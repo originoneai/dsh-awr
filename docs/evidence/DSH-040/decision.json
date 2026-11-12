@@ -1,0 +1,9 @@
+{
+  "work_item": "DSH-040",
+  "decided_on": "2026-11-12",
+  "decided_by": "the owner, in the chat",
+  "decision": "Move the takeover orchestration into the AWR CLI (the owner wrote: 接管逻辑搬进 CLI 吧).",
+  "reason": "The owner gave no reason beyond the decision. The rationale on record in the item's summary is that the module is host-independent by design (no DSH API, awr through argv) so that it can become an awr takeover command; docs/owner-decisions.md had recommended waiting, and the owner chose otherwise.",
+  "work_item_in_the_awr_repository": "https://github.com/originoneai/awr/issues/620 (Add awr takeover: unattended, resumable project takeover, moved from dsh-awr): the steps and stop reasons the module has today, the proposed command and reviewer interface, the guards that move into the CLI, the dependency on #618, and a test plan",
+  "not_done": "The implementation in the AWR repository."
+}

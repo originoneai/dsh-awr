@@ -1,0 +1,40 @@
+{
+  "work_item": "DSH-041",
+  "decided_on": "2026-11-12",
+  "decided_by": "the owner, in the chat",
+  "decision": "License MIT, make the repository public, publish a release (the owner wrote: 许可证用 MIT，可公开，可发版).",
+  "applied": {
+    "license": "LICENSE (MIT, copyright line 'originoneai') and package.json license MIT, merged in PR 25 (2821ce9)",
+    "visibility": "gh repo edit originoneai/dsh-awr --visibility public; gh repo view reports PUBLIC and licenseInfo MIT",
+    "release": "tag v0.1.0 on 2821ce9 and the GitHub release https://github.com/originoneai/dsh-awr/releases/tag/v0.1.0 (version 0.1.0, private removed)"
+  },
+  "checked_before_going_public": "tracked files and history scanned for credentials: only fake keys in test fixtures; machine-local paths in 40 evidence files and two author identities in the history became public and were not changed",
+  "clean_install": {
+    "how": "dsh dsh-awr-clean --from-default-profile headless (a new profile), then dsh plugin --profile dsh-awr-clean add github:originoneai/dsh-awr#v0.1.0",
+    "result": "+ @originoneai/dsh-awr 0.1.0 (pnpm), the plugin entry is in the composed config (dsh --dump-config), and a headless task with a local model stand-in and the released awr 0.7.0 on PATH produced the plugin trace below: apply ran, the conversation was bound to an AWR session on EXAMPLE-001 and the AWR context was injected",
+    "plugin_trace": [
+      {
+        "event": "apply"
+      },
+      {
+        "event": "bound",
+        "conversationId": "session-7c3fb2bf-9cb8-4b90-876b-2385616202fe",
+        "outcome": "created",
+        "sessionId": "01M77NT6KS5MR85YGJN8GHJ222",
+        "externalSession": "dsh:session-7c3fb2bf-9cb8-4b90-876b-2385616202fe",
+        "work": {
+          "key": "EXAMPLE-001",
+          "why": "ready"
+        }
+      },
+      {
+        "event": "prompt-context",
+        "conversationId": "session-7c3fb2bf-9cb8-4b90-876b-2385616202fe",
+        "kind": "context",
+        "revision": "37",
+        "chars": 3795
+      }
+    ]
+  },
+  "limits": "Checked with the headless profile on DeepSeek Harness 0.2.2-rc.1 (macOS arm64); the install through the desktop app's Plugins page from the GitHub URL was not repeated for the tag (the same page installed the local directory earlier today). No npm publish was made."
+}
