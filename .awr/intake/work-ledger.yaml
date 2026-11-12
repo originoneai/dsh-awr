@@ -279,7 +279,7 @@ work_items:
   required: true
   goal: intake-goal
   depends_on: []
-  summary: DSH 0.2.2-rc.1 rejects the tools/list result of awr-mcp 0.7.0 because ttlMs and cacheScope are missing under protocol 2026-07-28, so the server is reported as disconnected. Found in the DSH-001 check; see docs/dsh-001-l0-check.md. Decision (owner, 2026-11-11): the fix lives in AWR, not in this plugin, because every host that speaks protocol 2026-07-28 hits the same missing fields; reported as originoneai/awr#613, fixed by PR 614.
+  summary: DSH 0.2.2-rc.1 rejects the tools/list result of awr-mcp 0.7.0 because ttlMs and cacheScope are missing under protocol 2026-07-28, so the server is reported as disconnected. Found in the DSH-001 check; see docs/dsh-001-l0-check.md. The owner decided on 2026-11-11 that the fix lives in AWR and not in this plugin, because every host that speaks protocol 2026-07-28 hits the same missing fields. It was reported as originoneai/awr#613 and is fixed by PR 614.
   acceptance:
   - Without any shim, an awr-mcp entry in a DSH 0.2.2-rc.1 profile stays connected and awr_query with child_tool awr_project_status returns the fixture project's identity.
   - The decision on where the fix lives (AWR or this plugin) and its reason are recorded.
