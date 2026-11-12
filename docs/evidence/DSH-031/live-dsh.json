@@ -1,0 +1,82 @@
+{
+ "note": "DeepSeek Harness 0.2.2-rc.1, scripts/fake-model.mjs as the model; project: a real open-source repository that had been taken over. DSH_AWR_TRACE lines are in plugin-trace-*.jsonl.",
+ "manual": {
+  "how": "typed /compact in a conversation with two turns in the web profile; DSH said \"compressed 6 history records (about 5569 tokens)\"",
+  "awr_observation": {
+   "compaction_id": "595a019a-bace-4982-8142-35a9e689688c",
+   "sequence": 1,
+   "trigger": "manual",
+   "measurement_scope": "history_only",
+   "measurement_basis": "estimated",
+   "before_tokens": 5569,
+   "after_tokens": null,
+   "context_window_tokens": null,
+   "duration_ms": 15,
+   "model": "deepseek-flash",
+   "usage": {
+    "cached_input_tokens": null,
+    "cost_usd": null,
+    "input_tokens": 10,
+    "output_tokens": 5
+   },
+   "source": "DeepSeek Harness session events compaction/start, compaction/summary and compaction/end for 595a019a-bace-4982-8142-35a9e689688c. before_tokens is DSH's own estimate of the history span that was condensed (history only, not the request, not all of the history). No request size after compaction and no context window were reported."
+  },
+  "post_compaction_percent": null,
+  "state": "manual_observation",
+  "guidance": {
+   "basis": "Manual observation retained separately from automatic compaction policy",
+   "next_action": "Continue with native compaction enabled",
+   "recheck": "Next completed automatic compaction",
+   "when": "The recorded compaction was manual"
+  }
+ },
+ "automatic": {
+  "how": "headless profile with the compaction threshold forced down (thresholdRatio 0.001); the second run of a conversation compacted twice (the second condensed the first summary)",
+  "latest": {
+   "compaction_id": "167cb678-8cb1-459c-81d6-6f082f97861e",
+   "sequence": 2,
+   "trigger": "automatic",
+   "measurement_scope": "history_only",
+   "measurement_basis": "estimated",
+   "before_tokens": 117,
+   "after_tokens": null,
+   "context_window_tokens": null,
+   "duration_ms": 14,
+   "model": "deepseek-flash",
+   "usage": {
+    "cached_input_tokens": null,
+    "cost_usd": null,
+    "input_tokens": 10,
+    "output_tokens": 5
+   },
+   "source": "DeepSeek Harness session events compaction/start, compaction/summary and compaction/end for 167cb678-8cb1-459c-81d6-6f082f97861e. before_tokens is DSH's own estimate of the history span that was condensed (history only, not the request, not all of the history). No request size after compaction and no context window were reported."
+  },
+  "previous": {
+   "compaction_id": "6e791020-f306-4dd7-8483-019e0f76e2bb",
+   "sequence": 1,
+   "trigger": "automatic",
+   "measurement_scope": "history_only",
+   "measurement_basis": "estimated",
+   "before_tokens": 1413,
+   "after_tokens": null,
+   "context_window_tokens": null,
+   "duration_ms": 27,
+   "model": "deepseek-flash",
+   "usage": {
+    "cached_input_tokens": null,
+    "cost_usd": null,
+    "input_tokens": 10,
+    "output_tokens": 5
+   },
+   "source": "DeepSeek Harness session events compaction/start, compaction/summary and compaction/end for 6e791020-f306-4dd7-8483-019e0f76e2bb. before_tokens is DSH's own estimate of the history span that was condensed (history only, not the request, not all of the history). No request size after compaction and no context window were reported."
+  },
+  "post_compaction_percent": null,
+  "state": "measurement_missing",
+  "guidance": {
+   "basis": "Summary length and cumulative billed tokens cannot establish occupancy",
+   "next_action": "Continue existing workflow; have the host report available full-request metrics without guessing",
+   "recheck": "Next completed compaction with comparable host measurements",
+   "when": "Post-compaction full-request usage or effective window is unknown"
+  }
+ }
+}

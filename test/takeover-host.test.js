@@ -263,6 +263,15 @@ test('a missing subagent service, a failing child, an unusable answer and a time
   await assert.rejects(run(undefined), (e) => e instanceof TakeoverStop && e.reason === 'review_unavailable')
   await assert.rejects(run(fakeSubagents(() => Promise.reject(new Error('the model refused')))), (e) => e.reason === 'review_failed' && /the model refused/.test(e.message))
   await assert.rejects(run(fakeSubagents({ output: 'I could not decide.' })), (e) => e.reason === 'review_failed')
+  // A timeout that is over before the child has even started (the start takes longer than the limit) is still a timeout.
+  const slowStart = { started: [], disposed: 0, async startActivation() { await new Promise((r) => setTimeout(r, 40)); return { childId: 'c', result: new Promise(() => {}), dispose: async () => { slowStart.disposed += 1 } } } }
+  const keep = setTimeout(() => {}, 10_000)
+  try {
+    await assert.rejects(run(slowStart, { timeoutMs: 5 }), (e) => e.reason === 'review_failed' && /too long/.test(e.message))
+    assert.equal(slowStart.disposed, 1)
+  } finally {
+    clearTimeout(keep)
+  }
   const hung = fakeSubagents(new Promise(() => {}))
   const keepAlive = setTimeout(() => {}, 10_000)
   try {

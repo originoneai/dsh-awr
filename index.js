@@ -4,10 +4,11 @@
 // docs/dsh-surfaces.md. Loaded so far: binding each conversation to an AWR session (DSH-013), the /awr
 // command (DSH-015), the AWR work context in the prompt (DSH-014), the AWR tools for the model (DSH-012) and
 // the one-click takeover (DSH-021, with the header button in client.js) and the skill that teaches the AWR
-// workflow (DSH-032), and the end-of-turn checkpoint request (DSH-030).
+// workflow (DSH-032), the end-of-turn checkpoint request (DSH-030) and the report of native compactions (DSH-031).
 import { appendFileSync } from 'node:fs'
 import { createAwr } from './lib/awr-runtime.js'
 import { registerCheckpointPrompts } from './lib/checkpoint-prompt.js'
+import { registerCompactionReports } from './lib/compaction.js'
 import { registerAwrCommand, watchConversations } from './lib/conversation.js'
 import { registerPromptContext } from './lib/prompt-context.js'
 import { createReviewerPolicy, createTakeoverController } from './lib/takeover-host.js'
@@ -78,5 +79,6 @@ export function apply(ctx) {
     const value = Number.parseInt(process.env[name] ?? '', 10)
     return Number.isFinite(value) && value >= 0 ? value : undefined
   }
+  registerCompactionReports(ctx, { awr, bindings, trace })
   registerCheckpointPrompts(ctx, { bindings, enabled: process.env.DSH_AWR_CHECKPOINT_PROMPTS !== '0', minTools: number('DSH_AWR_CHECKPOINT_MIN_TOOLS'), cooldownMs: number('DSH_AWR_CHECKPOINT_COOLDOWN_MS'), trace })
 }
