@@ -20,20 +20,21 @@ No DSH-specific client dialect is added to AWR.
 | Priority | Capability | DSH surface | AWR action |
 | --- | --- | --- | --- |
 | P0 | Binary selection and self-check | plugin `apply` | Use `cli` from `.awr/runtime-binding.json`, else `awr` on PATH; stop on schema mismatch or migration prompts |
-| P0 | One-click project takeover | button + background subagent | Unattended `init` preview, draft, accept and `intake inspect` loop (see below) |
-| P0 | MCP mount | `ctx.mcpManager.register` | Start `awr-mcp --project <cwd>` over stdio |
-| P0 | Session binding | `session/created` | `awr client bind`; bind only, never auto-claim |
-| P0 | Context injection | `ctx.systemPrompt.context` | Inject next action, open loops and compiled work context |
-| P0 | Slash commands | command registry | `/awr status`, `claim`, `checkpoint`, `end` |
-| P1 | Checkpoints | `session/event` (`turn/end`, `compaction/*`) | Prompt the model to checkpoint at turn boundaries |
-| P1 | Compaction observation | `compaction/summary`, `compaction/end` | Report per AWR's context-continuity protocol |
-| P1 | Workflow skill | bundled skill | Teach preview/accept, evidence and completion rules |
-| P2 | Evidence candidates | `tools/result` | Suggest, never auto-register |
-| P2 | Session mapping | `appendPluginRecord()` | Persist AWR session id; forks resume via `--from-session` |
+| P0 | One-click project takeover | client slot button (for example `conversation.session.header.actions`) calling a registered command; background child through the `subagents` service | Unattended `init` preview, draft, accept and `intake inspect` loop (see below) |
+| P0 | MCP mount | `@deepseek-ai/dsh-mcp-client` row in the bundle patch | Start the native `awr-mcp --project <cwd>` over stdio (`ctx.mcpManager` does not exist in 0.2.2-rc.1) |
+| P0 | Session binding | event `agent/created` (serial, awaited) | `awr client bind`; bind only, never auto-claim |
+| P0 | Context injection | `ctx.systemPrompt.context` / `section`, `agent.inject` | Inject next action, open loops and compiled work context |
+| P0 | Slash commands | `ctx.commands.register` | `/awr status`, `claim`, `checkpoint`, `end` |
+| P1 | Checkpoints | event `agent/turn-stopping` (listener may `agent.steer`) | Ask the model to checkpoint before a turn closes |
+| P1 | Compaction observation | log-only session events `compaction/*` | Report per AWR's context-continuity protocol; no hook before compaction exists |
+| P1 | Workflow skill | `ctx.skills.register` | Teach preview/accept, evidence and completion rules |
+| P2 | Evidence candidates | event `tools/result` | Suggest, never auto-register |
+| P2 | Session mapping | none | AWR already stores it (`awr client bind`); forks resume via `--from-session` |
 | P2 | UI panel | `dsh.client` + slots | Current work, claim TTL, blockers |
 
-The DSH surface names above come from reading the DSH documentation, not from a working install.
-Each one must be confirmed against a pinned DSH version before it is relied on.
+Every surface above was checked against DeepSeek Harness desktop `0.2.2-rc.1` on 2026-11-11. The
+per-surface result, what changed and the evidence are in [docs/dsh-surfaces.md](docs/dsh-surfaces.md).
+The AWR build used for development is described in [docs/lab-environment.md](docs/lab-environment.md).
 
 ## One-click takeover
 
@@ -64,7 +65,12 @@ A project whose material does not establish its goals ends in `needs_organizatio
 
 ## Open questions
 
-- Whether the takeover orchestration lives in this plugin or in the AWR CLI.
-- Whether DSH exposes a blockable pre-tool-call hook, and its MCP config file format.
+- Whether the takeover orchestration lives in this plugin or in the AWR CLI (decided later, in DSH-040).
 - Whether DSH subagent permission presets can be narrowed to the takeover allowlist.
 - Whether AWR has an "undo takeover" path.
+- Whether the takeover can run with no approval prompt under DSH's default permission preset
+  (`workspace-write`, approval `ask`).
+
+Answered by [docs/dsh-surfaces.md](docs/dsh-surfaces.md): DSH does expose a blockable pre-tool-call
+hook (`tools/pre-execute`, `ctx.tools.guard`), and MCP servers are configured as
+`@deepseek-ai/dsh-mcp-client` rows in a bundle patch.

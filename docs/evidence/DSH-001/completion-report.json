@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "work_item": "DSH-001",
+  "source_sha": "047503cedf97053e180262217a9ca16a979bed40",
+  "command": "DSH desktop 0.2.2-rc.1 conversations running awr via the shell tool; a DSH conversation calling mcp__awr__awr_query on the lab awr-mcp; dsh headless MCP startup check; awr and DSH session logs read from outside DSH",
+  "scope": [
+    "docs/dsh-001-l0-check.md",
+    "docs/lab-environment.md",
+    "docs/evidence/DSH-001"
+  ],
+  "verified_at": 1794457518578,
+  "checks": [
+    {
+      "name": "DSH version, install source and date recorded",
+      "passed": true,
+      "details": "docs/dsh-001-l0-check.md records DSH desktop 0.2.2-rc.1 (com.deepseek.dsh, macOS arm64) from the owner-installed dmg, its update feed and channel, the check date 2026-11-11, the bundled CLI and Node versions, and that where the dmg was downloaded from was not observed.",
+      "criteria": [
+        "The DSH version, install source and check date are recorded in this repository."
+      ]
+    },
+    {
+      "name": "Session workflow from DSH conversations, receipts retained",
+      "passed": true,
+      "details": "Two desktop conversations ran awr session list, status, session start with a claim, context compile, session checkpoint and session end in a disposable fixture project. Nine receipts are in docs/evidence/DSH-001/receipts. They were re-read from outside DSH with the awr CLI: no active session remained and the revisions matched. The second conversation ran under workspace-write with no command blocked.",
+      "criteria": [
+        "From a DSH conversation, awr session start, context compile, session checkpoint and session end succeed on a disposable AWR project and their receipts are retained."
+      ]
+    },
+    {
+      "name": "awr-mcp connected to DSH and awr_project_status returns the project identity",
+      "passed": true,
+      "details": "Environment: lab build awr-mcp 0.7.0 (1b406982), origin/main c33ea2be plus the fix for originoneai/awr#613 (docs/lab-environment.md, docs/evidence/DSH-001/mcp/lab-build.json). With no shim and no wrapper, a native stdio entry stayed connected in DSH, and a desktop conversation called mcp__awr__awr_query with child_tool awr_project_status and received project id 01M76X7RPD0C8WNTE0AX7JTJ7V at revision 16, equal to the CLI at that moment (mcp/lab-run-no-shim.json, extracted from the DSH session log). Stock released awr-mcp 0.7.0 does not pass this check: DSH rejects its tools/list result (DSH-004 tracks that until the fix is merged and released).",
+      "criteria": [
+        "awr-mcp is connected to DSH and awr_project_status returns the disposable project's identity."
+      ]
+    }
+  ]
+}

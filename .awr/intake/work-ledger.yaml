@@ -27,7 +27,7 @@ work_items:
 - id: DSH-001
   title: Run the AWR L0 session workflow from a real DeepSeek Harness install
   kind: verification
-  status: ready
+  status: completed
   priority: P0
   required: true
   goal: intake-goal
@@ -37,7 +37,9 @@ work_items:
   - The DSH version, install source and check date are recorded in this repository.
   - From a DSH conversation, awr session start, context compile, session checkpoint and session end succeed on a disposable AWR project and their receipts are retained.
   - awr-mcp is connected to DSH and awr_project_status returns the disposable project's identity.
-  next_action: Complete with docs/dsh-001-l0-check.md and docs/evidence/DSH-001 as evidence, then move to DSH-002.
+  next_action: Complete DSH-001 with docs/dsh-001-l0-check.md and docs/evidence/DSH-001 as evidence.
+  "evidence": ["docs/evidence/DSH-001/completion-report.json"]
+  "verification": {"evidence_level":"locally_verified"}
 - id: DSH-002
   title: Confirm the DSH plugin surfaces the design relies on
   kind: verification

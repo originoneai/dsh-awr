@@ -1,0 +1,1043 @@
+{
+  "receipt": "dsh-inspect-2",
+  "generatedAt": "2026-11-11T23:24:34-05:00",
+  "source": "cordis_inspect_list and cordis_inspect_query only (no shell, no network, no guessing); host platform for Part A and Part C, client platform for Part B",
+  "note": "Each rawResult keeps the inspection provider's exact returned identifiers: service keys, method signature strings, slot names/kinds/scopes/registration option names and types/owner props/standard props/occupants. As in receipts/dsh-inspect.json, the provider's referencedTypes type appendices, per-method prose/parameter/returns arrays, and service access metadata are omitted; those are re-readable with the same query. One catalog result exceeded the tool's inline display (53,080 bytes were spilled to a temp file by the harness); its complete 107-key directory is recorded verbatim below, and every keyword match was then re-queried per service for exact signatures.",
+  "items": [
+    {
+      "id": "A1",
+      "kind": "service-directory",
+      "item": "host service list",
+      "query": {
+        "platform": "host",
+        "provider": "Service",
+        "method": "listService",
+        "input": {}
+      },
+      "status": "found",
+      "rawResult": {
+        "mode": "catalog",
+        "serviceKeys": [
+          "actionCards",
+          "agentDefaultModel",
+          "agentLoop",
+          "agentPresets",
+          "agents",
+          "agentTeams",
+          "approval",
+          "attachments",
+          "authorization",
+          "browserUse",
+          "claudeCodeMods",
+          "clientModules",
+          "commands",
+          "compaction",
+          "computerUse",
+          "configEditor",
+          "connection",
+          "cotTranslation",
+          "credentials",
+          "credentialsController",
+          "cuaAccess",
+          "deepseekAccount",
+          "deepseekLlmApiExtensions",
+          "directoryPicker",
+          "directoryPickerController",
+          "fileReferences",
+          "fileUploads",
+          "forge",
+          "forgePanel",
+          "forgeSession",
+          "fs",
+          "goals",
+          "headlessStartup",
+          "hmr",
+          "inspector",
+          "jobController",
+          "jobs",
+          "liveshareShares",
+          "llm",
+          "lsp",
+          "mcpResources",
+          "messageFeedback",
+          "officeToPdf",
+          "otel",
+          "permissionPresets",
+          "planMode",
+          "pluginManager",
+          "pluginMarket",
+          "pluginRecommendations",
+          "pluginRegistryProbe",
+          "productAnalytics",
+          "productTelemetry",
+          "profileContext",
+          "ptcRuntime",
+          "remoteAccess",
+          "sandbox",
+          "sandboxPolicy",
+          "schedule",
+          "sessionController",
+          "sessionFeedback",
+          "sessionFileReferences",
+          "sessionLogDeepSeek",
+          "sessionPersistence",
+          "sessionProjectionCache",
+          "sessionProjections",
+          "sessionQuery",
+          "sessionReferenceResolver",
+          "sessions",
+          "sessionSkillCatalog",
+          "sessionTelemetry",
+          "sessionTitle",
+          "settings",
+          "settingsController",
+          "shell",
+          "shellEnv",
+          "skills",
+          "speechController",
+          "speechToText",
+          "spillStore",
+          "ssh",
+          "storage",
+          "storageDomain",
+          "subagentModelSelection",
+          "subagents",
+          "subprocess",
+          "systemPrompt",
+          "terminalController",
+          "terminals",
+          "timer",
+          "tokenMeter",
+          "toolResultPruner",
+          "tools",
+          "translator",
+          "typert",
+          "typertGateway",
+          "userQuestions",
+          "web",
+          "webApp",
+          "webhookRuntime",
+          "webServer",
+          "workflowEngine",
+          "workingDirectory",
+          "workspaceChanges",
+          "workspaceController",
+          "workspaceFiles",
+          "workspaceRegistry",
+          "worktrees"
+        ],
+        "matchedKeys": [
+          "agentPresets",
+          "agentTeams",
+          "approval",
+          "permissionPresets",
+          "subagentModelSelection",
+          "subagents",
+          "workflowEngine"
+        ]
+      }
+    },
+    {
+      "id": "A2",
+      "kind": "service",
+      "item": "agentPresets",
+      "matchedKeyword": "preset",
+      "query": {
+        "platform": "host",
+        "provider": "Service",
+        "method": "listService",
+        "input": {
+          "service": "agentPresets"
+        }
+      },
+      "status": "found",
+      "rawResult": {
+        "mode": "service",
+        "service": {
+          "key": "agentPresets",
+          "description": "Registry of YAML-declared presets and the revisions live Agents retain.",
+          "methods": [
+            "presetForSession(session: Session): string | null",
+            "async register(definition: PresetDefinition): Promise<() => Promise<void>>",
+            "inspectCompositions(ctx?: Context): AgentPresetInspection[]",
+            "async list(): Promise<AgentPreset[]>",
+            "@Remote('list') async remoteExportList(): Promise<AgentPresetRoster>",
+            "async resolve(id?: string): Promise<AgentPreset>",
+            "@Remote('read') readDocument(agentPreset: string): Promise<AgentPresetDocument>",
+            "async mount(ctx: Context, id?: string): Promise<AgentPreset>",
+            "composeFrom(ctx: Context, parent: Context): string | undefined",
+            "composedPreset(ctx: Context): string | undefined",
+            "serviceFor<K extends string & keyof Context>(agent: { ctx: Context }, name: K): Context[K] | undefined",
+            "async recompose(ctx: Context, id: string): Promise<AgentPreset>",
+            "@Remote('select') async select(agent: Agent, agentPreset: string): Promise<string>",
+            "async acquireScope(id?: string): Promise<{ key: ScopeKey } & AsyncDisposable>",
+            "compositionInventory(): Promise<AgentPresetComposition[]>"
+          ]
+        }
+      }
+    },
+    {
+      "id": "A3",
+      "kind": "service",
+      "item": "agentTeams",
+      "matchedKeyword": "agent-team",
+      "query": {
+        "platform": "host",
+        "provider": "Service",
+        "method": "listService",
+        "input": {
+          "service": "agentTeams"
+        }
+      },
+      "status": "found",
+      "rawResult": {
+        "mode": "service",
+        "service": {
+          "key": "agentTeams",
+          "description": "Agent Teams service backed by the exact live Lead Session log.",
+          "methods": [
+            "membership(agent: Agent): TeamMembership",
+            "listMembers(agent: Agent): TeamMemberView[]",
+            "async spawnTeammate(caller: Agent, request: SpawnTeammateRequest): Promise<SpawnTeammateResult>",
+            "async sendMessage(caller: Agent, request: SendTeamMessageRequest): Promise<SendTeamMessageResult>",
+            "async createTask(caller: Agent, request: CreateTeamTaskRequest): Promise<TeamTaskView>",
+            "getTask(caller: Agent, id: TeamTaskId): TeamTaskView",
+            "listTasks(caller: Agent): TeamTaskView[]",
+            "async updateTask(caller: Agent, request: UpdateTeamTaskRequest): Promise<TeamTaskView>",
+            "async waitForChange(caller: Agent, timeoutMs: number, signal: AbortSignal): Promise<TeamWaitResult>",
+            "interrupt(caller: Agent, targetName: string): { previousStatus: 'running' | 'inactive' }",
+            "tryMembership(agent: Agent): TeamMembership | undefined"
+          ]
+        }
+      }
+    },
+    {
+      "id": "A4",
+      "kind": "service",
+      "item": "approval",
+      "matchedKeyword": "approval",
+      "query": {
+        "platform": "host",
+        "provider": "Service",
+        "method": "listService",
+        "input": {
+          "service": "approval"
+        }
+      },
+      "status": "found",
+      "rawResult": {
+        "mode": "service",
+        "service": {
+          "key": "approval",
+          "description": "Approval service that applies session policy before answerers and logs every ask/outcome pair to the requesting session.",
+          "methods": [
+            "setPolicy(agent: Agent, policy: ApprovalPolicy): void",
+            "async request(req: ApprovalRequest): Promise<ApprovalOutcome>",
+            "overrideOf(session: Session): ApprovalPolicy | undefined"
+          ]
+        }
+      }
+    },
+    {
+      "id": "A5",
+      "kind": "service",
+      "item": "permissionPresets",
+      "matchedKeyword": "permission, preset",
+      "query": {
+        "platform": "host",
+        "provider": "Service",
+        "method": "listService",
+        "input": {
+          "service": "permissionPresets"
+        }
+      },
+      "status": "found",
+      "rawResult": {
+        "mode": "service",
+        "service": {
+          "key": "permissionPresets",
+          "description": "Owns the deployment's configured permission presets, the fixed Auto integration hook, and their write path.",
+          "methods": [
+            "@Remote('catalog') catalog(): PermissionCatalog",
+            "registerAuto(admit: () => void): () => Promise<void>",
+            "current(session: Session): string",
+            "resolve(name: string): PresetSpec",
+            "optionOf(name: string): PresetOption",
+            "set(session: Session, name: string): void"
+          ]
+        }
+      }
+    },
+    {
+      "id": "A6",
+      "kind": "service",
+      "item": "subagentModelSelection",
+      "matchedKeyword": "subagent",
+      "query": {
+        "platform": "host",
+        "provider": "Service",
+        "method": "listService",
+        "input": {
+          "service": "subagentModelSelection"
+        }
+      },
+      "status": "found",
+      "rawResult": {
+        "mode": "service",
+        "service": {
+          "key": "subagentModelSelection",
+          "description": "Host settings owner that records Session authorization before the first model request.",
+          "methods": []
+        }
+      }
+    },
+    {
+      "id": "A7",
+      "kind": "service",
+      "item": "subagents",
+      "matchedKeyword": "subagent",
+      "query": {
+        "platform": "host",
+        "provider": "Service",
+        "method": "listService",
+        "input": {
+          "service": "subagents"
+        }
+      },
+      "status": "found",
+      "rawResult": {
+        "mode": "service",
+        "service": {
+          "key": "subagents",
+          "description": "Named provider registry with managed activations, durable discovery, and local child messaging.",
+          "methods": [
+            "resolveMaxDepth(configured?: number | 'provider-managed'): number | undefined",
+            "startActivation(spec: SubagentActivationSpec & { readonly childId: SessionId }): Promise<SubagentActivation & { readonly messageId: MessageId }>",
+            "startActivation(spec: SubagentActivationSpec): Promise<SubagentActivation>",
+            "async waitForChildren(parent: Agent): Promise<boolean>",
+            "async sendMessage( sender: Agent, targetId: SessionId, content: ContentBlock[], options: SubagentSendMessageOptions, ): Promise<MessageId>",
+            "interrupt(targetSessionId: SessionId, authority: SubagentInterruptAuthority): void",
+            "async drainDescendants(parents: readonly Agent[]): Promise<void>",
+            "async drainChildren(parent: Agent, childIds: readonly SessionId[]): Promise<void>",
+            "listChildren(parentSessionId: SessionId, signal?: AbortSignal): Promise<SubagentCatalogEntry[]>",
+            "listDescendants(rootSessionId: SessionId, signal?: AbortSignal): Promise<SubagentDescendantListEntry[]>",
+            "@Remote('prompt') async prompt(request: SubagentPromptRequest, signal: AbortSignal): Promise<SubagentPromptReceipt>",
+            "@Remote('interruptByParent') interruptByParent( childSessionId: SessionId, parentSessionId: SessionId, mode: 'continuable', ): SubagentInterruptReceipt",
+            "registerProvider(provider: SubagentProvider): () => void",
+            "getProvider(name: string): SubagentProvider | undefined",
+            "list(): string[]"
+          ]
+        }
+      }
+    },
+    {
+      "id": "A8",
+      "kind": "service",
+      "item": "workflowEngine",
+      "matchedKeyword": "workflow",
+      "query": {
+        "platform": "host",
+        "provider": "Service",
+        "method": "listService",
+        "input": {
+          "service": "workflowEngine"
+        }
+      },
+      "status": "found",
+      "rawResult": {
+        "mode": "service",
+        "service": {
+          "key": "workflowEngine",
+          "description": "Workflow Service Definition contract.",
+          "methods": [
+            "abstract start(request: WorkflowStartRequest): WorkflowRun"
+          ]
+        }
+      }
+    },
+    {
+      "id": "A9",
+      "kind": "keyword-scan",
+      "item": "delegate",
+      "query": {
+        "platform": "host",
+        "provider": "Service",
+        "method": "listService",
+        "input": {}
+      },
+      "status": "absent",
+      "rawResult": {
+        "note": "No service key in the 107-key catalog contains 'delegate'. Delegation exists only inside subagents' method prose (resolveMaxDepth for a delegation tool's depth policy) and in the subagents service description, not as a service key."
+      }
+    },
+    {
+      "id": "B1",
+      "kind": "slot-topology",
+      "item": "client slot tree",
+      "query": {
+        "platform": "client",
+        "provider": "Slots",
+        "method": "listSubTree",
+        "input": {}
+      },
+      "status": "found",
+      "rawResult": {
+        "slotNames": [
+          "root",
+          "shell.overlay",
+          "contextMenu.content",
+          "sidebar.workspaces.session.menu.item",
+          "sidebar.right.tab.menu.item",
+          "contextMenu.icon",
+          "shell.quota-notice",
+          "workspace.toast",
+          "sidebar",
+          "sidebar.brand.mark",
+          "sidebar.footer.action",
+          "sidebar.toggle.badge",
+          "sidebar.settings",
+          "settings.section",
+          "settings.general.item",
+          "settings.plugins.tab",
+          "settings.models.provider-card",
+          "settings.models.footer",
+          "settings.onboarding",
+          "settings.models.sign-in",
+          "settings.trigger",
+          "settings.header",
+          "settings.action",
+          "settings.close",
+          "settings.launcher",
+          "settings.section.icon",
+          "sidebar.workspaces",
+          "sidebar.workspaces.session.row.action",
+          "sidebar.workspaces.directoryFlow",
+          "sidebar.session.row.leading",
+          "sidebar.session.row.trailing",
+          "sidebar.session.row.hover",
+          "sidebar.panellist",
+          "sidebar.brand.name",
+          "sidebar.panellist.actions",
+          "main",
+          "plugins.add.actions",
+          "plugins.tab",
+          "plugins.item",
+          "plugins.bundle.activation",
+          "plugins.bundle.config",
+          "plugins.row.config",
+          "plugins.detail.actions",
+          "plugins.detail.badge",
+          "plugins.detail.section",
+          "main.conversation",
+          "conversation.header",
+          "conversation.header.leading",
+          "conversation.session.header",
+          "conversation.session.header.actions",
+          "conversation.session.header.utilities",
+          "conversation.session.header.corner",
+          "conversation.session.header.lineage",
+          "conversation.session.header.views.actions",
+          "sidebar.right.pane.tab",
+          "sidebar.right.tab.guide.actions",
+          "sidebar.right.tab.guide.entry",
+          "sidebar.right.tab.guide",
+          "sidebar.right.tab.document",
+          "sidebar.right.tab.document.office.pdf",
+          "sidebar.right.tab.document.actions",
+          "sidebar.right.tab.document.unpreviewable",
+          "sidebar.right.tab.document.action",
+          "sidebar.right.tab.files.actions",
+          "sidebar.chat.conversation",
+          "sidebar.right.pane.tab.title",
+          "shell.bottom",
+          "shell.leading",
+          "conversation.approval.card",
+          "conversation.approval.detail",
+          "conversation.images.content",
+          "workspace.toast.content",
+          "conversation.user.text",
+          "conversation.user.text.node",
+          "conversation.content",
+          "conversation.composer",
+          "conversation.plan-review.actions",
+          "conversation.hero.workspace",
+          "conversation.hero.workspace.directoryFlow",
+          "conversation.session",
+          "conversation.view",
+          "conversation.trajectory.images",
+          "conversation.chat.flow",
+          "conversation.chat.node",
+          "tool.call.toolview",
+          "tool.call.images",
+          "tool.view.cordis",
+          "conversation.chat.assistant-actions",
+          "conversation.chat.message.images",
+          "conversation.chat.reasoning.body",
+          "conversation.chat.user.before",
+          "conversation.chat.commandview",
+          "conversation.chat.turnTail",
+          "deliverables.file.actions",
+          "conversation.chat.text-interaction",
+          "conversation.composer.bar",
+          "conversation.input.overlay",
+          "conversation.input.attachments",
+          "conversation.input.permission",
+          "conversation.input.left",
+          "conversation.input.plan",
+          "conversation.input.right",
+          "conversation.input.model",
+          "conversation.input.model.label",
+          "conversation.input.activity",
+          "conversation.composer.dock",
+          "conversation.input.dock",
+          "conversation.hero.brand.mark",
+          "conversation.hero.agentPreset",
+          "conversation.hero.options"
+        ],
+        "factoryNames": [
+          "sidebar.files.tree",
+          "sidebar.files.navigator",
+          "sidebar.files.navigator.toggle",
+          "conversation.chat.reasoning.content",
+          "conversation.chat.user.content"
+        ],
+        "note": "The harness spilled 32,316 bytes of this same response; the names above are the slot/factory names carried by that returned tree. There is no slot or factory whose name contains 'palette', 'command palette' or 'toolbar'."
+      }
+    },
+    {
+      "id": "B2",
+      "kind": "slot",
+      "item": "sidebar",
+      "matchedCategory": "sidebar",
+      "query": {
+        "platform": "client",
+        "provider": "Slots",
+        "method": "listSubTree",
+        "input": {
+          "root": "sidebar"
+        }
+      },
+      "status": "found",
+      "rawResult": {
+        "requestedRoot": {
+          "name": "sidebar",
+          "available": true
+        },
+        "selected": {
+          "type": "slot",
+          "name": "sidebar",
+          "kind": "single",
+          "scope": "root",
+          "declaredBy": "an entry in \"root\" (tk)",
+          "occupants": [
+            {
+              "registrant": "tk",
+              "priority": 0,
+              "active": true
+            }
+          ],
+          "catalog": {
+            "description": "The whole left column. OCCUPIED by ui-sidebar's SidebarRoot, which declares the workspace and settings seats inside it — registering here replaces the navigation column outright rather than adding to it, and the seats it declares disappear with it. To add something to the sidebar, register into one of those inner seats instead. The occupant receives the frame's collapsed state, width and drawer mode. Drawer content stays mounted while hidden; other browser columns retain a compact control rail while collapsed.",
+            "registration": [],
+            "ownerProps": [
+              "export interface SidebarOwnerProps { collapsed: boolean; width: number; drawer: boolean }"
+            ],
+            "ownerPropsReferences": [],
+            "standardProps": [
+              "useRemoteAccess: (action: RemoteEndpoint) => boolean",
+              "useResource: UseResource",
+              "useContextMenu: UseContextMenu",
+              "useWorkspaces: SnapshotSelectorHook<WorkspaceSnapshot>",
+              "usePanelInfo: UsePanelInfo",
+              "useSessions: UseSessions",
+              "useSessionStatus: UseSessionStatus",
+              "useSessionRetainInfo: UseSessionRetainInfo",
+              "useSessionAccess: (sessionId: SessionId, action: RemoteEndpoint) => boolean",
+              "useWorkspaceAccess: (workspaceId: WorkspaceId, action: RemoteEndpoint) => boolean"
+            ],
+            "keyDomain": "",
+            "hookContext": "",
+            "slotInject": "",
+            "replaceRisk": "shadows-shipped-ui"
+          }
+        }
+      }
+    },
+    {
+      "id": "B3",
+      "kind": "slot",
+      "item": "sidebar.workspaces.session.menu.item",
+      "matchedCategory": "sidebar, session menu",
+      "query": {
+        "platform": "client",
+        "provider": "Slots",
+        "method": "listSubTree",
+        "input": {
+          "root": "sidebar.workspaces.session.menu.item"
+        }
+      },
+      "status": "found",
+      "rawResult": {
+        "requestedRoot": {
+          "name": "sidebar.workspaces.session.menu.item",
+          "available": true
+        },
+        "selected": {
+          "type": "slot",
+          "name": "sidebar.workspaces.session.menu.item",
+          "kind": "list",
+          "scope": "root",
+          "declaredBy": "an entry in \"contextMenu.content\" (tk)",
+          "occupants": [],
+          "catalog": {
+            "description": "Legacy external Session menu rows, in ascending `order`, rendered together before the built-in Archive action. Built-in actions use ctx.contextMenus; Slot priority cannot replace them. Each entry renders a `role=\"menuitem\"` button, owns its visibility and localized label, and dismisses through `useMenuOpenState`. The shared menu supplies keyboard navigation and focus return.",
+            "registration": [
+              {
+                "name": "id",
+                "type": "string",
+                "required": true
+              },
+              {
+                "name": "order",
+                "type": "number",
+                "required": false
+              },
+              {
+                "name": "label",
+                "type": "string | (() => string)",
+                "required": false
+              }
+            ],
+            "ownerProps": [
+              "export interface SessionRowOwnerProps { sessionId: SessionId; displayTitle: string }"
+            ],
+            "ownerPropsReferences": [
+              "SessionId"
+            ],
+            "standardProps": [
+              "useRemoteAccess: (action: RemoteEndpoint) => boolean",
+              "useResource: UseResource",
+              "useContextMenu: UseContextMenu",
+              "useWorkspaces: SnapshotSelectorHook<WorkspaceSnapshot>",
+              "usePanelInfo: UsePanelInfo",
+              "useSessions: UseSessions",
+              "useSessionStatus: UseSessionStatus",
+              "useSessionRetainInfo: UseSessionRetainInfo",
+              "useSessionAccess: (sessionId: SessionId, action: RemoteEndpoint) => boolean",
+              "useWorkspaceAccess: (workspaceId: WorkspaceId, action: RemoteEndpoint) => boolean"
+            ],
+            "keyDomain": "",
+            "hookContext": "MenuOpenState",
+            "slotInject": "{ hooks: { menuOpenState: SlotHookFactory<'sidebar.workspaces.session.menu.item', UseMenuOpenState> shortcuts: HostObservable<readonly ShortcutCatalogEntry[]> } }",
+            "replaceRisk": "none"
+          }
+        }
+      }
+    },
+    {
+      "id": "B4",
+      "kind": "slot",
+      "item": "conversation.session.header.actions",
+      "matchedCategory": "header, toolbar",
+      "query": {
+        "platform": "client",
+        "provider": "Slots",
+        "method": "listSubTree",
+        "input": {
+          "root": "conversation.session.header.actions"
+        }
+      },
+      "status": "found",
+      "rawResult": {
+        "requestedRoot": {
+          "name": "conversation.session.header.actions",
+          "available": true
+        },
+        "selected": {
+          "type": "slot",
+          "name": "conversation.session.header.actions",
+          "kind": "list",
+          "scope": "session",
+          "declaredBy": "an entry in \"conversation.session.header\" (tk)",
+          "occupants": [
+            {
+              "registrant": "tk",
+              "id": "agent-preset",
+              "order": -10,
+              "priority": 0,
+              "active": true
+            },
+            {
+              "registrant": "tk",
+              "id": "subagent-catalog",
+              "order": 10,
+              "priority": 0,
+              "active": true
+            },
+            {
+              "registrant": "tk",
+              "id": "job-list",
+              "order": 20,
+              "priority": 0,
+              "active": true
+            }
+          ],
+          "catalog": {
+            "description": "Title-adjacent Session actions in ascending order; overflow is clipped and faded before the utilities, so overlays must portal.",
+            "registration": [
+              {
+                "name": "id",
+                "type": "string",
+                "required": true
+              },
+              {
+                "name": "order",
+                "type": "number",
+                "required": false
+              },
+              {
+                "name": "label",
+                "type": "string | (() => string)",
+                "required": false
+              }
+            ],
+            "ownerProps": [
+              "export interface ConversationHeaderActionOwnerProps { children?: never }"
+            ],
+            "ownerPropsReferences": [],
+            "standardProps": [
+              "useRemoteAccess: (action: RemoteEndpoint) => boolean",
+              "useResource: UseResource",
+              "useContextMenu: UseContextMenu",
+              "useWorkspaces: SnapshotSelectorHook<WorkspaceSnapshot>",
+              "usePanelInfo: UsePanelInfo",
+              "useSessions: UseSessions",
+              "useSessionStatus: UseSessionStatus",
+              "useSessionRetainInfo: UseSessionRetainInfo",
+              "useSessionAccess: (sessionId: SessionId, action: RemoteEndpoint) => boolean",
+              "useWorkspaceAccess: (workspaceId: WorkspaceId, action: RemoteEndpoint) => boolean",
+              "useChat: UseChat",
+              "useConversation: UseConversation",
+              "useInput: SnapshotSelectorHook<InputState>",
+              "inputActions: InputActions",
+              "useSession: SessionSnapshotSelector",
+              "sessionId: SessionId",
+              "useProjection: UseProjection",
+              "useAccess: (action: RemoteEndpoint) => boolean",
+              "useTrajectory: UseTrajectory"
+            ],
+            "keyDomain": "",
+            "hookContext": "",
+            "slotInject": "",
+            "replaceRisk": "none"
+          }
+        }
+      }
+    },
+    {
+      "id": "B5",
+      "kind": "slot",
+      "item": "conversation.input.right",
+      "matchedCategory": "composer action, toolbar",
+      "query": {
+        "platform": "client",
+        "provider": "Slots",
+        "method": "listSubTree",
+        "input": {
+          "root": "conversation.input.right"
+        }
+      },
+      "status": "found",
+      "rawResult": {
+        "requestedRoot": {
+          "name": "conversation.input.right",
+          "available": true
+        },
+        "selected": {
+          "type": "slot",
+          "name": "conversation.input.right",
+          "kind": "list",
+          "scope": "session",
+          "declaredBy": "an entry in \"conversation.composer.bar\" (tk)",
+          "occupants": [],
+          "catalog": {
+            "description": "Compact controls before the composer submit action; fixed overlays must portal to the document body because the docked composer contains them.",
+            "registration": [
+              {
+                "name": "id",
+                "type": "string",
+                "required": true
+              },
+              {
+                "name": "order",
+                "type": "number",
+                "required": false
+              },
+              {
+                "name": "label",
+                "type": "string | (() => string)",
+                "required": false
+              }
+            ],
+            "ownerProps": [],
+            "ownerPropsReferences": [],
+            "standardProps": [
+              "useRemoteAccess: (action: RemoteEndpoint) => boolean",
+              "useResource: UseResource",
+              "useContextMenu: UseContextMenu",
+              "useWorkspaces: SnapshotSelectorHook<WorkspaceSnapshot>",
+              "usePanelInfo: UsePanelInfo",
+              "useSessions: UseSessions",
+              "useSessionStatus: UseSessionStatus",
+              "useSessionRetainInfo: UseSessionRetainInfo",
+              "useSessionAccess: (sessionId: SessionId, action: RemoteEndpoint) => boolean",
+              "useWorkspaceAccess: (workspaceId: WorkspaceId, action: RemoteEndpoint) => boolean",
+              "useChat: UseChat",
+              "useConversation: UseConversation",
+              "useInput: SnapshotSelectorHook<InputState>",
+              "inputActions: InputActions",
+              "useSession: SessionSnapshotSelector",
+              "sessionId: SessionId",
+              "useProjection: UseProjection",
+              "useAccess: (action: RemoteEndpoint) => boolean",
+              "useTrajectory: UseTrajectory"
+            ],
+            "keyDomain": "",
+            "hookContext": "",
+            "slotInject": "",
+            "replaceRisk": "none"
+          }
+        }
+      }
+    },
+    {
+      "id": "B6",
+      "kind": "slot",
+      "item": "settings.section",
+      "matchedCategory": "settings page",
+      "query": {
+        "platform": "client",
+        "provider": "Slots",
+        "method": "listSubTree",
+        "input": {
+          "root": "settings.section"
+        }
+      },
+      "status": "found",
+      "rawResult": {
+        "requestedRoot": {
+          "name": "settings.section",
+          "available": true
+        },
+        "selected": {
+          "type": "slot",
+          "name": "settings.section",
+          "kind": "list",
+          "scope": "root",
+          "declaredBy": "an entry in \"sidebar.settings\" (tk)",
+          "occupants": [
+            {
+              "registrant": "tk",
+              "id": "account",
+              "order": -10,
+              "priority": 0,
+              "active": true
+            },
+            {
+              "registrant": "tk",
+              "id": "general",
+              "order": 0,
+              "priority": 0,
+              "active": true
+            },
+            {
+              "registrant": "tk",
+              "id": "models",
+              "order": 10,
+              "priority": 0,
+              "active": true
+            },
+            {
+              "registrant": "tk",
+              "id": "plugins",
+              "order": 15,
+              "priority": 0,
+              "active": true
+            },
+            {
+              "registrant": "tk",
+              "id": "agent-presets",
+              "order": 20,
+              "priority": 0,
+              "active": true
+            }
+          ],
+          "catalog": {
+            "description": "One settings page per list entry. Registrant options carry the nav identity: `id` (section key, drives `only` filtering), `order` (nav position), `label` (registrant-localized display text — the registrant re-registers with fresh text on locale change, so the shell never subscribes locale state; the ledger bump doubles as the shell's re-render trigger). Sections render inside the panel content column. (`settings.general.item`, declared by ui-settings-general's General entry, is typed in the locale package — the common dependency of every item registrant; the shell neither declares nor renders it.)",
+            "registration": [
+              {
+                "name": "id",
+                "type": "string",
+                "required": true
+              },
+              {
+                "name": "order",
+                "type": "number",
+                "required": false
+              },
+              {
+                "name": "label",
+                "type": "string | (() => string)",
+                "required": false
+              }
+            ],
+            "ownerProps": [
+              "export interface SettingsSectionOwnerProps { close: () => void }"
+            ],
+            "ownerPropsReferences": [],
+            "standardProps": [
+              "useRemoteAccess: (action: RemoteEndpoint) => boolean",
+              "useResource: UseResource",
+              "useContextMenu: UseContextMenu",
+              "useWorkspaces: SnapshotSelectorHook<WorkspaceSnapshot>",
+              "usePanelInfo: UsePanelInfo",
+              "useSessions: UseSessions",
+              "useSessionStatus: UseSessionStatus",
+              "useSessionRetainInfo: UseSessionRetainInfo",
+              "useSessionAccess: (sessionId: SessionId, action: RemoteEndpoint) => boolean",
+              "useWorkspaceAccess: (workspaceId: WorkspaceId, action: RemoteEndpoint) => boolean"
+            ],
+            "keyDomain": "",
+            "hookContext": "",
+            "slotInject": "",
+            "replaceRisk": "none"
+          }
+        }
+      }
+    },
+    {
+      "id": "B7",
+      "kind": "slot",
+      "item": "main",
+      "matchedCategory": "plugin page, panel",
+      "query": {
+        "platform": "client",
+        "provider": "Slots",
+        "method": "listSubTree",
+        "input": {
+          "root": "main"
+        }
+      },
+      "status": "found",
+      "rawResult": {
+        "requestedRoot": {
+          "name": "main",
+          "available": true
+        },
+        "selected": {
+          "type": "slot",
+          "name": "main",
+          "kind": "keyed",
+          "scope": "root",
+          "declaredBy": "an entry in \"root\" (tk)",
+          "occupants": [
+            {
+              "registrant": "tk",
+              "key": "plugins",
+              "priority": 0,
+              "active": true
+            },
+            {
+              "registrant": "tk",
+              "key": "conversation",
+              "priority": 0,
+              "active": true
+            },
+            {
+              "registrant": "tk",
+              "key": "schedules",
+              "priority": 0,
+              "active": true
+            }
+          ],
+          "catalog": {
+            "description": "Central panel selected by sidebar entry id. The reserved `conversation` key hosts the Conversation; other keys receive no Session binding.",
+            "registration": [
+              {
+                "name": "key",
+                "type": "string",
+                "required": true
+              }
+            ],
+            "ownerProps": [],
+            "ownerPropsReferences": [],
+            "standardProps": [
+              "useRemoteAccess: (action: RemoteEndpoint) => boolean",
+              "useResource: UseResource",
+              "useContextMenu: UseContextMenu",
+              "useWorkspaces: SnapshotSelectorHook<WorkspaceSnapshot>",
+              "usePanelInfo: UsePanelInfo",
+              "useSessions: UseSessions",
+              "useSessionStatus: UseSessionStatus",
+              "useSessionRetainInfo: UseSessionRetainInfo",
+              "useSessionAccess: (sessionId: SessionId, action: RemoteEndpoint) => boolean",
+              "useWorkspaceAccess: (workspaceId: WorkspaceId, action: RemoteEndpoint) => boolean"
+            ],
+            "keyDomain": "open: any string the owner dispatches (no compile-time key set), already taken: conversation",
+            "hookContext": "",
+            "slotInject": "",
+            "replaceRisk": "shadows-shipped-ui"
+          }
+        }
+      }
+    },
+    {
+      "id": "B8",
+      "kind": "keyword-scan",
+      "item": "command palette",
+      "query": {
+        "platform": "client",
+        "provider": "Slots",
+        "method": "listSubTree",
+        "input": {}
+      },
+      "status": "absent",
+      "rawResult": {
+        "note": "No slot or factory name in the full client topology contains 'palette' or 'command-palette'. The only command-related seat is conversation.chat.commandview (a keyed renderer for a command row already in the chat flow), which is not a palette/launcher."
+      }
+    },
+    {
+      "id": "C1",
+      "kind": "service",
+      "item": "ctx.remote.commands.execute / Remote decorator host entry point",
+      "query": {
+        "platform": "host",
+        "provider": "Service",
+        "method": "listService",
+        "input": {
+          "service": "commands"
+        }
+      },
+      "status": "found",
+      "rawResult": {
+        "mode": "service",
+        "service": {
+          "key": "commands",
+          "description": "Human-command registry. Plain-context definitions are global; definitions registered through a command-injected child of an agent context shadow globals for that agent.",
+          "methods": [
+            "register(definition: CommandDefinition): () => void",
+            "registerFileReceiptResolver(resolver: CommandFileReceiptResolver): () => void",
+            "@Remote list(agent: Agent): readonly CommandDescriptor[]",
+            "find(agent: Agent, name: string): CommandDefinition | undefined",
+            "@Remote async execute( agent: Agent, line: string, submittedAttachments: readonly CommandSubmitAttachment[], signal: AbortSignal, ): Promise<CommandExecution | undefined>"
+          ],
+          "remoteFace": [
+            "list",
+            "execute"
+          ]
+        },
+        "answer": "Yes. The Host exposes client-callable entry points by decorating Host service methods with @Remote; each decorated method becomes callable from a plugin's client half through the generated ctx.remote.<service>.<method> namespace. ctx.remote.commands.execute is exactly the @Remote-decorated commands.execute(agent, line, submittedAttachments, signal): Promise<CommandExecution | undefined> above, which parses and runs a slash command on the Host without sending it to the model (and logs command/run + command/done). commands.list is the matching read-side Remote. The Host catalog also shows typertGateway.invoke(request: InvokeRemoteRequest): Promise<unknown> as the generic gateway that dispatches these Remote calls."
+      }
+    }
+  ]
+}
