@@ -53,9 +53,11 @@ panel cannot disagree with `awr status` for the same project:
 AWR lists the intake task of a project that still needs organization under "blocked" even though its own
 status is `ready` and it has no blocker text; the panel shows the list as AWR gives it.
 
-The panel asks only when it is opened, after a click or Refresh, and while a takeover runs and the panel is open
-(`/awr panel`, one command whose conversation row is a sentence; see `docs/takeover-ui.md`), because every command run is
-a row in the conversation. A closed panel asks nothing.
+The panel reads its data from a file the host writes, not from a command (see `docs/takeover-ui.md`), because every
+command run is a row in the conversation and no plugin can switch that off. Opening the panel on a file written in
+the last 30 s, a click on one of the buttons above, and the steps of a running takeover all leave no row of their own:
+the host writes the file again when `/awr claim`, `checkpoint`, `end` or `takeover` ran, and every 2 s while a takeover
+runs, and the panel reads it. A closed panel reads nothing but, once, to colour its dot.
 
 ## Checked
 

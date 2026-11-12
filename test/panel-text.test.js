@@ -1,8 +1,12 @@
-// What the panel's own queries put in the conversation (DSH-056): one readable sentence, and the data out of sight.
+// What the panel's own queries put in the conversation (DSH-056): one readable sentence and nothing else.
 import assert from 'node:assert/strict'
+import { mkdtemp, readFile, rm } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import test from 'node:test'
 import { createAwrCommand } from '../lib/commands.js'
-import { decodePanel, encodePanel, panelSentence, panelText } from '../lib/panel-text.js'
+import { createPanelPublisher } from '../lib/panel-snapshot.js'
+import { panelSentence } from '../lib/panel-text.js'
 
 const steps = (statuses) => ['preflight', 'preview', 'review', 'accept', 'organize', 'receipt'].map((name, index) => ({ name, status: statuses[index] ?? 'pending' }))
 const view = (state, extra = {}) => ({ projectRoot: '/p', state, steps: steps([]), stop: null, receipt: null, ...extra })
@@ -27,66 +31,77 @@ test('every state is one sentence in English and in Chinese', () => {
   }
 })
 
-test('the first line a person sees has no JSON in it, and without the comment nothing but the sentence is left', () => {
+test('a sentence is a sentence: no JSON, no markup, one line', () => {
   const state = view('stopped', { stop: { step: 'review', reason: 'review_failed', message: 'The review failed: "quoted" {braces}' }, receipt: { mapped: { sources: [{ path: 'README.md' }] } } })
+  const work = { in_progress: [], ready: [], blocked: [] }
   for (const language of ['en', 'zh']) {
-    const text = panelText(state, { in_progress: [], ready: [], blocked: [] }, language)
-    const [first, ...rest] = text.split('\n')
-    assert.ok(!/[{}"\[\]]/.test(first), `a readable sentence: ${first}`)
-    assert.equal(rest.length, 1, 'one more line: the comment')
-    assert.equal(text.replace(/<!--[\s\S]*?-->/g, '').trim(), first, 'a Markdown view that hides comments shows only the sentence')
+    for (const shown of [state, view('running'), view('completed', { receipt: { organization: { goalTotal: 1, gapTotal: 0 } } }), view('not_initialized'), view('unavailable')]) {
+      const text = panelSentence(shown, work, language)
+      assert.ok(!/[{}"\[\]<>]/.test(text), `a readable sentence: ${text}`)
+      assert.ok(!text.includes('\n'), 'one line')
+    }
   }
 })
 
-test('the payload survives a round trip, including text that would end a comment', () => {
-  const nasty = { view: { state: 'stopped', stop: { message: 'a --> b <!-- c -- d ---- e', detail: { path: '文档/说明.md', line: 4 } } }, work: null, n: -1, tail: '--' }
-  const text = encodePanel(nasty)
-  assert.equal(text.indexOf('-->'), text.length - 3, 'the only comment end is the last one')
-  assert.ok(!text.slice(4, -3).includes('--'), 'no double hyphen inside the comment')
-  assert.deepEqual(decodePanel(`A sentence\n${text}\n`), nasty)
-})
+async function withDirectory(run) {
+  const dir = await mkdtemp(join(tmpdir(), 'dsh-awr-panel-'))
+  try {
+    await run(dir)
+  } finally {
+    await rm(dir, { recursive: true, force: true })
+  }
+}
 
-test('text without a payload, or with a broken one, decodes to nothing', () => {
-  assert.equal(decodePanel('Just a sentence'), undefined)
-  assert.equal(decodePanel('<!--awr-panel:{not json}-->'), undefined)
-  assert.equal(decodePanel(undefined), undefined)
-  assert.equal(decodePanel('<!-- another comment -->'), undefined)
-})
+const agent = { session: { id: 'conv-1' } }
 
-test('/awr panel answers with the sentence and the data, in the language it is given', async () => {
-  const takeover = { status: async () => view('running', { steps: steps(['done', 'done']) }) }
-  const command = createAwrCommand({ awr: { run: async () => ({}) }, bindings: { get: () => undefined }, takeover })
-  const agent = { session: { id: 'conv-1' } }
-  const zh = await command({ agent, rawInput: 'panel zh' })
-  assert.equal(zh.kind, 'success')
-  assert.match(zh.text.split('\n')[0], /正在接管项目 · 审阅草稿/)
-  assert.equal(decodePanel(zh.text).view.state, 'running')
-  const en = await command({ agent, rawInput: 'panel' })
-  assert.match(en.text.split('\n')[0], /Taking the project over/)
-  const other = await command({ agent, rawInput: 'panel fr' })
-  assert.match(other.text.split('\n')[0], /Taking the project over/, 'an unknown language falls back to English')
+test('/awr panel answers with the sentence alone, in the language it is given, and writes the data to the file', async () => {
+  await withDirectory(async (dir) => {
+    const takeover = { status: async () => view('running', { steps: steps(['done', 'done']) }) }
+    const panel = createPanelPublisher({ takeover, awr: { run: async () => ({}) }, bindings: { get: () => undefined }, dir, setTimer: () => undefined })
+    const command = createAwrCommand({ awr: { run: async () => ({}) }, bindings: { get: () => undefined }, takeover, panel })
+    const zh = await command({ agent, rawInput: 'panel zh' })
+    assert.equal(zh.kind, 'success')
+    assert.equal(zh.text, '正在接管项目 · 审阅草稿（第 3/6 步）', 'the whole text of the row')
+    const en = await command({ agent, rawInput: 'panel' })
+    assert.equal(en.text, 'Taking the project over · reviewing the draft (step 3 of 6)')
+    const other = await command({ agent, rawInput: 'panel fr' })
+    assert.match(other.text, /^Taking the project over/, 'an unknown language falls back to English')
+    const written = JSON.parse(await readFile(panel.file('conv-1'), 'utf8'))
+    assert.equal(written.view.state, 'running')
+    assert.equal(written.work, null)
+  })
 })
 
 test('/awr panel adds the work state of a project AWR manages and nothing for one that is not', async () => {
-  const awr = {
-    async run(root, args) {
-      if (args[0] === 'status') return { project: 'p', project_id: 'P', project_revision: 7, current: [{ key: 'W-1' }], ready: [{ key: 'W-2' }], blocked: [], waiting: [] }
-      if (args[0] === 'session') return { session: { status: 'active' }, claims: [] }
-      if (args[0] === 'work') return { work: { external_key: args[2], title: 'T', status: 'in_progress' } }
-      throw new Error(`unexpected: ${args.join(' ')}`)
-    },
-  }
-  const bindings = { get: async () => ({ projectRoot: '/p', sessionId: 'S1', work: { key: 'W-1' } }) }
-  const agent = { session: { id: 'conv-1' } }
-  const managed = createAwrCommand({ awr, bindings, takeover: { status: async () => view('initialized') } })
-  const answer = await managed({ agent, rawInput: 'panel' })
-  assert.match(answer.text.split('\n')[0], /AWR project · 1 in progress, 1 ready, 0 blocked/)
-  const payload = decodePanel(answer.text)
-  assert.equal(payload.work.session.id, 'S1')
-  assert.equal(payload.work.bound_work.key, 'W-1')
+  await withDirectory(async (dir) => {
+    const awr = {
+      async run(root, args) {
+        if (args[0] === 'status') return { project: 'p', project_id: 'P', project_revision: 7, current: [{ key: 'W-1' }], ready: [{ key: 'W-2' }], blocked: [], waiting: [] }
+        if (args[0] === 'session') return { session: { status: 'active' }, claims: [] }
+        if (args[0] === 'work') return { work: { external_key: args[2], title: 'T', status: 'in_progress' } }
+        throw new Error(`unexpected: ${args.join(' ')}`)
+      },
+    }
+    const bindings = { get: async () => ({ projectRoot: '/p', sessionId: 'S1', work: { key: 'W-1' } }) }
+    const managedTakeover = { status: async () => view('initialized') }
+    const managed = createAwrCommand({ awr, bindings, takeover: managedTakeover, panel: createPanelPublisher({ takeover: managedTakeover, awr, bindings, dir }) })
+    const answer = await managed({ agent, rawInput: 'panel' })
+    assert.equal(answer.text, 'AWR project · 1 in progress, 1 ready, 0 blocked')
+    const payload = JSON.parse(await readFile(join(dir, 'conv-1.json'), 'utf8'))
+    assert.equal(payload.work.session.id, 'S1')
+    assert.equal(payload.work.bound_work.key, 'W-1')
 
-  const plain = createAwrCommand({ awr, bindings, takeover: { status: async () => view('not_initialized') } })
-  assert.equal(decodePanel((await plain({ agent, rawInput: 'panel' })).text).work, null)
+    const plainTakeover = { status: async () => view('not_initialized') }
+    const plain = createAwrCommand({ awr, bindings, takeover: plainTakeover, panel: createPanelPublisher({ takeover: plainTakeover, awr, bindings, dir }) })
+    await plain({ agent, rawInput: 'panel' })
+    assert.equal(JSON.parse(await readFile(join(dir, 'conv-1.json'), 'utf8')).work, null)
+  })
+})
+
+test('/awr panel works without a publisher: the sentence, and no file', async () => {
+  const takeover = { status: async () => view('not_initialized') }
+  const command = createAwrCommand({ awr: { run: async () => ({}) }, bindings: { get: () => undefined }, takeover })
+  assert.equal((await command({ agent, rawInput: 'panel' })).text, 'This project has no AWR work state yet')
 })
 
 test('/awr panel is not in the usage that people read, and a failure is a short sentence', async () => {
@@ -97,4 +112,6 @@ test('/awr panel is not in the usage that people read, and a failure is a short 
   const failed = await command({ agent, rawInput: 'panel' })
   assert.equal(failed.kind, 'error')
   assert.match(failed.text, /^AWR panel: boom$/)
+  const withPublisher = createAwrCommand({ awr: { run: async () => ({}) }, bindings: { get: () => undefined }, takeover: { status: async () => { throw new Error('boom') } }, panel: createPanelPublisher({ takeover: { status: async () => { throw new Error('boom') } }, awr: { run: async () => ({}) }, bindings: { get: () => undefined }, dir: join(tmpdir(), 'dsh-awr-never-written') }) })
+  assert.match((await withPublisher({ agent, rawInput: 'panel' })).text, /^AWR panel: boom$/)
 })

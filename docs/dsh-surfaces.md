@@ -47,7 +47,10 @@ Third-party web pages read earlier are not used for any row below.
   `package.json`) registers into `conversation.session.header.actions` and receives `sessionId` and the
   session hooks as props; `ctx.remote.commands.execute(sessionId, line, [])` runs a host command and
   returns `{ ok, value: { result: { kind, text } } }` (or `{ ok: false, error }`). Every command run is a
-  line in the conversation's timeline and an entry in its log. The `web` profile serves the same client and
+  line in the conversation's timeline and an entry in its log, and no plugin can hide it, so the panel's data does not
+  travel in a command: the host writes it to a file and the client reads it with
+  `ctx.remote.workspaceFiles.read(sessionId, path, {})` (inject `remote.workspaceFiles`; the host's home is
+  `ctx.remote.hostFacts.home`; a plugin whose `inject` is an object with `optional` is not loaded). The `web` profile serves the same client and
   can be opened in a browser: `dsh <profile> --no-open --host 127.0.0.1 --port N`. The web client's "add
   workspace" needs a native folder dialog.
 - Subagents (DSH-021, shape corrected in DSH-055): `ctx.subagents.startActivation({ provider: 'spawn', label,

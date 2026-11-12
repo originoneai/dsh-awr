@@ -414,3 +414,13 @@ work_items:
   "next_action": "Complete DSH-057 with the registered evidence"
   "priority": "P0"
   "summary": "Two findings of the first real run in the desktop app: the plugin used the released awr 0.7.0 although an awr built from the changed code was first on the PATH of the app, because DSH replaces the PATH of its runtime with the login shell PATH, and nothing in the UI said which awr ran; and a real model wrote WORK_ITEMS.md, which AWR refuses, so the takeover stopped at accept."
+- "id": "WORK-5fbaebd1b940cce21825828254ef68e6"
+  "title": "DSH-058: Claim, checkpoint and end from the panel work on a project that was just taken over"
+  "status": "draft"
+  "acceptance": ["From the panel of a conversation in a project that was just taken over, a claim names the work the session is bound to, a checkpoint on a context AWR marks incomplete is saved as AWR says (marked incomplete, each gap an open loop), and ending the session works; each leaves one readable line in the conversation and the panel shows the new state without asking the host.","This is shown in the real DeepSeek Harness desktop app with a real model, and AWR itself shows the claim, the checkpoint and the ended session."]
+  "depends_on": ["WORK-98192defe36aa6433e78538b159fdcbb"]
+  "goal": ["intake-goal"]
+  "kind": "defect"
+  "next_action": "Register the real-app evidence and complete DSH-058"
+  "priority": "P0"
+  "summary": "Found by pressing the buttons in the real desktop app after a takeover: /awr claim without an argument stopped with 'Name the work to claim' because the binding a takeover makes names no work although the AWR session is bound to one, and /awr checkpoint was refused with ContextIncomplete although AWR says an incomplete checkpoint is allowed. A 50-character work key also broke the claim button, and the receipt showed the raw state needs_organization."

@@ -70,15 +70,26 @@ The panel also shows where a stop is (`README.md:1468 (credential)` for a secret
 project AWR manages the work state of `docs/panel.md`.
 
 DeepSeek Harness records every command run as a row in the conversation and shows the text the command returned; no
-plugin can switch that off (the Client's remote capabilities are fixed at build time, so a plugin cannot add a quiet
-call either). The panel therefore asks as little as it can, and what it asks is readable (DSH-056):
+plugin can switch that off. A first design hid the panel's data in an HTML comment after a sentence (DSH-056); the real
+app showed the comment in the row, so the data now does not travel in any command text (DSH-056, finished):
 
-- It asks `/awr panel zh|en`, whose text is **one sentence** ("Taking the project over · reviewing the draft (step 3
-  of 6)"). The data the panel draws from follows in an HTML comment, which a Markdown view does not show
-  (`lib/panel-text.js`). It never asks with `--json`, which used to put a line of raw JSON in the conversation for each
-  query, about fifteen for one takeover.
-- It asks when it is opened, after a click or a press of Refresh, and only while it is open and a takeover is running,
-  at 5 s and then slower up to 30 s. A closed panel asks nothing.
+- **The data is a file.** The host writes `<home>/.local/state/dsh-awr/panel/<conversation>.json`
+  (`{ version, updatedAt, view, work }`, `lib/panel-snapshot.js`) and the panel reads it through DeepSeek Harness's
+  workspace-file service, `ctx.remote.workspaceFiles.read(sessionId, path, {})` (the plugin injects
+  `remote.workspaceFiles`; the path is built from `ctx.remote.hostFacts.home`, the same way on both sides). Reading
+  writes nothing to the conversation. A file read may name a path outside the workspace; the real app read it with the
+  default sandbox.
+- **A command is used only when the file cannot do it.** `/awr panel zh|en` makes the host write the file and answers
+  with **one sentence** ("Taking the project over · reviewing the draft (step 3 of 6)", `lib/panel-text.js`): that is
+  its whole row. The panel runs it when the file is missing or older than 30 s at opening, when someone presses
+  Refresh, after an action whose command did not write the file, and once when a running takeover's file has not
+  changed for 12 s (the host stopped writing). It never asks with `--json`.
+- **The host keeps the file current.** `/awr claim`, `checkpoint`, `end` and `takeover` write it before they answer;
+  while a takeover runs the host writes it every 2 s until it is no longer running. The panel reads it every 2.5 s while
+  it is open and a takeover runs. A closed panel reads it once, to colour its dot.
+- `inject` has to be the plain list (`['slots', 'locale', 'remote', 'remote.commands', 'remote.workspaceFiles']`):
+  DeepSeek Harness's client loader does not load a plugin whose `inject` is an object with `optional`. A profile whose
+  DeepSeek Harness does not mount `workspaceFiles` therefore does not show the panel at all (0.2.2-rc.2 does).
 
 ## Checked
 
@@ -108,7 +119,6 @@ call either). The panel therefore asks as little as it can, and what it asks is 
 
 - A real model as the reviewer: the stand-in reads two files and rewrites the goal from the README. Whether a
   model writes a good draft, and keeps to "nothing invented", is DSH-022.
-- The desktop app. The web profile runs the same plugins and client; the desktop shell around it is DSH's.
 - The permission preset and approval policy of a real session: the headless and web runs raised no prompt
   for the child's reads or for the plugin's tools.
 - The panel in a narrow window, and other languages than English and Chinese (the locale service falls
@@ -130,3 +140,21 @@ cd <an uninitialized Git project inside a workspace DSH knows> && \
 
 Open the printed URL, start a conversation in that project, open the AWR action. The web client's "add
 workspace" needs a native folder dialog, so the project has to be in a workspace that already exists.
+
+## Checked in the desktop app (DSH-056, DSH-058)
+
+DeepSeek Harness 0.2.2-rc.2 desktop, the plugin installed from its local directory, an awr built from the changed code
+(`DSH_AWR_CLI`), the real model (DeepSeek-V4.1-Flash) as the reviewer, the demo project `ui-demo`:
+
+- The conversation shows one row per thing the person did and nothing else. Opening the panel on a file older than
+  30 s added one row, "AWR 项目 · 0 项进行中，0 项就绪，2 项阻塞"; opening it again at once added none. Continuing a
+  stopped takeover added one row ("Resumed the takeover of …"); the whole run (review by the real model, accept,
+  organize, receipt, under a minute) added none, and the panel followed it step by step.
+- The takeover ran through `awr takeover` and finished: the reviewer's extra file was dropped, `.awr/` and the intake
+  files were created, the receipt said "目标还需要整理；2 个目标，9 个未决缺口".
+- Claim, checkpoint and end from the buttons, each one row, the panel updated without asking: claim (after the fix to
+  name the session's work), checkpoint (after the fix to save it marked incomplete with its four gaps as open loops,
+  as AWR says), end. `awr session show` confirmed the active claim, the checkpoint
+  (`01M785HHWFCW5CRYK4NB996PEF`) and the ended session.
+- The two refusals the first presses met are in the conversation as readable red lines: "Name the work to claim: /awr
+  claim WORK" and "ContextIncomplete: …".

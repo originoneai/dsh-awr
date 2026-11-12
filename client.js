@@ -1,7 +1,8 @@
 // The browser half of the plugin (DSH-021): an "AWR" action in the conversation header with a panel that
 // offers the one-click takeover of the project and shows its progress and receipt. It holds no logic of its
-// own: it runs `/awr takeover` and `/awr takeover status --json` on the host (`ctx.remote.commands`) and
-// draws what comes back. Plain JS against the module table's React, as DSH's plugin guide prescribes.
+// own: it runs `/awr` commands on the host (`ctx.remote.commands`) for what the user does, and draws the data the
+// host writes into a file it reads (`ctx.remote.workspaceFiles`, lib/panel-snapshot.js), which keeps data out of the
+// conversation. Plain JS against the module table's React, as DSH's plugin guide prescribes.
 window.__ModuleLoader__.load({
   id: '@originoneai/dsh-awr',
   factory(require) {
@@ -41,6 +42,8 @@ window.__ModuleLoader__.load({
       'status.failed': 'failed',
       'receipt.title': 'Receipt',
       'receipt.result': 'Result: {state}; {goals} goal(s), {gaps} open gap(s)',
+      'receipt.state.needs_organization': 'the goals still need to be organized',
+      'receipt.state.ready': 'ready',
       'receipt.mapped': 'Read as',
       'receipt.created': 'Created',
       'receipt.awaiting': 'Waiting for you to confirm',
@@ -117,6 +120,8 @@ window.__ModuleLoader__.load({
       'status.failed': '失败',
       'receipt.title': '回执',
       'receipt.result': '结果：{state}；{goals} 个目标，{gaps} 个未决缺口',
+      'receipt.state.needs_organization': '目标还需要整理',
+      'receipt.state.ready': '已就绪',
       'receipt.mapped': '读取为',
       'receipt.created': '已创建',
       'receipt.awaiting': '等你确认',
@@ -191,18 +196,35 @@ window.__ModuleLoader__.load({
       if (!left || !right || left.includes('::') || right.includes('::')) return undefined
       return `/awr checkpoint ${left} :: ${right}`
     }
+    /** A work key as a button label: AWR's own keys can be a 50-character hash, which does not fit in the panel. */
+    const shortKey = (key) => (String(key).length > 24 ? `${String(key).slice(0, 12)}…${String(key).slice(-6)}` : String(key))
+    const RECEIPT_STATES = new Set(['needs_organization', 'ready'])
     const OUTCOMES = ['ended', 'interrupted', 'incomplete']
     const FINISHED = new Set(['completed', 'closed_without_completion'])
 
-    /** The data a `/awr panel` answer carries after its sentence, in an HTML comment (see lib/panel-text.js). */
-    function decodePanel(text) {
-      const found = String(text ?? '').match(/<!--awr-panel:([\s\S]*?)-->/)
-      if (!found) return undefined
-      try {
-        return JSON.parse(found[1])
-      } catch {
-        return undefined
-      }
+    /**
+     * Where the host writes the data of the panel (lib/panel-snapshot.js): below its home directory, with the conversation
+     * id made safe. The same path the host builds, because the panel cannot see the host's environment.
+     */
+    function snapshotPath(home, sessionId) {
+      const separator = home.includes('\\') && !home.includes('/') ? '\\' : '/'
+      return [home, '.local', 'state', 'dsh-awr', 'panel', `${String(sessionId).replace(/[^A-Za-z0-9._-]/g, '_')}.json`].join(separator)
+    }
+    /**
+     * The data of the panel, read from the file the host writes. Reading it adds nothing to the conversation, unlike a
+     * command, which DeepSeek Harness records as a row. Returns `{ updatedAt, view, work }` or throws why it cannot.
+     */
+    async function readSnapshot(ctx, sessionId) {
+      const home = ctx.remote?.hostFacts?.home
+      if (typeof home !== 'string' || !home) throw new Error('the host did not say where its home directory is')
+      const files = ctx.remote?.workspaceFiles
+      if (!files) throw new Error('this DeepSeek Harness has no file service for the panel')
+      const answer = await files.read(sessionId, snapshotPath(home, sessionId), {})
+      if (!answer?.ok) throw new Error(answer?.error?.code ?? 'the host could not read the panel data')
+      if (answer.value?.eof === false) throw new Error('the panel data is longer than one read')
+      const payload = JSON.parse(String(answer.value?.text ?? ''))
+      if (!payload?.view) throw new Error('the panel data has no view')
+      return payload
     }
     /** The language of the sentence the host writes into the conversation: Chinese for a Chinese interface. */
     const panelLanguage = () => (typeof navigator !== 'undefined' && String(navigator.language ?? '').toLowerCase().startsWith('zh') ? 'zh' : 'en')
@@ -243,34 +265,80 @@ window.__ModuleLoader__.load({
       const [outcome, setOutcome] = React.useState('ended')
       const [acting, setActing] = React.useState(false)
       const [note, setNote] = React.useState(undefined)
+      // What the panel shows is read from a file the host writes (see readSnapshot), which adds nothing to the
+      // conversation. A command does: DeepSeek Harness records every command as a row. So the panel runs one only when
+      // the file cannot do it: the host is asked to write it (`/awr panel`, whose row is one readable sentence) when the
+      // file is missing or old, when someone presses Refresh, and when a takeover that should be moving has stopped
+      // changing it. An action's own command already made the host write the file again.
+      const apply = React.useCallback((payload) => {
+        setView(payload.view)
+        setWork(payload.work ?? undefined)
+        setError(undefined)
+      }, [])
+      // Ask the host to write the file, then read it.
       const refresh = React.useCallback(async () => {
         try {
-          // One query, whose conversation row is a readable sentence; the data is in a comment after it (lib/panel-text.js).
-          const payload = decodePanel(await runCommand(ctx, sessionId, `/awr panel ${panelLanguage()}`))
-          if (!payload?.view) throw new Error('the host answered without the panel data')
-          setView(payload.view)
-          setWork(payload.work ?? undefined)
-          setError(undefined)
+          await runCommand(ctx, sessionId, `/awr panel ${panelLanguage()}`)
+          apply(await readSnapshot(ctx, sessionId))
         } catch (failure) {
           setError(String(failure?.message ?? failure))
         }
-      }, [ctx, sessionId])
-
-      // The conversation shows a row for every command, so the panel asks as little as it can: when it is opened, after
-      // a click or a press of Refresh, and, only while it is open and a takeover is running, at a growing interval
-      // (5 s, then slower up to 30 s). A closed panel asks nothing: the dot shows what it last saw.
-      const delay = React.useRef(5000)
-      React.useEffect(() => {
-        if (view?.state !== 'running' || !open) {
-          delay.current = 5000
-          return undefined
+      }, [ctx, sessionId, apply])
+      // Read the file; ask the host to write it first when it is missing, or older than `since` (on this machine), or
+      // older than `maxAge`.
+      const reload = React.useCallback(async ({ since, maxAge } = {}) => {
+        let payload
+        try {
+          payload = await readSnapshot(ctx, sessionId)
+        } catch {
+          payload = undefined
         }
-        const timer = setTimeout(() => {
-          delay.current = Math.min(delay.current * 1.7, 30000)
-          refresh()
-        }, delay.current)
-        return () => clearTimeout(timer)
-      }, [open, view, refresh])
+        const age = payload ? Date.now() - payload.updatedAt : 0
+        const local = ctx.remote?.hostFacts?.isLoopback === true
+        const old = payload && ((local && since !== undefined && payload.updatedAt < since) || (local && maxAge !== undefined && age > maxAge))
+        if (!payload || old) return refresh()
+        apply(payload)
+        return undefined
+      }, [ctx, sessionId, apply, refresh])
+
+      // The dot shows what the file says as soon as the header is there, without asking the host anything.
+      React.useEffect(() => {
+        let live = true
+        readSnapshot(ctx, sessionId).then((payload) => { if (live) apply(payload) }, () => {})
+        return () => { live = false }
+      }, [ctx, sessionId, apply])
+
+      // While the panel is open and a takeover runs, read the file again every 2.5 s: the host writes it as the steps
+      // finish. A file that has not changed for 12 s means the host stopped writing (it was restarted, say), so the
+      // host is asked once, and then the panel goes on reading.
+      const seen = React.useRef({ at: undefined, same: 0 })
+      React.useEffect(() => {
+        if (!open || view?.state !== 'running') return undefined
+        let live = true
+        let timer
+        const poll = async () => {
+          try {
+            const payload = await readSnapshot(ctx, sessionId)
+            if (!live) return
+            seen.current.same = payload.updatedAt === seen.current.at ? seen.current.same + 1 : 0
+            seen.current.at = payload.updatedAt
+            if (seen.current.same >= 5) {
+              seen.current.same = 0
+              await refresh()
+            } else {
+              apply(payload)
+            }
+          } catch (failure) {
+            if (live) setError(String(failure?.message ?? failure))
+          }
+          if (live) timer = setTimeout(poll, 2500)
+        }
+        timer = setTimeout(poll, 2500)
+        return () => {
+          live = false
+          clearTimeout(timer)
+        }
+      }, [open, view?.state, ctx, sessionId, apply, refresh])
 
       React.useEffect(() => {
         if (!open) return undefined
@@ -293,14 +361,16 @@ window.__ModuleLoader__.load({
           setAnchor({ top: rect.bottom + 6, left: Math.max(12, Math.min(rect.left, window.innerWidth - 392)) })
         }
         setOpen(!open)
-        if (!open) refresh()
+        // A file written a moment ago is current; an older one, or none, makes the host write it.
+        if (!open) reload({ maxAge: 30000 })
       }
 
       const start = async () => {
         setBusy(true)
         try {
+          const since = Date.now()
           await runCommand(ctx, sessionId, '/awr takeover')
-          await refresh()
+          await reload({ since })
         } catch (failure) {
           setError(String(failure?.message ?? failure))
         } finally {
@@ -314,12 +384,13 @@ window.__ModuleLoader__.load({
         setActing(true)
         setNote(undefined)
         try {
+          const since = Date.now()
           const text = await runCommand(ctx, sessionId, line)
           setNote({ ok: true, text })
           setForm(undefined)
           setDigest('')
           setNext('')
-          await refresh()
+          await reload({ since })
         } catch (failure) {
           setNote({ ok: false, text: String(failure?.message ?? failure) })
         } finally {
@@ -345,7 +416,7 @@ window.__ModuleLoader__.load({
         const manage = work.session?.status !== 'active' ? null : h('div', { key: 'actions', 'data-testid': 'awr-actions', style: { marginTop: 8 } },
           h('div', { style: styles.heading }, t('action.title')),
           h('div', null,
-            canClaim ? h('button', { id: 'awr-claim', type: 'button', style: styles.action, disabled: acting, onClick: () => act('/awr claim') }, t('action.claim', { work: bound.key })) : null,
+            canClaim ? h('button', { id: 'awr-claim', type: 'button', title: bound.key, style: styles.action, disabled: acting, onClick: () => act('/awr claim') }, t('action.claim', { work: shortKey(bound.key) })) : null,
             h('button', { id: 'awr-checkpoint-open', type: 'button', style: styles.action, disabled: acting, onClick: flip('checkpoint') }, t('action.checkpoint')),
             h('button', { id: 'awr-end-open', type: 'button', style: styles.action, disabled: acting, onClick: flip('end') }, t('action.end'))),
           form === 'checkpoint' ? h('div', { 'data-testid': 'awr-checkpoint-form', style: { marginTop: 4 } },
@@ -403,7 +474,7 @@ window.__ModuleLoader__.load({
           const list = (items, render) => (items.length ? h('ul', { style: styles.list }, ...items.map((item, index) => h('li', { key: index, style: styles.mono }, render(item)))) : h('div', { style: styles.small }, t('receipt.nothing')))
           body.push(h('div', { key: 'receipt', 'data-testid': 'awr-receipt', style: styles.section },
             h('div', { style: styles.heading }, t('receipt.title')),
-            h('div', null, t('receipt.result', { state: receipt.organization?.state ?? receipt.result, goals: receipt.organization?.goalTotal ?? 0, gaps: receipt.organization?.gapTotal ?? 0 })),
+            h('div', null, t('receipt.result', { state: (() => { const state = receipt.organization?.state ?? receipt.result; return RECEIPT_STATES.has(state) ? t(`receipt.state.${state}`) : state })(), goals: receipt.organization?.goalTotal ?? 0, gaps: receipt.organization?.gapTotal ?? 0 })),
             h('div', { style: { ...styles.heading, marginTop: 8 } }, t('receipt.mapped')),
             list(receipt.mapped?.sources ?? [], (source) => `${source.path} (${source.adapter})`),
             h('div', { style: { ...styles.heading, marginTop: 8 } }, t('receipt.created')),
@@ -422,7 +493,7 @@ window.__ModuleLoader__.load({
     }
 
     return {
-      inject: ['slots', 'locale', 'remote', 'remote.commands'],
+      inject: ['slots', 'locale', 'remote', 'remote.commands', 'remote.workspaceFiles'],
       apply(ctx) {
         ctx.effect(() => ctx.locale.register('awr', { en, zh }), 'dsh-awr: dictionaries')
         const Action = (props) => h(AwrAction, { ...props, __ctx: ctx })

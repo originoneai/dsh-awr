@@ -91,6 +91,89 @@ test('claim sends the current revision, the session and the bound work by defaul
   assert.equal(named.kind, 'success')
 })
 
+const gapDocument = (extra = {}) => ({
+  work_context: { context_hash: 'b'.repeat(64), identity: { work_item_key: 'md-01da' } },
+  error: { code: 'ContextIncomplete', details: { incomplete_checkpoint_allowed: true, next_action: 'Save a checkpoint marked incomplete and list each gap as an open loop.' } },
+  completeness: {
+    complete: false,
+    source_fresh: true,
+    issues: [{ code: 'acceptance_missing_or_stale', reason: 'Current work needs fresh, nonempty acceptance criteria' }, { code: 'goal_state_incomplete', reason: 'Goal title/status\n must be declared' }],
+    evidence_gaps: [{ code: 'no_evidence', reason: 'no evidence is associated with this work' }],
+  },
+  ...extra,
+})
+const incomplete = (document) => () => { throw new AwrError('failed', 'ContextIncomplete: context incomplete', { code: 'ContextIncomplete', awrMessage: 'context incomplete: L1 has required gaps', awrDocument: document }) }
+
+test('a checkpoint on a context AWR calls incomplete is saved as AWR says: marked incomplete, each gap an open loop', async () => {
+  const awr = scripted({ status: () => status(20), 'context compile': incomplete(gapDocument()), 'session checkpoint': () => ({ checkpoint: { id: 'C9' } }) })
+  const result = await run(awr, bound, 'checkpoint Took the project over :: Confirm the goals')
+  assert.equal(result.kind, 'success', result.text)
+  assert.match(result.text, /Checkpoint saved for AWR session S1 \(C9\), marked incomplete: the context of the work has 3 gap\(s\), kept as open loops\./)
+  const saved = awr.calls.find((c) => c[1] === 'checkpoint')
+  assert.equal(flag(saved, '--context-hash'), 'b'.repeat(64), 'the hash is the one of the document AWR returned')
+  const loops = saved.flatMap((arg, index) => (arg === '--open-loop' ? [saved[index + 1]] : []))
+  assert.deepEqual(loops, [
+    'acceptance_missing_or_stale: Current work needs fresh, nonempty acceptance criteria',
+    'goal_state_incomplete: Goal title/status must be declared',
+    'no_evidence: no evidence is associated with this work',
+  ])
+  // A complete context carries no open loop and says nothing of incompleteness.
+  const complete = scripted({ status: () => status(20), 'context compile': () => ({ work_context: { context_hash: 'a'.repeat(64) } }), 'session checkpoint': () => ({ checkpoint: { id: 'C1' } }) })
+  const plain = await run(complete, bound, 'checkpoint done :: next')
+  assert.ok(!complete.calls.find((c) => c[1] === 'checkpoint').includes('--open-loop'))
+  assert.doesNotMatch(plain.text, /incomplete/)
+})
+
+test('an incomplete context is not checkpointed when AWR does not allow it, its sources are not current, or it carries no hash', async () => {
+  const refusals = {
+    'AWR does not allow an incomplete checkpoint': gapDocument({ error: { code: 'ContextIncomplete', details: { incomplete_checkpoint_allowed: false } } }),
+    'AWR says nothing of it': gapDocument({ error: undefined }),
+    'the sources are stale': gapDocument({ completeness: { complete: false, source_fresh: false, issues: [] } }),
+    'the document has no hash': gapDocument({ work_context: { identity: {} } }),
+  }
+  for (const [why, document] of Object.entries(refusals)) {
+    const awr = scripted({ status: () => status(20), 'context compile': incomplete(document), 'session checkpoint': () => ({}) })
+    const result = await run(awr, bound, 'checkpoint done :: next')
+    assert.equal(result.kind, 'error', why)
+    assert.match(result.text, /context incomplete/, why)
+    assert.ok(!awr.calls.some((c) => c[1] === 'checkpoint'), `${why}: nothing is saved`)
+  }
+})
+
+test('a conversation whose binding names no work (a takeover made it) claims the work its session is bound to', async () => {
+  const unbound = { projectRoot: '/p', sessionId: 'S1' }
+  const awr = scripted({
+    status: () => status(11),
+    'context compile': () => ({ work_context: { identity: { work_item_key: 'md-01da' } } }),
+    'work claim': () => ({ project_revision: 12 }),
+  })
+  const result = await run(awr, unbound, 'claim')
+  assert.equal(result.kind, 'success', result.text)
+  const claim = awr.calls.find((c) => c[1] === 'claim')
+  assert.equal(claim[2], 'md-01da')
+  assert.equal(flag(claim, '--session'), 'S1')
+  assert.equal(awr.calls.filter((c) => c[0] === 'context').length, 1, 'the context is compiled once')
+  assert.deepEqual(awr.calls.find((c) => c[0] === 'context').slice(0, 3), ['context', 'compile', '--session'])
+  // A context AWR calls incomplete still names the work.
+  const incomplete = scripted({
+    status: () => status(11),
+    'context compile': () => { const error = new Error('incomplete'); error.details = { awrDocument: { work_context: { identity: { work_item_key: 'md-02' } } } }; throw error },
+    'work claim': () => ({ project_revision: 12 }),
+  })
+  await run(incomplete, unbound, 'claim')
+  assert.equal(incomplete.calls.find((c) => c[1] === 'claim')[2], 'md-02')
+  // A session with no work says so, and nothing is claimed.
+  const none = scripted({ status: () => status(11), 'context compile': () => ({ work_context: {} }), 'work claim': () => ({}) })
+  const refused = await run(none, unbound, 'claim')
+  assert.equal(refused.kind, 'error')
+  assert.match(refused.text, /has no work to claim/)
+  assert.ok(!none.calls.some((c) => c[1] === 'claim'))
+  // A binding that knows its work does not compile anything.
+  const known = scripted({ status: () => status(11), 'work claim': () => ({ project_revision: 12 }) })
+  await run(known, bound, 'claim')
+  assert.ok(!known.calls.some((c) => c[0] === 'context'))
+})
+
 test('checkpoint needs a digest and a next action, and uses a freshly compiled context hash and the current revision', async () => {
   const awr = scripted({
     status: () => status(20),
@@ -189,6 +272,19 @@ test('registerAwrCommand mounts /awr once the commands service exists and tolera
   assert.match(registered[0].input.hint, /checkpoint/)
   assert.equal(typeof registered[0].handler, 'function')
   assert.doesNotThrow(() => registerAwrCommand({}, { awr: scripted({}), bindings: bindingsOf(undefined) }))
+})
+
+test('unloading the command stops the periodic writing of the panel data, and the command is still removed', () => {
+  const log = []
+  const panel = { stop: () => log.push('panel stopped'), publish: async () => ({}) }
+  let disposeEffect
+  registerAwrCommand({
+    inject: (_deps, mount) => {
+      disposeEffect = mount({ commands: { register: () => () => log.push('command removed') }, effect: (register) => register() })
+    },
+  }, { awr: scripted({}), bindings: bindingsOf(undefined), panel })
+  disposeEffect()
+  assert.deepEqual(log, ['panel stopped', 'command removed'])
 })
 
 // --- the real awr -------------------------------------------------------------------------------
