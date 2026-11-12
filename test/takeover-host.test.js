@@ -16,6 +16,7 @@ import {
   SENSITIVE_FILE,
   buildReviewPrompt,
   capGoalStatuses,
+  keepIntakeWork,
   createReviewerPolicy,
   createSubagentReview,
   createTakeoverController,
@@ -435,4 +436,47 @@ test('/awr takeover starts it and answers at once; /awr takeover status shows th
   const failing = createAwrCommand({ awr: {}, bindings: { get: () => undefined }, takeover: { start: async () => { throw new Error('no disk') } } })
   assert.match((await failing({ agent, rawInput: 'takeover' })).text, /could not be started: no disk/)
   assert.match((await command({ agent, rawInput: 'help' })).text, /\/awr takeover status/)
+})
+
+// --- the generated intake work is kept when the review leaves none -----------------------------------------------
+
+const INTAKE_LEDGER = 'goals:\n- id: intake-goal\n  status: draft\n  title: Project goal\nwork_items:\n- id: INTAKE-001\n  kind: intake\n  status: ready\n  title: Verify project goals\n'
+const REVIEWED_GOALS = 'goals:\n- id: g1\n  status: candidate\n  title: A real goal\n  summary: |-\n    Provenance: README.md.\n'
+
+test('a ledger the reviewer returns with no work items gets the draft\'s intake work back', () => {
+  const path = '.awr/intake/work-ledger.yaml'
+  for (const empty of [`${REVIEWED_GOALS}work_items: []\n`, `${REVIEWED_GOALS}work_items:\n`, `${REVIEWED_GOALS}work_items: [ ]\n# nothing yet\n`, REVIEWED_GOALS]) {
+    const { files, kept } = keepIntakeWork({ [path]: empty }, { [path]: INTAKE_LEDGER })
+    assert.deepEqual(kept, [path], JSON.stringify(empty))
+    assert.match(files[path], /^goals:\n- id: g1\n/, 'the reviewer\'s goals stay')
+    assert.match(files[path], /work_items:\n- id: INTAKE-001\n {2}kind: intake\n {2}status: ready\n {2}title: Verify project goals\n$/, 'the draft\'s work is back, once')
+    assert.equal(files[path].match(/work_items:/g).length, 1)
+  }
+})
+
+test('work the reviewer wrote is never replaced, and what cannot be restored safely is left alone', () => {
+  const path = '.awr/intake/work-ledger.yaml'
+  const real = `${REVIEWED_GOALS}work_items:\n- id: W-1\n  kind: task\n  status: planned\n  title: Real work\n`
+  const flow = `${REVIEWED_GOALS}work_items: [{id: W-2, title: x}]\n`
+  for (const text of [real, flow]) assert.deepEqual(keepIntakeWork({ [path]: text }, { [path]: INTAKE_LEDGER }), { files: { [path]: text }, kept: [] })
+  // a draft with no work items, a file the draft does not have, Markdown, and content after the empty key
+  assert.deepEqual(keepIntakeWork({ [path]: `${REVIEWED_GOALS}work_items: []\n` }, { [path]: REVIEWED_GOALS }).kept, [])
+  assert.deepEqual(keepIntakeWork({ [path]: `${REVIEWED_GOALS}work_items: []\n` }, {}).kept, [])
+  assert.deepEqual(keepIntakeWork({ '.awr/intake/GOALS.md': '# G\n' }, { '.awr/intake/GOALS.md': 'work_items:\n- x\n' }).kept, [])
+  const trailing = `${REVIEWED_GOALS}work_items: []\nextras:\n  a: 1\n`
+  assert.deepEqual(keepIntakeWork({ [path]: trailing }, { [path]: INTAKE_LEDGER }), { files: { [path]: trailing }, kept: [] })
+})
+
+test('parseReview puts the intake work back and says so, and the prompt tells the reviewer to keep it', () => {
+  const path = '.awr/intake/work-ledger.yaml'
+  const draft = { ...DRAFT, generated_files: { ...DRAFT.generated_files, [path]: INTAKE_LEDGER } }
+  const parsed = parseReview(JSON.stringify({ generated_files: { [path]: `${REVIEWED_GOALS}work_items: []\n` }, notes: 'Based on README.md.' }), draft)
+  assert.match(parsed.draft.generated_files[path], /id: INTAKE-001/)
+  assert.match(parsed.notes, /Based on README\.md\. The reviewer left no work items, so the generated intake work was kept \(\.awr\/intake\/work-ledger\.yaml\)/)
+  const untouched = parseReview(JSON.stringify({ generated_files: { [path]: `${REVIEWED_GOALS}work_items:\n- id: W-1\n  status: planned\n` } }), draft)
+  assert.doesNotMatch(untouched.draft.generated_files[path], /INTAKE-001/)
+  assert.equal(untouched.notes, undefined)
+  const prompt = buildReviewPrompt({ root: '/p', draft: DRAFT, history: '' })
+  assert.match(prompt, /Keep the draft's generated intake work item \(INTAKE-001\)/)
+  assert.match(prompt, /never leave work_items empty/)
 })

@@ -1,0 +1,100 @@
+{
+  "version": 1,
+  "run": "40dd19b298d1",
+  "project": "/Users/mac/Documents/deepseek-harness/dsh001-fixture",
+  "startedAt": 1794478373861,
+  "finishedAt": 1794478429086,
+  "result": "needs_organization",
+  "mapped": {
+    "sources": [
+      {
+        "path": ".awr/intake/work-ledger.yaml",
+        "domain": "ledger",
+        "adapter": "yaml-ledger-v1",
+        "role": "primary"
+      },
+      {
+        "path": "README.md",
+        "domain": "plan",
+        "adapter": "markdown-heading-v1",
+        "role": "supporting"
+      }
+    ],
+    "inventory": 50
+  },
+  "created": {
+    "writes": [
+      {
+        "action": "create",
+        "path": ".awr/project.toml"
+      },
+      {
+        "action": "replace",
+        "path": ".gitignore"
+      },
+      {
+        "action": "create",
+        "path": ".awr/intake/inventory.json"
+      },
+      {
+        "action": "create",
+        "path": ".awr/intake/project.toml"
+      },
+      {
+        "action": "create",
+        "path": ".awr/intake/work-ledger.yaml"
+      }
+    ],
+    "writtenOutsideAwr": [
+      ".gitignore"
+    ],
+    "recovered": false
+  },
+  "reviewed": {
+    "byCallback": true,
+    "changedFiles": [
+      ".awr/intake/work-ledger.yaml"
+    ],
+    "rounds": 1
+  },
+  "organization": {
+    "state": "needs_organization",
+    "gapTotal": 2,
+    "goalTotal": 1,
+    "executableWorkTotal": 0,
+    "rounds": 0,
+    "actions": [
+      "goals",
+      "work",
+      "recheck"
+    ],
+    "gaps": [
+      {
+        "code": "goal_unconfirmed",
+        "action": "goals",
+        "detail": "Goal is a draft, unknown, stale, empty or an intake placeholder. Preserve uncertain intent and record its source before declaring it active.",
+        "target": "subagent-collection"
+      },
+      {
+        "code": "ledger_empty",
+        "action": "work",
+        "detail": "No work is projected. This is not evidence that all project work is complete; establish the current scope and its next delivery.",
+        "target": "project"
+      }
+    ]
+  },
+  "awaitingConfirmation": [
+    {
+      "key": "subagent-collection",
+      "status": "candidate",
+      "title": "Claude Code Subagents Collection"
+    }
+  ],
+  "git": {
+    "headBefore": "d9e72d1879d1d04851d9ffbe1ff65c0b0f78e609",
+    "headAfter": "d9e72d1879d1d04851d9ffbe1ff65c0b0f78e609",
+    "committed": false,
+    "pushed": false,
+    "headMoved": false
+  }
+}

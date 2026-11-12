@@ -1,0 +1,14 @@
+goals:
+- id: subagent-collection
+  status: candidate
+  success_criteria:
+  - README.md lists 48 subagent Markdown files, and each listed file exists in the repository.
+  - Every listed subagent file has YAML frontmatter with name, description, and model fields.
+  - Model values in the subagent files match README.md's assignment totals of 8 haiku, 29 sonnet, and 11 opus.
+  - README.md documents installation under ~/.claude/agents/ and both automatic and explicit invocation, and LICENSE contains the MIT License text.
+  summary: |-
+    Provide a comprehensive collection of specialized AI subagents for Claude Code, each an expert in a specific domain, invoked automatically from context or explicitly by name, with Claude models assigned by task complexity.
+
+    Provenance: README.md, LICENSE.
+  title: Claude Code Subagents Collection
+work_items: []

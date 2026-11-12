@@ -36,6 +36,11 @@ and tools (`docs/prompt-context.md`, `docs/tools.md`).
   paths outside the project (symlinks resolved), credential files (`.env*`, keys, `.npmrc`, ...: what it
   reads goes to the model provider), and every other tool. `grep` is left out on purpose: it returns
   matching lines, and no guard can keep those from coming out of a `.env` the search covers.
+- **The generated work is kept:** a real model once returned a ledger with `work_items: []`, removing the generated
+  intake item; with no work item AWR has nothing to bind a conversation to, so the new conversation got no AWR
+  context (docs/evidence/DSH-022/run1-findings.json). The reviewer prompt now says to keep INTAKE-001 unless the
+  material names concrete work, and `keepIntakeWork` puts the draft's `work_items:` back when a returned YAML ledger
+  has none (not when it has any, and not when other content follows the empty key). The receipt's review note says so.
 - **Goals stay the owner's:** whatever the reviewer writes, `status=active` or `confirmed` on a goal is
   lowered to `candidate` (Markdown goal headings and the `goals:` part of a YAML ledger); work items are
   left as the material says.

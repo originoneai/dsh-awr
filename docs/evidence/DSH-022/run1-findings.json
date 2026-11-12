@@ -1,0 +1,16 @@
+{
+  "run": "1, wshobson/agents (34 commits) in the signed-in DeepSeek Harness 0.2.2-rc.1 desktop app, real model DeepSeek-V4.1-Flash via the account provider, started with /awr takeover",
+  "took_seconds": 55.2,
+  "result": "needs_organization (final state, steps preflight..receipt done, no human input)",
+  "reviewer_output": "one candidate goal 'Claude Code Subagents Collection' with 4 success criteria and Provenance README.md, LICENSE; work_items: []",
+  "review_against_readme_and_history": {
+    "README lists 48 subagent files and each exists": true,
+    "every listed file has frontmatter name, description, model": true,
+    "model totals 8 haiku / 29 sonnet / 11 opus match the files and the README": true,
+    "README documents ~/.claude/agents install and automatic/explicit invocation, LICENSE is MIT": true,
+    "invented intent": "none found"
+  },
+  "defect": "The reviewer removed the generated intake work item (INTAKE-001) and left work_items: []. With no work item awr has nothing to bind a conversation to, so a new conversation in the project got no AWR context. In the desktop conversation the model answered: 'My prompt contains no AWR work context'. awr client show for the conversation: no binding.",
+  "cause": "nothing in the host kept the generated work when the reviewer returned none, and the reviewer prompt did not forbid emptying it",
+  "fix": "lib/takeover-host.js keepIntakeWork + a prompt rule (this branch)"
+}

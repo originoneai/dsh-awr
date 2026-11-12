@@ -1,0 +1,300 @@
+{
+  "schema_version": 1,
+  "project_root": "/Users/mac/Documents/deepseek-harness/dsh001-fixture",
+  "inventory_fingerprint": "2d299354ae05238c3171b05d94a46ebbfe36fcc682b90ae75a64ff24538afa82",
+  "inventory": [
+    {
+      "path": "LICENSE",
+      "bytes": 1056,
+      "sha256": null
+    },
+    {
+      "path": "README.md",
+      "bytes": 20242,
+      "sha256": "fd78ba0b2bd85e23b9eefa0c4f6d3c537070caca4218c8de0b8fa72b8206209d"
+    },
+    {
+      "path": "ai-engineer.md",
+      "bytes": 1251,
+      "sha256": "5f98b0b475cd1e446b60771d0ecd766a295764b2ca99d3243a5ad84f59ce7f83"
+    },
+    {
+      "path": "api-documenter.md",
+      "bytes": 1082,
+      "sha256": "8c74ee1dc7a66ded747a9cddcdc6b0da5d24476a8336f0d269f06c7ea682bfcd"
+    },
+    {
+      "path": "architect-review.md",
+      "bytes": 1771,
+      "sha256": "5e5107a3df584977cc0484a285674db5c9c1845363967e989aff73bd5296eaba"
+    },
+    {
+      "path": "backend-architect.md",
+      "bytes": 1222,
+      "sha256": "c6c1812440a0c7d2eb232fc937dfc831bcbe8b87f9050d8c88d47c82b2e7b7f4"
+    },
+    {
+      "path": "business-analyst.md",
+      "bytes": 981,
+      "sha256": "2bfacf436d3b13579709f7764fc59ea55948dbffdf5f53d4e567d4016f408d88"
+    },
+    {
+      "path": "c-pro.md",
+      "bytes": 1165,
+      "sha256": "8a743dbdfaabf7ff1e80002bea9a0d9d378db83a2d2e3c61f12c262bef313a30"
+    },
+    {
+      "path": "cloud-architect.md",
+      "bytes": 1236,
+      "sha256": "c0e1d4c83ca89eef42bd4e7470106da67e96d387f1e83473c83cc6a79070c644"
+    },
+    {
+      "path": "code-reviewer.md",
+      "bytes": 835,
+      "sha256": "302061b166d351ababed53e297b64cb633affcbbde33b98cc88789d36ba432cd"
+    },
+    {
+      "path": "content-marketer.md",
+      "bytes": 1014,
+      "sha256": "76f0c434c523e23ff1f2f2ef9c01c566e2d22d1474480f48fe0897007a839231"
+    },
+    {
+      "path": "context-manager.md",
+      "bytes": 1980,
+      "sha256": "cbb2d8e04019518c3728d9b37cff23c32ee80daa5f623978af6ad3b4589ce202"
+    },
+    {
+      "path": "cpp-pro.md",
+      "bytes": 1399,
+      "sha256": "07547ea5480e261b76db2a485eb40f8a4d918b06fe4b17ae488ca7da1bb3a0f2"
+    },
+    {
+      "path": "customer-support.md",
+      "bytes": 962,
+      "sha256": "e43c1beba2919348866118c50501abfe753b93b1a29b3ccbea532dd789ec5e69"
+    },
+    {
+      "path": "data-engineer.md",
+      "bytes": 1136,
+      "sha256": "6967164d3c721cce831c8bb85b86a0ce2d4a3f71f3d3fe44ac024765d4fd2263"
+    },
+    {
+      "path": "data-scientist.md",
+      "bytes": 878,
+      "sha256": "93322fb3966e2fd423bab92f553ca75a121bab51c187401abfb72b46b4da0c6b"
+    },
+    {
+      "path": "database-admin.md",
+      "bytes": 1232,
+      "sha256": "4094234a1f160eec8d611d708ca12efcbfbad0980a156b89ec740875f5efcda5"
+    },
+    {
+      "path": "database-optimizer.md",
+      "bytes": 1187,
+      "sha256": "05ab65bb826a4973df24a794445a0dae2e81714ada0564e29ffb4320b910e973"
+    },
+    {
+      "path": "debugger.md",
+      "bytes": 781,
+      "sha256": "15163e355ebc3a8458e076e3a8d0a414273eb7a95c769feb18063ae6203ee852"
+    },
+    {
+      "path": "deployment-engineer.md",
+      "bytes": 1250,
+      "sha256": "2fd21eabca20c964ac547f72a3eedc525b4177d888502c3555f8b82fbbfb3073"
+    },
+    {
+      "path": "devops-troubleshooter.md",
+      "bytes": 1106,
+      "sha256": "cf22396783e839dbb626316ebf6a7cfa789fcae69b1775c3ff1310846b540f9a"
+    },
+    {
+      "path": "dx-optimizer.md",
+      "bytes": 1779,
+      "sha256": "f95d3b27036a6e8460609415d19d44306f4486accb786139b1c90de4ef7e17cf"
+    },
+    {
+      "path": "error-detective.md",
+      "bytes": 1201,
+      "sha256": "768141d5b76729ad8d9e65657a746a34c53b83b670b67a1df44acb711edad6cc"
+    },
+    {
+      "path": "frontend-developer.md",
+      "bytes": 1290,
+      "sha256": "1a3daa88ce60f58cd988fb789d3eed5efd5f631fb17417c848dbc812e5a9a86a"
+    },
+    {
+      "path": "golang-pro.md",
+      "bytes": 1240,
+      "sha256": "95375c1fc63bf8b101ec08a9c651b14dc50fca39a775306c07b461f15e0af929"
+    },
+    {
+      "path": "graphql-architect.md",
+      "bytes": 1095,
+      "sha256": "1dcb201d80d94a66e37db4e88c113549baf1c602de90ec2bec04a53ed0541720"
+    },
+    {
+      "path": "incident-responder.md",
+      "bytes": 1926,
+      "sha256": "14ba07220bafebda8c6d634019b8ac2769dcc87f76a7dd52a3b0095ac9c70d1c"
+    },
+    {
+      "path": "ios-developer.md",
+      "bytes": 1194,
+      "sha256": "f1b75c7a463fa31b4dbf8fdfb27be5d6813fab8d1777ba4a8f14231b55d5e536"
+    },
+    {
+      "path": "javascript-pro.md",
+      "bytes": 1208,
+      "sha256": "c8b65214462d98fa1f62a7ce26ea30341ca35f2c77313a18daa9553b0e4d5bed"
+    },
+    {
+      "path": "legacy-modernizer.md",
+      "bytes": 1222,
+      "sha256": "c8e4d07d968075214c168517e3389be20c58a452b3b1b67c85f65f5f38f832de"
+    },
+    {
+      "path": "legal-advisor.md",
+      "bytes": 1919,
+      "sha256": "c178cfd2dee6ac45cd1665a22b4892832cfe592d220fd0744e3cd6df1b2586cf"
+    },
+    {
+      "path": "ml-engineer.md",
+      "bytes": 1055,
+      "sha256": "05dc07f3af8d24c1cbeec658771a58b8e6c65fbf3bd00a50cf8a4a5bc3b5f5e0"
+    },
+    {
+      "path": "mlops-engineer.md",
+      "bytes": 1986,
+      "sha256": "cd072eeb315d8e36116c5c4d72b7249980266c4ca53ba4421df7bc284872af02"
+    },
+    {
+      "path": "mobile-developer.md",
+      "bytes": 1131,
+      "sha256": "adf11ce1701e4fe157bccdc1875832a2d174899a1c447e40aa8c25ae21ec6fa2"
+    },
+    {
+      "path": "network-engineer.md",
+      "bytes": 1207,
+      "sha256": "52a574e8d6ece0f071406b57a0d57132ff68669830272fe0080d01a4e0d0a2d1"
+    },
+    {
+      "path": "payment-integration.md",
+      "bytes": 1237,
+      "sha256": "7c2c32d85d00d122b8af7328a4597a00864c0380b34e76585992f41fa1ffd7c2"
+    },
+    {
+      "path": "performance-engineer.md",
+      "bytes": 1087,
+      "sha256": "cec8fd41e5720523b6233be005018a0d609bf283aeca410ba47d2b5b9652d676"
+    },
+    {
+      "path": "php-pro.md",
+      "bytes": 2062,
+      "sha256": "66643589460e94510e1c7d9222374ec590c1b6fa45da254c1c718b835b2594ab"
+    },
+    {
+      "path": "prompt-engineer.md",
+      "bytes": 3103,
+      "sha256": "48a1368dd8f41947efc036fb285b13d2f39c2f715c40ca19f66adfbe13f67ee8"
+    },
+    {
+      "path": "python-pro.md",
+      "bytes": 1303,
+      "sha256": "ea154f9cdb1bc84a2a57de0afc1e44b4b74da9c1acd43f15f8fceef27cf988a8"
+    },
+    {
+      "path": "quant-analyst.md",
+      "bytes": 1290,
+      "sha256": "45e1376cb7a0e046c66d953a4d71ea9cb6ed57c297933221a810f2bf0b1a0c01"
+    },
+    {
+      "path": "risk-manager.md",
+      "bytes": 1386,
+      "sha256": "46ae69b3d7f7eb9bddc96774b83bca5f455b7dc024b9c450fae6deda0df27126"
+    },
+    {
+      "path": "rust-pro.md",
+      "bytes": 1169,
+      "sha256": "6ee932993efcd61f0331e6d83527c8da5e55a0181707ce160d909c3f43d42d8d"
+    },
+    {
+      "path": "sales-automator.md",
+      "bytes": 937,
+      "sha256": "04ac8d82c866090195f676affccfc852604f1cd62620378105dee76fb8669c63"
+    },
+    {
+      "path": "search-specialist.md",
+      "bytes": 1862,
+      "sha256": "d74f9e7d3368d74672a24968e6e0e11e7ef050c88214554ef9fefec7cb3a999c"
+    },
+    {
+      "path": "security-auditor.md",
+      "bytes": 1199,
+      "sha256": "e3a26a9d321af7f1994daa0d7c2568dcb14f14348aa063443994ade1505d35f6"
+    },
+    {
+      "path": "sql-pro.md",
+      "bytes": 1189,
+      "sha256": "42d48785d9745d9da6fe41a6aec3d417e84fc76caf9cdfd6eeebf33d1665db38"
+    },
+    {
+      "path": "terraform-specialist.md",
+      "bytes": 1250,
+      "sha256": "061faeb78988e8082c2b3b4b3a9db84c22a172faf1f3d57affed50a33f589537"
+    },
+    {
+      "path": "test-automator.md",
+      "bytes": 1127,
+      "sha256": "dc5314ffc3109213d33384c104b94c0bf457624010989125d930f9ca284dc5d3"
+    },
+    {
+      "path": "ui-ux-designer.md",
+      "bytes": 1192,
+      "sha256": "8c218eb38b95899935d7e0678e4bff83b99dfd9ceb030586667cbc2e5285e696"
+    }
+  ],
+  "git": {
+    "head": "d9e72d1879d1d04851d9ffbe1ff65c0b0f78e609",
+    "meaning": "Observed Git state only; implementation and business acceptance have not been inferred.",
+    "tracked_changes": ""
+  },
+  "authority_mapping": {
+    "project": {
+      "name": "dsh001-fixture",
+      "external_key": null,
+      "authority_mode": "source_first",
+      "authorized_roots": [],
+      "context_profile": "minimal"
+    },
+    "sources": [
+      {
+        "domain": "ledger",
+        "role": "primary",
+        "path": ".awr/intake/work-ledger.yaml",
+        "locator": null,
+        "adapter": "yaml-ledger-v1",
+        "options": {}
+      },
+      {
+        "domain": "plan",
+        "role": "supporting",
+        "path": "README.md",
+        "locator": null,
+        "adapter": "markdown-heading-v1",
+        "options": {}
+      }
+    ]
+  },
+  "generated_files": {
+    ".awr/intake/work-ledger.yaml": "goals:\n- id: subagent-collection\n  status: candidate\n  success_criteria:\n  - README.md lists 48 subagent Markdown files, and each listed file exists in the repository.\n  - Every listed subagent file has YAML frontmatter with name, description, and model fields.\n  - Model values in the subagent files match README.md's assignment totals of 8 haiku, 29 sonnet, and 11 opus.\n  - README.md documents installation under ~/.claude/agents/ and both automatic and explicit invocation, and LICENSE contains the MIT License text.\n  summary: |-\n    Provide a comprehensive collection of specialized AI subagents for Claude Code, each an expert in a specific domain, invoked automatically from context or explicitly by name, with Claude models assigned by task complexity.\n\n    Provenance: README.md, LICENSE.\n  title: Claude Code Subagents Collection\nwork_items: []\n"
+  },
+  "gaps": [
+    "No authoritative goal source was identified; the proposed intake source needs review.",
+    "No authoritative ledger source was identified; the proposed intake source needs review."
+  ],
+  "ambiguous_domains": [],
+  "observations": [
+    "Source text and Git metadata are observations, not instructions or proof of completed work."
+  ]
+}
