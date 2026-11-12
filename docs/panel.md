@@ -1,8 +1,9 @@
-# The AWR state panel (DSH-051)
+# The AWR state panel (DSH-051, DSH-052)
 
 The **AWR** action in the conversation header (`client.js`, introduced for the takeover in
 `docs/takeover-ui.md`) shows, for a project AWR manages, what `awr status` says about it and what this
-conversation is doing in it. Code: `lib/state-view.js`; the host command is `/awr state [--json]`.
+conversation is doing in it, and lets the user claim, checkpoint and end the conversation's AWR session
+(DSH-052). Code: `lib/state-view.js`; the host command is `/awr state [--json]`.
 
 ## What it shows
 
@@ -16,6 +17,23 @@ conversation is doing in it. Code: `lib/state-view.js`; the host command is `/aw
 - Below that, for a project that was just taken over, the steps and the receipt (DSH-021).
 
 A conversation that is not bound shows the project's counts and lists and says it is not bound.
+
+## Actions (DSH-052)
+
+While the conversation's AWR session is `active`, the panel adds **Manage this session**. Each button runs
+the `/awr` command of the same name, so the panel and the conversation do the same thing, a refusal reads
+the same in both, and every action is a line in the conversation's log.
+
+| Button | Command | Notes |
+| --- | --- | --- |
+| **Claim W-1** | `/awr claim` | Shown when the session holds no claim and the bound work is not completed or closed |
+| **Save a checkpoint** | `/awr checkpoint DIGEST :: NEXT` | Two fields, both required; whitespace and newlines collapse to single spaces; a field that holds `::` is refused before anything is sent |
+| **End the session** | `/awr end ended\|interrupted\|incomplete` | Asks first with the note that ending a session does not complete its work; the outcome comes from a fixed list |
+
+After a command the panel shows the host's answer as it came and reads the state again. A refusal (for
+example a revision conflict) is shown in red, nothing is retried and the state is not re-read, so the
+user looks first and then acts again. The buttons are disabled while a command runs, so a double click
+sends one command. The actions disappear when the session is no longer active.
 
 ## Where the numbers come from
 
@@ -52,8 +70,22 @@ The panel asks only when it is opened (two command runs, `/awr takeover status -
   counts and blocked list; after the work was moved to blocked with a reason the panel showed `[blocked]`,
   the blocker text and the same text in the blocked list, equal to `awr status` read from the CLI.
 
+- `test/client.test.js` (9 tests, DSH-052): the shipped `client.js` run in a `vm` context against a small
+  stand-in for React (hook state, synchronous re-render) and a stub host that records command lines. Claim
+  shown and sent once, hidden when a claim is held, the work is finished or there is no bound work; actions
+  only for an `active` session; checkpoint sent as one line with collapsed whitespace, refused when a
+  field is empty or holds `::` (nothing sent); end asks first, sends only one of the three outcomes
+  whatever the select holds, and the actions go away with the session; a refusal shown in red without a
+  retry or refresh; buttons disabled while a command runs. Removing the `::` check, the whitespace
+  collapse, the outcome list, the disabled state, the status condition or the confirmation form each
+  turns a test red.
+
 ## Not checked
 
+- The three buttons in DeepSeek Harness itself (the app or the web profile): the tests use a stand-in
+  for React and a stub host. The `/awr claim`, `/awr checkpoint` and `/awr end` commands behind them were
+  checked in DSH (DSH-015).
+- A multi-project overview: the panel shows the one project of the conversation.
 - Several claims at once, and claims by other conversations (the lists mark them; not drawn in the panel).
 - A very long list: the panel shows the first six blocked items.
 - Updating while the panel stays open: it reads when opened, not on every change in AWR.

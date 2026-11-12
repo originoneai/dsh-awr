@@ -63,6 +63,22 @@ window.__ModuleLoader__.load({
       'work.counts': 'Project: {progress} in progress, {ready} ready, {blocked} blocked',
       'work.blockedList': 'Blocked work',
       'work.revision': 'revision {revision}',
+      'action.title': 'Manage this session',
+      'action.claim': 'Claim {work}',
+      'action.checkpoint': 'Save a checkpoint',
+      'action.end': 'End the session',
+      'action.digest': 'What was done so far',
+      'action.next': 'What comes next',
+      'action.save': 'Save',
+      'action.cancel': 'Cancel',
+      'action.confirmEnd': 'End it',
+      'action.outcome': 'Outcome',
+      'action.outcome.ended': 'ended',
+      'action.outcome.interrupted': 'interrupted',
+      'action.outcome.incomplete': 'incomplete',
+      'action.endNote': 'Ending a session does not complete its work.',
+      'action.invalid': 'Fill in both fields, and leave out "::".',
+      'action.working': 'Working…',
     }
     const zh = {
       'trigger.label': 'AWR',
@@ -118,6 +134,22 @@ window.__ModuleLoader__.load({
       'work.counts': '项目：{progress} 项进行中，{ready} 项就绪，{blocked} 项阻塞',
       'work.blockedList': '被阻塞的工作',
       'work.revision': '版本 {revision}',
+      'action.title': '管理本会话',
+      'action.claim': '认领 {work}',
+      'action.checkpoint': '保存检查点',
+      'action.end': '结束会话',
+      'action.digest': '目前完成了什么',
+      'action.next': '接下来做什么',
+      'action.save': '保存',
+      'action.cancel': '取消',
+      'action.confirmEnd': '确认结束',
+      'action.outcome': '结果',
+      'action.outcome.ended': '已结束',
+      'action.outcome.interrupted': '被中断',
+      'action.outcome.incomplete': '未完成',
+      'action.endNote': '结束会话不会完成其中的工作。',
+      'action.invalid': '两项都要填写，且不能含 "::"。',
+      'action.working': '处理中…',
     }
 
     const FALLBACK = (key, params) => (en[key] ?? key).replace(/\{(\w+)\}/g, (_, name) => String(params?.[name] ?? ''))
@@ -136,7 +168,21 @@ window.__ModuleLoader__.load({
       mono: { fontFamily: 'var(--dsw-font-mono, monospace)', fontSize: 12, wordBreak: 'break-all' },
       error: { color: 'var(--dsw-alias-state-error-primary, #c0392b)' },
       list: { margin: '2px 0 0', padding: 0, listStyle: 'none' },
+      action: { marginTop: 6, marginRight: 6, padding: '4px 10px', border: '0.5px solid var(--dsw-alias-border-l1, rgba(128,128,128,.4))', borderRadius: 'var(--dsw-radius-sm, 6px)', background: 'transparent', color: 'inherit', cursor: 'pointer', fontSize: 12 },
+      input: { display: 'block', width: '100%', boxSizing: 'border-box', marginTop: 4, padding: '4px 6px', border: '0.5px solid var(--dsw-alias-border-l1, rgba(128,128,128,.4))', borderRadius: 'var(--dsw-radius-sm, 6px)', background: 'transparent', color: 'inherit', fontSize: 12 },
     }
+
+    /** One line of text for a `/awr` command: whitespace collapsed, so a pasted newline cannot start a second command. */
+    const single = (text) => String(text ?? '').replace(/\s+/g, ' ').trim()
+    /** `/awr checkpoint DIGEST :: NEXT`, or undefined when a field is empty or holds the `::` that separates them. */
+    function checkpointLine(digest, next) {
+      const left = single(digest)
+      const right = single(next)
+      if (!left || !right || left.includes('::') || right.includes('::')) return undefined
+      return `/awr checkpoint ${left} :: ${right}`
+    }
+    const OUTCOMES = ['ended', 'interrupted', 'incomplete']
+    const FINISHED = new Set(['completed', 'closed_without_completion'])
 
     /** `ctx.remote.commands.execute` returns `{ ok, value: { result: { kind, text } } }` or `{ ok: false, error }`. */
     async function runCommand(ctx, sessionId, line) {
@@ -167,6 +213,13 @@ window.__ModuleLoader__.load({
       const panel = React.useRef(null)
 
       const [work, setWork] = React.useState(undefined)
+      // The session actions: which form is open, what it holds, and what the last command answered.
+      const [form, setForm] = React.useState(undefined)
+      const [digest, setDigest] = React.useState('')
+      const [next, setNext] = React.useState('')
+      const [outcome, setOutcome] = React.useState('ended')
+      const [acting, setActing] = React.useState(false)
+      const [note, setNote] = React.useState(undefined)
       const refresh = React.useCallback(async () => {
         try {
           const text = await runCommand(ctx, sessionId, '/awr takeover status --json')
@@ -242,14 +295,58 @@ window.__ModuleLoader__.load({
         }
       }
 
+      // Each action is the `/awr` command of the same name, so the panel and the conversation do the same thing and
+      // a conflict or a refusal reads the same in both. Nothing is retried; the answer is shown as it came.
+      const act = async (line) => {
+        setActing(true)
+        setNote(undefined)
+        try {
+          const text = await runCommand(ctx, sessionId, line)
+          setNote({ ok: true, text })
+          setForm(undefined)
+          setDigest('')
+          setNext('')
+          await refresh()
+        } catch (failure) {
+          setNote({ ok: false, text: String(failure?.message ?? failure) })
+        } finally {
+          setActing(false)
+        }
+      }
+      const saveCheckpoint = () => {
+        const line = checkpointLine(digest, next)
+        if (!line) setNote({ ok: false, text: t('action.invalid') })
+        else act(line)
+      }
+
       const state = view?.state ?? (error ? 'unavailable' : undefined)
-      const dot = h('span', { 'data-testid': 'awr-dot', 'data-state': state ?? 'loading', style: { width: 7, height: 7, borderRadius: '50%', background: DOT[state] ?? '#8a8f98', display: 'inline-block' } })
+      const dot =h('span', { 'data-testid': 'awr-dot', 'data-state': state ?? 'loading', style: { width: 7, height: 7, borderRadius: '50%', background: DOT[state] ?? '#8a8f98', display: 'inline-block' } })
       const button = h('button', { ref: trigger, id: 'awr-header-action', type: 'button', style: styles.trigger, title: t('trigger.title'), 'aria-label': t('trigger.title'), 'aria-haspopup': 'dialog', 'aria-expanded': open, onClick: toggle }, dot, t('trigger.label'))
       if (!open || !anchor) return button
 
       const workNode = !(work && (view?.state === 'initialized' || view?.state === 'completed')) ? null : (() => {
         const bound = work.bound_work
         const when = (ms) => new Date(ms).toLocaleString()
+        const canClaim = bound && !work.claims?.length && !FINISHED.has(bound.status)
+        const flip = (name) => () => setForm(form === name ? undefined : name)
+        const manage = work.session?.status !== 'active' ? null : h('div', { key: 'actions', 'data-testid': 'awr-actions', style: { marginTop: 8 } },
+          h('div', { style: styles.heading }, t('action.title')),
+          h('div', null,
+            canClaim ? h('button', { id: 'awr-claim', type: 'button', style: styles.action, disabled: acting, onClick: () => act('/awr claim') }, t('action.claim', { work: bound.key })) : null,
+            h('button', { id: 'awr-checkpoint-open', type: 'button', style: styles.action, disabled: acting, onClick: flip('checkpoint') }, t('action.checkpoint')),
+            h('button', { id: 'awr-end-open', type: 'button', style: styles.action, disabled: acting, onClick: flip('end') }, t('action.end'))),
+          form === 'checkpoint' ? h('div', { 'data-testid': 'awr-checkpoint-form', style: { marginTop: 4 } },
+            h('input', { id: 'awr-checkpoint-digest', type: 'text', value: digest, placeholder: t('action.digest'), 'aria-label': t('action.digest'), style: styles.input, onChange: (event) => setDigest(event.target.value) }),
+            h('input', { id: 'awr-checkpoint-next', type: 'text', value: next, placeholder: t('action.next'), 'aria-label': t('action.next'), style: styles.input, onChange: (event) => setNext(event.target.value) }),
+            h('button', { id: 'awr-checkpoint-save', type: 'button', style: styles.action, disabled: acting, onClick: saveCheckpoint }, t('action.save')),
+            h('button', { id: 'awr-checkpoint-cancel', type: 'button', style: styles.action, disabled: acting, onClick: () => setForm(undefined) }, t('action.cancel'))) : null,
+          form === 'end' ? h('div', { 'data-testid': 'awr-end-form', style: { marginTop: 4 } },
+            h('div', { style: styles.small }, t('action.endNote')),
+            h('select', { id: 'awr-end-outcome', value: outcome, 'aria-label': t('action.outcome'), style: styles.input, onChange: (event) => setOutcome(event.target.value) }, ...OUTCOMES.map((name) => h('option', { key: name, value: name }, t(`action.outcome.${name}`)))),
+            h('button', { id: 'awr-end-confirm', type: 'button', style: styles.action, disabled: acting, onClick: () => act(`/awr end ${OUTCOMES.includes(outcome) ? outcome : 'ended'}`) }, t('action.confirmEnd')),
+            h('button', { id: 'awr-end-cancel', type: 'button', style: styles.action, disabled: acting, onClick: () => setForm(undefined) }, t('action.cancel'))) : null)
+        const noteNode = acting ? h('div', { key: 'working', style: { ...styles.small, marginTop: 6 } }, t('action.working'))
+          : note ? h('div', { key: 'note', 'data-testid': 'awr-action-result', style: { ...(note.ok ? styles.small : styles.error), marginTop: 6 } }, note.text) : null
         return (h('div', { key: 'work', 'data-testid': 'awr-work', style: styles.section },
           h('div', { style: styles.heading }, t('work.title'), work.project?.revision != null ? ` · ${t('work.revision', { revision: work.project.revision })}` : ''),
           work.session ? h('div', { style: styles.small }, t('work.session', { id: work.session.id, status: work.session.status })) : h('div', { style: styles.muted }, t('work.none')),
@@ -262,7 +359,9 @@ window.__ModuleLoader__.load({
             h('div', { style: styles.heading }, t('work.claim')),
             work.claims?.length ? h('ul', { style: styles.list }, ...work.claims.map((claim, index) => h('li', { key: index, style: styles.mono }, `${claim.work ?? '?'}: ${claim.expires_at ? t('work.expires', { time: when(claim.expires_at) }) : t('work.noexpiry')}`))) : h('div', { style: styles.small }, t('work.noclaim'))) : null,
           h('div', { style: { ...styles.small, marginTop: 6 } }, t('work.counts', { progress: work.in_progress?.length ?? 0, ready: work.ready?.length ?? 0, blocked: work.blocked?.length ?? 0 })),
-          work.blocked?.length ? h('div', { style: { marginTop: 4 } }, h('div', { style: styles.heading }, t('work.blockedList')), h('ul', { style: styles.list }, ...work.blocked.slice(0, 6).map((item) => h('li', { key: item.key, style: styles.mono }, `${item.key}${item.blocker ? `: ${item.blocker}` : ''}`)))) : null))
+          work.blocked?.length ? h('div', { style: { marginTop: 4 } }, h('div', { style: styles.heading }, t('work.blockedList')), h('ul', { style: styles.list }, ...work.blocked.slice(0, 6).map((item) => h('li', { key: item.key, style: styles.mono }, `${item.key}${item.blocker ? `: ${item.blocker}` : ''}`)))) : null,
+          manage,
+          noteNode))
       })()
       const body = []
       if (!view && !error) body.push(h('div', { key: 'load', style: styles.muted }, t('state.loading')))

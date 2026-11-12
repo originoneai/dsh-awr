@@ -67,7 +67,7 @@ No DSH-specific client dialect is added to AWR.
 | P1 | Workflow skill | `ctx.skills.register` | Teaches reading, claims, checkpoints, expected revisions, preview/accept, evidence and completion (see [docs/skill.md](docs/skill.md)) |
 | P2 | Evidence candidates | event `tools/result` | Suggest, never auto-register |
 | P2 | Session mapping | none | AWR already stores it (`awr client bind`); forks resume via `--from-session` |
-| P2 | UI panel | `dsh.client` + slots, `/awr state` | Bound work, claim expiry, blockers, counts (see [docs/panel.md](docs/panel.md)) |
+| P2 | UI panel | `dsh.client` + slots, `/awr state` | Bound work, claim expiry, blockers, counts, and claim, checkpoint and end buttons (see [docs/panel.md](docs/panel.md)) |
 
 Every surface above was checked against DeepSeek Harness desktop `0.2.2-rc.1` on 2026-11-11. The
 per-surface result, what changed and the evidence are in [docs/dsh-surfaces.md](docs/dsh-surfaces.md).
