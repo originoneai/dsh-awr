@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "work_item": "DSH-051",
+  "source_sha": "5824b311e32dccdf53bd152f3236879b562104d6",
+  "command": "node --test (150 tests; test/state-view.test.js runs the real awr); DeepSeek Harness 0.2.2-rc.1 web profile in the app browser pane on a real open-source project taken over by DSH-021, compared with awr status read from the CLI (docs/evidence/DSH-051)",
+  "scope": [
+    "lib/state-view.js",
+    "lib/commands.js",
+    "client.js",
+    "lib/takeover-host.js",
+    "test/state-view.test.js",
+    "docs/panel.md",
+    "docs/evidence/DSH-051"
+  ],
+  "verified_at": 1794470035181,
+  "checks": [
+    {
+      "name": "A panel shows the bound work item, claim expiry and blockers, and matches awr status for the same project",
+      "passed": true,
+      "details": "The AWR action in the conversation header shows, for a project AWR manages, the bound AWR session, the bound work item (key, title, status, next action, blocker or 'no blocker'), each claim of the session with its expiry or 'no expiry', and the project's counts and blocked list, all read through /awr state --json from awr status, session show and work show and passed on as awr gave them. Against the real awr (test/state-view.test.js) the view equals awr status for the same project (revision, name, counts, the four lists, next action) when bound with no claim, after a claim with a TTL (expiry = acquired_at + ttl), after the work was blocked with a reason (the blocker in the bound work and the blocked list) and after the session ended (no claims). In DeepSeek Harness (web profile) on a real open-source project the panel showed the claim with the expiry awr had set (2026/11/12 04:21:34, equal to expires_at) and, after the work was moved to blocked with a reason, [blocked] and the blocker text in the bound work and in the blocked list, equal to awr status read from the CLI. Limits: the panel reads when opened, not on every change; several claims at once and other conversations' claims are marked in the data but not drawn; the web profile, not the desktop shell. AWR lists the intake task of a project that needs organization under blocked although its own status is ready; the panel shows AWR's list.",
+      "criteria": [
+        "A panel shows the bound work item, claim expiry and blockers, and matches awr status for the same project."
+      ]
+    }
+  ]
+}

@@ -278,14 +278,16 @@ work_items:
 - id: DSH-051
   title: Show AWR state in a DSH panel
   kind: implementation
-  status: planned
+  status: completed
   priority: P2
   required: false
   goal: intake-goal
   depends_on: [DSH-013]
   acceptance:
   - A panel shows the bound work item, claim expiry and blockers, and matches awr status for the same project.
-  next_action: Confirm the client and slot surfaces in DSH-002, then design the panel.
+  next_action: Complete DSH-051 with the registered evidence
+  "evidence": ["docs/evidence/DSH-051/completion-report.json"]
+  "verification": {"evidence_level":"locally_verified"}
 - id: DSH-004
   title: Get stock awr-mcp accepted by DSH's MCP client
   kind: defect
