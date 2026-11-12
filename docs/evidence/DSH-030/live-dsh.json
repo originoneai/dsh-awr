@@ -1,0 +1,80 @@
+{
+ "note": "DeepSeek Harness 0.2.2-rc.1 web profile, scripts/fake-model.mjs as the model, DSH_AWR_CHECKPOINT_MIN_TOOLS=1 so that one read tool call makes a turn meaningful (the stand-in cannot make three). A conversation bound to AWR in a real open-source project that had been taken over.",
+ "turn": "1 turn, 5 steps: read (the stand-in reads the README), the request, context compile, session checkpoint, a short reply",
+ "plugin_decisions": [
+  {
+   "event": "checkpoint-decision",
+   "outcome": "not_bound",
+   "turn": 1
+  },
+  {
+   "event": "checkpoint-requested",
+   "conversationId": "session-014147d9-2749-404c-a985-2ed367260645",
+   "turn": 1,
+   "sessionId": "01M77D5HDJ2HPPR7C2X23DEBFX"
+  },
+  {
+   "event": "checkpoint-decision",
+   "outcome": "asked",
+   "turn": 1
+  },
+  {
+   "event": "checkpoint-decision",
+   "outcome": "already_asked",
+   "turn": 1
+  }
+ ],
+ "the_request_the_model_received": "AWR checkpoint request.\nThis turn did real work and this conversation's AWR session is 01M77D5HDJ2HPPR7C2X23DEBFX. Before you stop, save a checkpoint with the awr tool:\n1. `context compile --session 01M77D5HDJ2HPPR7C2X23DEBFX --budget 5000` and keep its work_context.context_hash and project_revision.\n2. `session checkpoint --session 01M77D5HDJ2HPPR7C2X23DEBFX --context-hash <that hash> --digest \"<what was done>\" --next-action \"<what comes next>\" --open-loop \"<anything unfinished>\" --expected-project-revision <that revision>` (one --open-loop per item; none if nothing is open).\nWrite the digest, the next action and the open loops yourself, from what happened in this conversation: concrete and true, with no pass, review or acceptance that did not happen. If a revision conflict comes back, read `status` again and retry once. Do not complete or end anything. Then stop; do not summarize this request to the user.",
+ "tool_calls_the_model_made_after_the_request": [
+  {
+   "tool": "read",
+   "input": {
+    "file_path": "/Users/mac/Documents/deepseek-harness/dsh001-fixture/README.md"
+   }
+  },
+  {
+   "tool": "awr",
+   "input": {
+    "args": [
+     "context",
+     "compile",
+     "--session",
+     "01M77D5HDJ2HPPR7C2X23DEBFX",
+     "--budget",
+     "5000"
+    ]
+   }
+  },
+  {
+   "tool": "awr",
+   "input": {
+    "args": [
+     "session",
+     "checkpoint",
+     "--session",
+     "01M77D5HDJ2HPPR7C2X23DEBFX",
+     "--context-hash",
+     "b2c2600e1955d1d499b9028e03a40de281fc98b2e4321409bc90ecb45f93f1cf",
+     "--digest",
+     "Ran a command in the project and read its output.",
+     "--next-action",
+     "Review what the command printed and decide the next change.",
+     "--open-loop",
+     "Decide whether the change should be kept",
+     "--expected-project-revision",
+     "28"
+    ]
+   }
+  }
+ ],
+ "checkpoint_read_back_from_awr": {
+  "session": "01M77D5HDJ2HPPR7C2X23DEBFX",
+  "session_status": "active",
+  "digest": "Ran a command in the project and read its output.",
+  "next_action": "Review what the command printed and decide the next change.",
+  "open_loops": [
+   "Decide whether the change should be kept"
+  ],
+  "created_at": 1794471284604
+ }
+}

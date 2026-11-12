@@ -25,7 +25,7 @@ scripts/build-awr-lab.sh <awr-checkout>    # the local AWR this plugin is develo
   [docs/commands.md](docs/commands.md). The AWR work context in the prompt:
   [docs/prompt-context.md](docs/prompt-context.md). The AWR tools the model can call:
   [docs/tools.md](docs/tools.md). The takeover module: [docs/takeover.md](docs/takeover.md); its button, subagent and panel in DSH:
-  [docs/takeover-ui.md](docs/takeover-ui.md). The AWR state panel: [docs/panel.md](docs/panel.md). The workflow skill: [docs/skill.md](docs/skill.md).
+  [docs/takeover-ui.md](docs/takeover-ui.md). The AWR state panel: [docs/panel.md](docs/panel.md). The workflow skill: [docs/skill.md](docs/skill.md). Checkpoint requests: [docs/checkpoints.md](docs/checkpoints.md).
 
 ## What the plugin is for
 
@@ -46,7 +46,7 @@ No DSH-specific client dialect is added to AWR.
 | P0 | Session binding | event `agent/created` (serial, awaited) | `awr client bind`; bind only, never auto-claim |
 | P0 | Context injection | `ctx.systemPrompt.context` (required runtime context), refreshed in `agent/pre-step` | Inject next action, open loops and compiled work context; DSH re-adds it after a compaction |
 | P0 | Slash commands | `ctx.commands.register` | `/awr status`, `claim`, `checkpoint`, `end` |
-| P1 | Checkpoints | event `agent/turn-stopping` (listener may `agent.steer`) | Ask the model to checkpoint before a turn closes |
+| P1 | Checkpoints | event `agent/turn-stopping` (listener may `agent.steer`) | Ask the model to checkpoint before a turn closes, in its own words (see [docs/checkpoints.md](docs/checkpoints.md)) |
 | P1 | Compaction observation | log-only session events `compaction/*` | Report per AWR's context-continuity protocol; no hook before compaction exists |
 | P1 | Workflow skill | `ctx.skills.register` | Teaches reading, claims, checkpoints, expected revisions, preview/accept, evidence and completion (see [docs/skill.md](docs/skill.md)) |
 | P2 | Evidence candidates | event `tools/result` | Suggest, never auto-register |

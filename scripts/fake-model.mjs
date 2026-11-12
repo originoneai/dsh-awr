@@ -75,6 +75,40 @@ createServer((req, res) => {
       res.end()
       return
     }
+    // The checkpoint request (DSH-030): a user message that starts "AWR checkpoint request." is answered by compiling
+    // the context and saving a checkpoint with the awr tool, in text the stand-in writes itself, then a short reply.
+    const allMessages = body.messages ?? []
+    const requestAt = allMessages.map((m) => textOf(m.content)).findLastIndex((t) => t.includes('AWR checkpoint request.'))
+    if (requestAt >= 0 && (body.tools ?? []).some((t) => t.name === 'awr')) {
+      const sessionId = textOf(allMessages[requestAt].content).match(/AWR session is ([0-9A-Z]+)/)?.[1]
+      const after = allMessages.slice(requestAt)
+      const results = after.flatMap((m) => (Array.isArray(m.content) ? m.content.filter((b) => b.type === 'tool_result') : []))
+      const send = (event, data) => res.write(`event: ${event}\ndata: ${JSON.stringify({ type: event, ...data })}\n\n`)
+      res.writeHead(200, { 'content-type': 'text/event-stream', 'cache-control': 'no-cache' })
+      send('message_start', { message: { id: 'msg_c', type: 'message', role: 'assistant', model: body.model, content: [], stop_reason: null, stop_sequence: null, usage: { input_tokens: 10, output_tokens: 1 } } })
+      let step
+      if (results.length === 0) step = { args: ['context', 'compile', '--session', sessionId, '--budget', '5000'] }
+      else if (results.length === 1) {
+        let doc = {}
+        try { doc = JSON.parse(textOf(results[0].content)) } catch { /* the error text has no document */ }
+        step = { args: ['session', 'checkpoint', '--session', sessionId, '--context-hash', doc.work_context?.context_hash ?? 'missing', '--digest', 'Ran a command in the project and read its output.', '--next-action', 'Review what the command printed and decide the next change.', '--open-loop', 'Decide whether the change should be kept', '--expected-project-revision', String(doc.project_revision ?? 0)] }
+      }
+      if (step) {
+        send('content_block_start', { index: 0, content_block: { type: 'tool_use', id: `toolu_cp_${results.length}`, name: 'awr', input: {} } })
+        send('content_block_delta', { index: 0, delta: { type: 'input_json_delta', partial_json: JSON.stringify({ args: step.args }) } })
+        send('content_block_stop', { index: 0 })
+        send('message_delta', { delta: { stop_reason: 'tool_use', stop_sequence: null }, usage: { output_tokens: 5 } })
+      } else {
+        const failed = /Error/.test(textOf(results.at(-1).content).slice(0, 12))
+        send('content_block_start', { index: 0, content_block: { type: 'text', text: '' } })
+        send('content_block_delta', { index: 0, delta: { type: 'text_delta', text: failed ? `Checkpoint failed: ${textOf(results.at(-1).content).slice(0, 200)}` : 'Checkpoint saved.' } })
+        send('content_block_stop', { index: 0 })
+        send('message_delta', { delta: { stop_reason: 'end_turn', stop_sequence: null }, usage: { output_tokens: 5 } })
+      }
+      send('message_stop', {})
+      res.end()
+      return
+    }
     const last = (body.messages ?? []).at(-1)
     const results = Array.isArray(last?.content) ? last.content.filter((b) => b.type === 'tool_result') : []
     const offered = (body.tools ?? []).map((t) => t.name)

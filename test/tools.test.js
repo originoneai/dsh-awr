@@ -127,6 +127,16 @@ test('errors from awr reach the model with their code and AWR\'s own suggestion'
   await assert.rejects(run.execute({ args: ['session', 'end'] }, { agent: agentOf('c1') }), /AWR|database|schema/i)
 })
 
+test('a ContextIncomplete answer reaches the model as the document awr gave, so it can checkpoint with the hash in it', async () => {
+  const document = { ok: false, error: { code: 'ContextIncomplete', message: 'context incomplete' }, project_revision: 7, work_context: { context_hash: 'abc123' }, completeness: { status: 'CONTEXT INCOMPLETE' } }
+  const incomplete = new AwrError('failed', 'ContextIncomplete: context incomplete', { code: 'ContextIncomplete', awrMessage: 'context incomplete', awrDocument: document })
+  const bare = new AwrError('failed', 'ContextIncomplete: context incomplete', { code: 'ContextIncomplete', awrMessage: 'context incomplete' })
+  const awr = scripted({ context: (args) => { throw args.includes('--bare') ? bare : incomplete } })
+  const { run } = createAwrTools({ awr, bindings: bindingsOf({ c1: bindingOf() }) })
+  assert.deepEqual(await run.execute({ args: ['context', 'compile', '--session', 'S1'] }, { agent: agentOf('c1') }), document)
+  await assert.rejects(run.execute({ args: ['context', 'compile', '--bare'] }, { agent: agentOf('c1') }), /ContextIncomplete/, 'without a document it is an error as before')
+})
+
 test('a conversation without an AWR session gets no tools and cannot run them', async () => {
   const awr = scripted({ status: () => STATUS })
   const { status, run, when } = createAwrTools({
