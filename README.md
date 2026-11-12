@@ -25,7 +25,7 @@ scripts/build-awr-lab.sh <awr-checkout>    # the local AWR this plugin is develo
   [docs/commands.md](docs/commands.md). The AWR work context in the prompt:
   [docs/prompt-context.md](docs/prompt-context.md). The AWR tools the model can call:
   [docs/tools.md](docs/tools.md). The takeover module: [docs/takeover.md](docs/takeover.md); its button, subagent and panel in DSH:
-  [docs/takeover-ui.md](docs/takeover-ui.md). The AWR state panel: [docs/panel.md](docs/panel.md). The workflow skill: [docs/skill.md](docs/skill.md). Checkpoint requests: [docs/checkpoints.md](docs/checkpoints.md). Compactions reported to AWR: [docs/compaction.md](docs/compaction.md). Evidence candidates from tool results: [docs/evidence-candidates.md](docs/evidence-candidates.md).
+  [docs/takeover-ui.md](docs/takeover-ui.md). The AWR state panel: [docs/panel.md](docs/panel.md). The workflow skill: [docs/skill.md](docs/skill.md). Checkpoint requests: [docs/checkpoints.md](docs/checkpoints.md). Compactions reported to AWR: [docs/compaction.md](docs/compaction.md). Evidence candidates from tool results: [docs/evidence-candidates.md](docs/evidence-candidates.md). Real-model takeover runbook (DSH-022): [docs/dsh-022-runbook.md](docs/dsh-022-runbook.md).
 
 ## What the plugin is for
 
