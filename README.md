@@ -20,6 +20,7 @@ scripts/build-awr-lab.sh <awr-checkout>    # the local AWR this plugin is develo
 - Loading the plugin into DSH through a dev profile:
   [docs/dsh-010-skeleton-check.md](docs/dsh-010-skeleton-check.md).
 - What DSH offers a plugin, checked against 0.2.2-rc.1: [docs/dsh-surfaces.md](docs/dsh-surfaces.md).
+- How the plugin picks and runs `awr`, and when it refuses to: [docs/awr-runtime.md](docs/awr-runtime.md).
 
 ## What the plugin is for
 

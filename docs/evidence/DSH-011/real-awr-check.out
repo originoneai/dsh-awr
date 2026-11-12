@@ -1,0 +1,11 @@
+bound: AWR repo, pinned build from its runtime-binding.json
+  -> ok source=binding cli=/Users/mac/Documents/originone/agent-work-running/.local/acceptance-core-20261109/pinned/awr-local-ddac3463-acr-002/bin/awr
+     program 0.7.0, schema 14, revision 23440
+unbound: dsh-awr project, awr from PATH (lab build first)
+  -> ok source=path cli=/Users/mac/Documents/OriginOneAI/dsh-awr/.local/awr-lab/bin/awr
+     program 0.7.0, schema 14, revision 114
+unbound: dsh-awr project, awr from PATH (released 0.7.0)
+  -> ok source=path cli=/opt/homebrew/bin/awr
+     program 0.7.0, schema 14, revision 114
+missing: dsh-awr project, no awr anywhere
+  -> missing: AWR is not available for /Users/mac/Documents/OriginOneAI/dsh-awr: No awr was found on PATH and the project has no .awr/runtime-binding.json. Install awr, or fix the cli path in .awr/runtime-binding.json.
