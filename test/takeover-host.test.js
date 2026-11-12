@@ -95,6 +95,7 @@ test('the review prompt names the project, forbids questions and writes, and car
   assert.match(prompt, /only read files \(read, glob\)/)
   assert.match(prompt, /Never use active or confirmed/)
   assert.match(prompt, /Never invent business intent/)
+  assert.match(prompt, /`priority` and `required` on a work item only when the material states them/)
   assert.match(prompt, /\.env files and key files are not available/)
   assert.match(prompt, /<draft>[\s\S]*placeholder[\s\S]*<\/draft>/)
   assert.match(prompt, /README\.md \(40 bytes\)/)

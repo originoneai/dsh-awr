@@ -361,3 +361,12 @@ work_items:
   "summary": "The panel (DSH-051) only observed the session and offered the takeover button. The gap was management actions: claim, checkpoint and end."
   "evidence": ["docs/evidence/DSH-052/completion-report.json"]
   "verification": {"evidence_level":"locally_verified"}
+- "id": "WORK-ba1600bbdba57b75d8c27731019f7ccf"
+  "title": "DSH-053: Stop the takeover reviewer from inventing priority and required"
+  "status": "in_progress"
+  "acceptance": ["The reviewer prompt tells the reviewer to set priority and required on a work item only when the material states them, and a test pins that rule.","AWR accepts a reviewed ledger whose new work items carry neither field, checked with a real awr."]
+  "goal": ["intake-goal"]
+  "kind": "defect"
+  "next_action": "Merge the PR, then register evidence and complete DSH-053"
+  "priority": "P2"
+  "summary": "Open minor finding of the DSH-022 real-model run: the prompt forbade inventing owners, dates and completion but not priority, so new work items carried a P0 required that was the reviewer's inference."

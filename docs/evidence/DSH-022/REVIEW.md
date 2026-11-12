@@ -55,9 +55,11 @@ No invented goal, owner, date or completion was found in either project.
    `INTAKE-001`. With no work item AWR has nothing to bind, so the conversation got no AWR context. The reviewer
    prompt now says to keep it, and the host restores the draft's work section when a returned YAML ledger has none.
    In run 2 and in the grouping run the reviewer kept or replaced `INTAKE-001` with real work itself.
-2. **Open, minor:** `priority` and `required` of the new work items in the grouping run (`REQ-ALIGN` P0 required,
-   the others P1 or P2) are the reviewer's inference; the README states each row's status but not a priority. The
-   prompt forbids inventing owners, dates and completion but does not mention priority.
+2. **Fixed (DSH-053):** `priority` and `required` of the new work items in the grouping run (`REQ-ALIGN` P0 required,
+   the others P1 or P2) were the reviewer's inference; the README states each row's status but not a priority. The
+   prompt forbade inventing owners, dates and completion but did not mention priority. It now says to set both only
+   when the material states them; a real awr accepts a reviewed ledger whose new items carry neither (status
+   `planned`, ready, priority and required empty). Not re-run with a real model.
 3. **By design, recorded:** `doris-mcp-server` stops at AWR's secret boundary (example `Authorization: Bearer ...`
    lines in its README, three findings at lines 1468, 1469 and 1533); the stop names the file and line, never the
    value, and leaves the project untouched. AWR gives no unattended way past it when the README is the only source
