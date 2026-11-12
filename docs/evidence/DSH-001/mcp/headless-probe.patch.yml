@@ -1,0 +1,12 @@
+- insert:
+    - id: mcp-awr-fixed
+      name: "@deepseek-ai/dsh-mcp-client"
+      config:
+        serverName: awr
+        transport: stdio
+        command: /Users/mac/Documents/originone/agent-work-running/.local/target-wt-613/debug/awr-mcp
+        args: ["--project", "/Users/mac/Documents/deepseek-harness/dsh001-fixture"]
+        cwd: /Users/mac/Documents/deepseek-harness/dsh001-fixture
+        failOnStartupError: true
+        reconnect:
+          enabled: false

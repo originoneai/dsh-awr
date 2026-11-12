@@ -8,9 +8,11 @@ Checked on 2026-11-11 (local time, UTC-5). Raw material is in `docs/evidence/DSH
 | --- | --- |
 | DSH version, install source and check date recorded | Met (this page) |
 | Session start, context compile, checkpoint and end succeed from a DSH conversation, receipts retained | Met |
-| `awr-mcp` connected to DSH and `awr_project_status` returns the project identity | **Not met with stock `awr-mcp` 0.7.0.** Met only with a diagnostic shim |
+| `awr-mcp` connected to DSH and `awr_project_status` returns the project identity | **Met with the lab build** (main plus the fix for originoneai/awr#613), no shim. **Not met with stock `awr-mcp` 0.7.0**; that is tracked as `DSH-004` until the fix is merged and released |
 
-DSH-001 is therefore not complete. The blocker is tracked as `DSH-004`.
+The first pass on 2026-11-11 used stock `awr-mcp` 0.7.0 and failed the third criterion; that run and
+its diagnosis are kept below. The rerun on the lab build ([lab-environment.md](lab-environment.md))
+is in "Rerun on the lab build".
 
 ## What was installed
 
@@ -103,3 +105,25 @@ Findings, in the order they were hit:
 - Whether the requirement for `ttlMs` and `cacheScope` on `tools/list` comes from the 2026-07-28
   specification or only from DSH's bundled SDK.
 - Compaction, plugin loading and every surface listed in the README. Those belong to `DSH-002`.
+
+## Rerun on the lab build
+
+Environment: `awr-mcp 0.7.0 (1b406982)` built from `origin/main` (`c33ea2be`) plus the one commit
+that fixes #613; see [lab-environment.md](lab-environment.md) and
+`docs/evidence/DSH-001/mcp/lab-build.json`. DSH desktop `0.2.2-rc.1`, same fixture project
+`dsh001-fixture`.
+
+1. **DSH's own MCP client, startup check.** With `failOnStartupError: true`, a stdio entry for the
+   lab binary activates. The same entry for the released 0.7.0 native binary fails with
+   `1 entry did not activate` (`mcp/headless-fixed-binary-stderr.txt`,
+   `mcp/headless-old-binary-stderr.txt`, entry in `mcp/headless-probe.patch.yml`).
+2. **Desktop conversation, no shim, no wrapper.** The entry was added to the desktop profile
+   (`serverName: awr`, `command` the native `awr-mcp`, `args` and `cwd` the fixture). The server
+   process stayed up. In a new conversation under `workspace-write`, the model called
+   `mcp__awr__awr_query` with `{}` (the manifest) and then with
+   `{"child_tool": "awr_project_status", "arguments": {}}`. The second result held project id
+   `01M76X7RPD0C8WNTE0AX7JTJ7V` and revision 16, equal to what the CLI reported at that moment
+   (`mcp/lab-run-no-shim.json`, extracted from the DSH session log).
+3. The profile file was restored byte for byte afterwards and DSH relaunched.
+
+Not covered by the rerun: streamable HTTP, and a stock released `awr-mcp` containing the fix.

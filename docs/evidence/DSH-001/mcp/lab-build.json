@@ -1,0 +1,22 @@
+{
+  "purpose": "Local experimental AWR environment for DSH plugin development. Not a release.",
+  "built_at_utc": "2026-11-12T04:21:36Z",
+  "source_path": "/Users/mac/Documents/originone/agent-work-running/.local/wt-mcp-613",
+  "source_branch": "fix/mcp-list-tools-cache-metadata",
+  "source_commit": "1b4069825688a52c7f6b14e8c835ac191c61beff",
+  "origin_main_commit": "c33ea2bef3f810dd739f0c49e4d91db207bdc392",
+  "commits_not_on_origin_main": "1",
+  "uncommitted_tracked_changes": [],
+  "build_command": "cargo build --release --locked -p awr-cli -p awr-mcp",
+  "rustc": "rustc 1.93.1 (01f6ddf75 2026-02-11) (Homebrew)",
+  "binaries": {
+    "awr": {
+      "sha256": "632f4a7bb27b7295054c792a0f48c781d2fee305c8150cf36cbf8ea6ecc974d2",
+      "version": "awr 0.7.0 (1b406982)"
+    },
+    "awr-mcp": {
+      "sha256": "ea6babd0e4f8279b0234a25eb5cdc5b281a3bb0755e812c8e3d3f3334cc3507d",
+      "version": "awr-mcp 0.7.0 (1b406982)"
+    }
+  }
+}
