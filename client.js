@@ -47,7 +47,22 @@ window.__ModuleLoader__.load({
       'receipt.nothing': 'nothing',
       'receipt.git': 'Git: nothing committed, nothing pushed.',
       'stop.where': 'Stopped at {step}: {reason}',
+      'stop.at': 'Found at {location}',
       'error.call': 'The host did not answer: {message}',
+      'work.title': 'This conversation',
+      'work.bound': 'Bound work',
+      'work.none': 'This conversation is not bound to an AWR session.',
+      'work.next': 'Next action',
+      'work.blocker': 'Blocked',
+      'work.noblocker': 'no blocker',
+      'work.claim': 'Claim',
+      'work.noclaim': 'This session holds no claim.',
+      'work.expires': 'expires {time}',
+      'work.noexpiry': 'no expiry',
+      'work.session': 'AWR session {id} ({status})',
+      'work.counts': 'Project: {progress} in progress, {ready} ready, {blocked} blocked',
+      'work.blockedList': 'Blocked work',
+      'work.revision': 'revision {revision}',
     }
     const zh = {
       'trigger.label': 'AWR',
@@ -87,7 +102,22 @@ window.__ModuleLoader__.load({
       'receipt.nothing': '无',
       'receipt.git': 'Git：未提交，未推送。',
       'stop.where': '停在 {step}：{reason}',
+      'stop.at': '位置：{location}',
       'error.call': '宿主没有回应：{message}',
+      'work.title': '本会话',
+      'work.bound': '绑定的工作',
+      'work.none': '本会话没有绑定 AWR 会话。',
+      'work.next': '下一步',
+      'work.blocker': '阻塞',
+      'work.noblocker': '无阻塞',
+      'work.claim': '认领',
+      'work.noclaim': '本会话没有持有认领。',
+      'work.expires': '到期 {time}',
+      'work.noexpiry': '无到期时间',
+      'work.session': 'AWR 会话 {id}（{status}）',
+      'work.counts': '项目：{progress} 项进行中，{ready} 项就绪，{blocked} 项阻塞',
+      'work.blockedList': '被阻塞的工作',
+      'work.revision': '版本 {revision}',
     }
 
     const FALLBACK = (key, params) => (en[key] ?? key).replace(/\{(\w+)\}/g, (_, name) => String(params?.[name] ?? ''))
@@ -136,11 +166,23 @@ window.__ModuleLoader__.load({
       const trigger = React.useRef(null)
       const panel = React.useRef(null)
 
+      const [work, setWork] = React.useState(undefined)
       const refresh = React.useCallback(async () => {
         try {
           const text = await runCommand(ctx, sessionId, '/awr takeover status --json')
-          setView(JSON.parse(text))
+          const next = JSON.parse(text)
+          setView(next)
           setError(undefined)
+          // A project AWR manages also has work state to show; asked only then, and only when the panel is looked at.
+          if (next.state === 'initialized' || next.state === 'completed') {
+            try {
+              setWork(JSON.parse(await runCommand(ctx, sessionId, '/awr state --json')))
+            } catch {
+              setWork(undefined)
+            }
+          } else {
+            setWork(undefined)
+          }
         } catch (failure) {
           setError(String(failure?.message ?? failure))
         }
@@ -205,14 +247,36 @@ window.__ModuleLoader__.load({
       const button = h('button', { ref: trigger, id: 'awr-header-action', type: 'button', style: styles.trigger, title: t('trigger.title'), 'aria-label': t('trigger.title'), 'aria-haspopup': 'dialog', 'aria-expanded': open, onClick: toggle }, dot, t('trigger.label'))
       if (!open || !anchor) return button
 
+      const workNode = !(work && (view?.state === 'initialized' || view?.state === 'completed')) ? null : (() => {
+        const bound = work.bound_work
+        const when = (ms) => new Date(ms).toLocaleString()
+        return (h('div', { key: 'work', 'data-testid': 'awr-work', style: styles.section },
+          h('div', { style: styles.heading }, t('work.title'), work.project?.revision != null ? ` · ${t('work.revision', { revision: work.project.revision })}` : ''),
+          work.session ? h('div', { style: styles.small }, t('work.session', { id: work.session.id, status: work.session.status })) : h('div', { style: styles.muted }, t('work.none')),
+          bound ? h('div', { 'data-testid': 'awr-bound-work', style: { marginTop: 6 } },
+            h('div', { style: styles.heading }, t('work.bound')),
+            h('div', null, h('span', { style: styles.mono }, bound.key), bound.title ? ` ${bound.title}` : '', bound.status ? h('span', { style: styles.small }, ` [${bound.status}]`) : null),
+            bound.next_action ? h('div', { style: styles.small }, `${t('work.next')}: ${bound.next_action}`) : null,
+            h('div', { 'data-testid': 'awr-blocker', style: bound.blocker ? styles.error : styles.small }, bound.blocker ? `${t('work.blocker')}: ${bound.blocker}` : t('work.noblocker'))) : null,
+          work.session ? h('div', { 'data-testid': 'awr-claims', style: { marginTop: 6 } },
+            h('div', { style: styles.heading }, t('work.claim')),
+            work.claims?.length ? h('ul', { style: styles.list }, ...work.claims.map((claim, index) => h('li', { key: index, style: styles.mono }, `${claim.work ?? '?'}: ${claim.expires_at ? t('work.expires', { time: when(claim.expires_at) }) : t('work.noexpiry')}`))) : h('div', { style: styles.small }, t('work.noclaim'))) : null,
+          h('div', { style: { ...styles.small, marginTop: 6 } }, t('work.counts', { progress: work.in_progress?.length ?? 0, ready: work.ready?.length ?? 0, blocked: work.blocked?.length ?? 0 })),
+          work.blocked?.length ? h('div', { style: { marginTop: 4 } }, h('div', { style: styles.heading }, t('work.blockedList')), h('ul', { style: styles.list }, ...work.blocked.slice(0, 6).map((item) => h('li', { key: item.key, style: styles.mono }, `${item.key}${item.blocker ? `: ${item.blocker}` : ''}`)))) : null))
+      })()
       const body = []
       if (!view && !error) body.push(h('div', { key: 'load', style: styles.muted }, t('state.loading')))
       if (error && !view) body.push(h('div', { key: 'err', style: styles.error }, t('error.call', { message: error })))
       if (view) {
         body.push(h('div', { key: 'state', 'data-testid': 'awr-state', style: styles.muted }, t(`state.${view.state}`)))
         if (view.projectRoot) body.push(h('div', { key: 'root', style: { ...styles.small, ...styles.mono, marginTop: 2 } }, view.projectRoot))
+        if (workNode) body.push(workNode)
         if (view.state === 'not_initialized' || view.state === 'stopped' || view.state === 'failed' || view.state === 'interrupted') {
-          if (view.stop) body.push(h('div', { key: 'stop', style: { ...styles.error, marginTop: 8 } }, t('stop.where', { step: t(`step.${view.stop.step}`), reason: view.stop.reason }), h('div', { style: { ...styles.small, marginTop: 2 } }, view.stop.message)))
+          if (view.stop) {
+            const detail = view.stop.detail
+            const location = detail?.path ? `${detail.path}${detail.line ? `:${detail.line}` : ''}${detail.category ? ` (${detail.category})` : ''}` : undefined
+            body.push(h('div', { key: 'stop', style: { ...styles.error, marginTop: 8 } }, t('stop.where', { step: t(`step.${view.stop.step}`), reason: view.stop.reason }), h('div', { style: { ...styles.small, marginTop: 2 } }, view.stop.message), location ? h('div', { 'data-testid': 'awr-stop-location', style: { ...styles.small, ...styles.mono, marginTop: 4 } }, t('stop.at', { location })) : null))
+          }
           if (view.state === 'not_initialized') body.push(h('div', { key: 'hint', style: { ...styles.small, marginTop: 8 } }, t('takeover.hint')))
           body.push(h('button', { key: 'go', id: 'awr-takeover-start', type: 'button', style: { ...styles.button, opacity: busy ? 0.6 : 1 }, disabled: busy, onClick: start }, busy ? t('takeover.starting') : t(view.state === 'not_initialized' ? 'takeover.start' : 'takeover.retry')))
         }

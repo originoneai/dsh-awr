@@ -1,0 +1,25 @@
+{
+ "note": "DeepSeek Harness 0.2.2-rc.1, web profile in the app browser pane, scripts/fake-model.mjs as the model. The project is a real open-source repository (modelcontextprotocol/experimental-ext-grouping, 17 commits) that the one-click takeover (DSH-021) had taken over; its conversation is bound to an AWR session. The panel was opened in the conversation header; awr status was read from the CLI for the same project.",
+ "panel_text_claimed_work": {
+  "work_section": "本会话 · 版本 10 / AWR 会话 01M77BKXGC3CJYA0ZPXCTB4T4R（active） / 绑定的工作 INTAKE-001 Verify project goals, current state, and the next deliverable [ready] / 下一步: Run awr intake inspect and read sources for each gap; add goal references, acceptance criteria, and next actions, then inspect again. / 无阻塞 / 认领 INTAKE-001: 到期 2026/11/12 04:21:34 / 项目：0 项进行中，0 项就绪，1 项阻塞 / 被阻塞的工作 INTAKE-001",
+  "claim_set_with": "awr work claim INTAKE-001 --session <bound session> --ttl-ms 5400000 (expires_at 1794475294109 = 2026-11-12 04:21:34 local)"
+ },
+ "panel_text_blocked_work": {
+  "work_section": "绑定的工作 INTAKE-001 Verify project goals, current state, and the next deliverable [blocked] / 下一步: Ask the owner to name the goal / 阻塞: Waiting for the owner to name the goal / 认领 INTAKE-001: 到期 2026/11/12 04:21:34 / 项目：0 项进行中，0 项就绪，1 项阻塞 / 被阻塞的工作 INTAKE-001: Waiting for the owner to name the goal",
+  "made_with": "awr work progress, then awr work block INTAKE-001 --reason \"Waiting for the owner to name the goal\""
+ },
+ "awr_status_for_the_same_project_afterwards": {
+  "project_revision": 24,
+  "counts": {
+   "blocked": 1
+  },
+  "current": [],
+  "ready": [],
+  "blocked": [
+   {
+    "key": "INTAKE-001",
+    "blocker": "Waiting for the owner to name the goal"
+   }
+  ]
+ }
+}

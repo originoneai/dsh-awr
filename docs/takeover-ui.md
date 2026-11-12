@@ -56,6 +56,9 @@ on the child's directory did not restrict it at all; the live check caught that.
 reply. Text goes through the client locale service (English and Chinese); colors and radii come from
 DSH's theme variables; the panel is portaled to the page body and closes on an outside click or Escape.
 
+The panel also shows where a stop is (`README.md:1468 (credential)` for a secret-boundary stop), and for a
+project AWR manages the work state of `docs/panel.md`.
+
 A command run is a line in the conversation's timeline and an entry in its log, and there is no quiet
 way to ask for a state. So the panel asks only when it is opened, after a click, and while a takeover is
 running (a growing interval when open, every 10 seconds when closed). A conversation nobody looked at

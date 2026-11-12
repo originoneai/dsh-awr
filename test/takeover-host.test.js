@@ -398,7 +398,7 @@ test('describeRun and formatRun cover every state', () => {
   assert.equal(describeRun({ root: '/p', record: { status: 'failed', steps: {}, stop: { step: 'review', reason: 'unexpected_error', message: 'x' } } }).state, 'failed')
   assert.match(formatRun(describeRun({ root: '/p' })), /Takeover of \/p: not_initialized/)
   assert.doesNotMatch(formatRun(describeRun({ root: '/p' })), /Steps done/)
-  assert.match(formatRun(describeRun({ root: '/p', record: { status: 'stopped', steps: { preflight: { status: 'done' } }, stop: { step: 'preview', reason: 'secret_boundary', message: 'credential at docs/plan.md:3' } } })), /Steps done: preflight[\s\S]*Stopped at preview: secret_boundary: credential at docs\/plan\.md:3/)
+  assert.match(formatRun(describeRun({ root: '/p', record: { status: 'stopped', steps: { preflight: { status: 'done' } }, stop: { step: 'preview', reason: 'secret_boundary', message: 'AWR refused a credential', detail: { path: 'docs/plan.md', line: 3, category: 'credential' } } } })), /Steps done: preflight[\s\S]*Stopped at preview: secret_boundary: AWR refused a credential \(docs\/plan\.md:3, credential\)/)
 })
 
 // --- the command ------------------------------------------------------------------------------------------------------------

@@ -25,7 +25,7 @@ scripts/build-awr-lab.sh <awr-checkout>    # the local AWR this plugin is develo
   [docs/commands.md](docs/commands.md). The AWR work context in the prompt:
   [docs/prompt-context.md](docs/prompt-context.md). The AWR tools the model can call:
   [docs/tools.md](docs/tools.md). The takeover module: [docs/takeover.md](docs/takeover.md); its button, subagent and panel in DSH:
-  [docs/takeover-ui.md](docs/takeover-ui.md).
+  [docs/takeover-ui.md](docs/takeover-ui.md). The AWR state panel: [docs/panel.md](docs/panel.md).
 
 ## What the plugin is for
 
@@ -51,7 +51,7 @@ No DSH-specific client dialect is added to AWR.
 | P1 | Workflow skill | `ctx.skills.register` | Teach preview/accept, evidence and completion rules |
 | P2 | Evidence candidates | event `tools/result` | Suggest, never auto-register |
 | P2 | Session mapping | none | AWR already stores it (`awr client bind`); forks resume via `--from-session` |
-| P2 | UI panel | `dsh.client` + slots | Current work, claim TTL, blockers |
+| P2 | UI panel | `dsh.client` + slots, `/awr state` | Bound work, claim expiry, blockers, counts (see [docs/panel.md](docs/panel.md)) |
 
 Every surface above was checked against DeepSeek Harness desktop `0.2.2-rc.1` on 2026-11-11. The
 per-surface result, what changed and the evidence are in [docs/dsh-surfaces.md](docs/dsh-surfaces.md).
