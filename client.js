@@ -978,10 +978,14 @@ window.__ModuleLoader__.load({
     }
 
     /** The plugin's own version, and the update from GitHub when the plugin was installed from there. */
-    function UpdateLine({ plugin, t, busy, onCheck, onApply, canApply, status }) {
+    function UpdateLine({ plugin, t, busy, onCheck, onApply, canApply, status: reported }) {
       if (!plugin?.version) return null
       const check = plugin.check
       const github = plugin.kind === 'github'
+      // What the host says is installed outranks what this card remembers of its own try: the host loads the updated plugin
+      // while the call is still open, so the answer of the call may never arrive (or arrive as a failure) for an update that went through.
+      const taken = github && Boolean(check) && check.available === false
+      const status = taken && (reported?.phase === 'applying' || reported?.phase === 'failed') ? undefined : reported
       let right = null
       if (status?.phase === 'checking') right = h('span', { style: { color: C.text3 } }, t('update.checking'))
       else if (status?.phase === 'applying') right = h('span', { style: { display: 'inline-flex', alignItems: 'center', gap: 6, color: C.text2 } }, h(Icon, { name: 'refresh', size: 12, className: 'awr-spin' }), t('update.applying'))
@@ -1079,9 +1083,11 @@ window.__ModuleLoader__.load({
           else {
             const offline = result.failedAt === 'spec-host' || ['network', 'timeout'].includes(result.packageResult?.kind)
             setUpdate({ phase: 'failed', text: offline ? t('update.failed.network') : t('update.failed'), code: result.error?.code ?? result.packageResult?.kind ?? result.application })
+            project.refresh()
           }
         } catch (problem) {
           setUpdate({ phase: 'failed', text: t('update.failed'), code: String(problem?.message ?? problem) })
+          project.refresh()
         }
       }
 
