@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "work_item": "WORK-98192defe36aa6433e78538b159fdcbb",
+  "source_sha": "86703a3695a64e593bd9cf98c308bd16336f8612",
+  "command": "node --test (290 tests pass with AWR_TAKEOVER_BIN set to an awr built from the changed originoneai/awr code); twenty-three mutations of the new behaviour in lib/panel-snapshot.js, lib/commands.js and client.js, each restored; and a run in the real DeepSeek Harness 0.2.2-rc.2 desktop app with the plugin installed from its local directory, DeepSeek-V4.1-Flash as the reviewer and DSH_AWR_CLI naming the changed awr",
+  "scope": [
+    "client.js",
+    "index.js",
+    "lib/commands.js",
+    "lib/conversation.js",
+    "lib/panel-snapshot.js",
+    "lib/panel-text.js",
+    "lib/state-view.js",
+    "test/client.test.js",
+    "test/commands.test.js",
+    "test/panel-snapshot.test.js",
+    "test/panel-text.test.js",
+    "docs/takeover-ui.md",
+    "docs/panel.md",
+    "docs/dsh-surfaces.md",
+    "docs/evidence/DSH-056"
+  ],
+  "verified_at": 1794497259077,
+  "checks": [
+    {
+      "name": "Nothing the panel asks for shows as JSON or a log line in the conversation",
+      "passed": true,
+      "details": "The data of the panel is a file the host writes (lib/panel-snapshot.js) and the panel reads through ctx.remote.workspaceFiles, which writes nothing to the conversation; /awr panel answers with one sentence, which is its whole row (test/panel-text.test.js compares the text exactly). A first design that hid the data in an HTML comment after the sentence (#34) showed the comment in the real app, which is why this was redone. A closed panel runs no command (test/client.test.js), and the panel runs /awr panel only when the file is missing or older than 30 s, on Refresh, or when a running takeover's file stops changing. Sixteen mutations of this behaviour (no write after a command, data in the command text, no write queue, a loop that never stops, a path that leaves the directory, a world-readable file, another directory, always asking on opening, the stuck-takeover rule, no staleness check after an action, polling too fast or while closed, an action that asks the host, a wrong Windows separator, no first read for the dot) each fail a test.",
+      "criteria": [
+        "Nothing the panel asks for shows as JSON or a log line in the conversation: its own queries return one readable sentence and keep the data out of sight, and a panel that is closed asks nothing."
+      ]
+    },
+    {
+      "name": "A takeover with a real model leaves only readable lines in the conversation of the real desktop app",
+      "passed": true,
+      "details": "In DeepSeek Harness 0.2.2-rc.2 (desktop) with DeepSeek-V4.1-Flash as the reviewer: continuing a stopped takeover added one conversation row ('Resumed the takeover of ...'); the whole run (review, accept, organize, receipt, under a minute) added none while the panel followed it step by step from the file; opening the panel on an old file added one row ('AWR 项目 · 0 项进行中，0 项就绪，2 项阻塞') and opening it again at once added none. Limit: the rows of earlier runs with the old plugin versions are still in that conversation.",
+      "criteria": [
+        "This is shown in the real DeepSeek Harness desktop app: a takeover with a real model leaves only readable lines in the conversation."
+      ]
+    }
+  ]
+}

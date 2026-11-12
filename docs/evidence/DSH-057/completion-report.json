@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "work_item": "WORK-cdd95f497497a0b512f83950f5a8cc8d",
+  "source_sha": "86703a3695a64e593bd9cf98c308bd16336f8612",
+  "command": "node --test (290 tests pass with AWR_TAKEOVER_BIN set to an awr built from the changed originoneai/awr code); twenty-three mutations of the new behaviour in lib/panel-snapshot.js, lib/commands.js and client.js, each restored; and a run in the real DeepSeek Harness 0.2.2-rc.2 desktop app with the plugin installed from its local directory, DeepSeek-V4.1-Flash as the reviewer and DSH_AWR_CLI naming the changed awr",
+  "scope": [
+    "client.js",
+    "index.js",
+    "lib/commands.js",
+    "lib/conversation.js",
+    "lib/panel-snapshot.js",
+    "lib/panel-text.js",
+    "lib/state-view.js",
+    "test/client.test.js",
+    "test/commands.test.js",
+    "test/panel-snapshot.test.js",
+    "test/panel-text.test.js",
+    "docs/takeover-ui.md",
+    "docs/panel.md",
+    "docs/dsh-surfaces.md",
+    "docs/evidence/DSH-057"
+  ],
+  "verified_at": 1794497259077,
+  "checks": [
+    {
+      "name": "The plugin can be told which awr to use, the panel shows it, and a file AWR does not accept is dropped and reported",
+      "passed": true,
+      "details": "DSH_AWR_CLI names the awr for a project that is not pinned (a pinned project keeps its own); the panel's footer shows the version and path of the awr and whether the takeover runs through awr takeover or in the plugin; parseReview drops a file that is not one of GOALS.md, PLAN.md, RULES.md and work-ledger.yaml and says so in the receipt's review note. Tests in test/awr-runtime.test.js, test/takeover-host.test.js, test/takeover-cli.test.js and test/client.test.js; the first real run's WORK_ITEMS.md is the case.",
+      "criteria": [
+        "The plugin can be told which awr to use, the panel shows which awr it uses and how the takeover runs, and a file the reviewer writes that AWR does not accept is dropped and reported instead of stopping the run at accept."
+      ]
+    },
+    {
+      "name": "This is shown in the real desktop app with a real model and an awr built from the changed code",
+      "passed": true,
+      "details": "The app was started with DSH_AWR_CLI naming an awr built from the changed originoneai/awr code (0.7.0 plus the takeover commands); the panel footer showed that binary and 'runs through awr takeover'; the takeover that had stopped at accept on the real model's WORK_ITEMS.md (awr_error: draft may create only the four owned intake source files) was continued and finished with the receipt (needs_organization, 2 goals, 9 gaps).",
+      "criteria": [
+        "This is shown in the real DeepSeek Harness desktop app with a real model and an awr built from the changed code."
+      ]
+    }
+  ]
+}

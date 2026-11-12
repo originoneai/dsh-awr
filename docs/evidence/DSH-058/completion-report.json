@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "work_item": "WORK-5fbaebd1b940cce21825828254ef68e6",
+  "source_sha": "86703a3695a64e593bd9cf98c308bd16336f8612",
+  "command": "node --test (290 tests pass with AWR_TAKEOVER_BIN set to an awr built from the changed originoneai/awr code); twenty-three mutations of the new behaviour in lib/panel-snapshot.js, lib/commands.js and client.js, each restored; and a run in the real DeepSeek Harness 0.2.2-rc.2 desktop app with the plugin installed from its local directory, DeepSeek-V4.1-Flash as the reviewer and DSH_AWR_CLI naming the changed awr",
+  "scope": [
+    "client.js",
+    "index.js",
+    "lib/commands.js",
+    "lib/conversation.js",
+    "lib/panel-snapshot.js",
+    "lib/panel-text.js",
+    "lib/state-view.js",
+    "test/client.test.js",
+    "test/commands.test.js",
+    "test/panel-snapshot.test.js",
+    "test/panel-text.test.js",
+    "docs/takeover-ui.md",
+    "docs/panel.md",
+    "docs/dsh-surfaces.md",
+    "docs/evidence/DSH-058"
+  ],
+  "verified_at": 1794497259077,
+  "checks": [
+    {
+      "name": "Claim, checkpoint and end work from the panel of a project that was just taken over, each leaving one readable row",
+      "passed": true,
+      "details": "A claim without an argument takes the work from the session (boundWorkKey, shared with the panel's state view) because the binding a takeover makes names none; a checkpoint on a context AWR answers ContextIncomplete (with incomplete_checkpoint_allowed and fresh sources) is saved marked incomplete with each gap as an open loop, as AWR says, and is refused otherwise; the panel reads the state the command wrote and asks nothing (test/commands.test.js, test/panel-snapshot.test.js, test/client.test.js). Mutations: the allowed check, the freshness check, the open loops and the claim fallback each fail a test.",
+      "criteria": [
+        "From the panel of a conversation in a project that was just taken over, a claim names the work the session is bound to, a checkpoint on a context AWR marks incomplete is saved as AWR says (marked incomplete, each gap an open loop), and ending the session works; each leaves one readable line in the conversation and the panel shows the new state without asking the host."
+      ]
+    },
+    {
+      "name": "This is shown in the real desktop app, and AWR itself shows the claim, the checkpoint and the ended session",
+      "passed": true,
+      "details": "Pressing the three buttons in the real desktop app: the first claim and the first checkpoint were refused (Name the work to claim; ContextIncomplete), which is how the two defects were found; after the fixes the claim, the checkpoint ('marked incomplete: the context of the work has 4 gap(s), kept as open loops') and the end each added one row and the panel updated. awr session show confirmed the active claim, last_checkpoint_id 01M785HHWFCW5CRYK4NB996PEF, and status ended.",
+      "criteria": [
+        "This is shown in the real DeepSeek Harness desktop app with a real model, and AWR itself shows the claim, the checkpoint and the ended session."
+      ]
+    }
+  ]
+}

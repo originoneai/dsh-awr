@@ -386,7 +386,7 @@ work_items:
   "verification": {"evidence_level":"locally_verified"}
 - "id": "WORK-2cf979f9b5a999d59329511e1272f488"
   "title": "DSH-055: Start the takeover review subagent the way the current DeepSeek Harness expects"
-  "status": "in_progress"
+  "status": "completed"
   "acceptance": ["The takeover's review subagent starts in the DeepSeek Harness desktop app of today (0.2.2-rc.2) and still starts in the version the plugin was first checked against (0.2.2-rc.1).","A test fails when the subagent start has the old nested shape, and the takeover is shown working in the real desktop app with a real model."]
   "depends_on": ["DSH-021"]
   "goal": ["intake-goal"]
@@ -394,9 +394,11 @@ work_items:
   "next_action": "Fix createSubagentReview, make the test fake reject the nested shape, verify in the desktop app"
   "priority": "P0"
   "summary": "First real operation of the panel in the desktop app (0.2.2-rc.2) with a real model: the takeover stopped at the review with \"The review subagent failed: Cannot read properties of undefined (reading id)\". startActivation now reads spec.parent.id from a flat spec; the plugin sent parent, cwd and prompt nested in request, the shape of rc.1 and of its documentation. The fake subagent service of the tests had the old shape, so every test passed."
+  "evidence": ["docs/evidence/DSH-055/completion-report.json"]
+  "verification": {"evidence_level":"locally_verified"}
 - "id": "WORK-98192defe36aa6433e78538b159fdcbb"
   "title": "DSH-056: Keep raw JSON and polling logs out of the conversation"
-  "status": "planned"
+  "status": "completed"
   "acceptance": ["Nothing the panel asks for shows as JSON or a log line in the conversation: its own queries return one readable sentence and keep the data out of sight, and a panel that is closed asks nothing.","This is shown in the real DeepSeek Harness desktop app: a takeover with a real model leaves only readable lines in the conversation."]
   "depends_on": ["DSH-051"]
   "goal": ["intake-goal"]
@@ -404,9 +406,11 @@ work_items:
   "next_action": "Complete DSH-056 with the registered evidence"
   "priority": "P0"
   "summary": "Seen in the real desktop app: every state query of the panel is a command row in the conversation, and its text was the JSON the panel parses (about fifteen rows for one takeover, some while the panel was closed). The owner: the conversation should show what a person can read, not JSON or run logs."
+  "evidence": ["docs/evidence/DSH-056/completion-report.json"]
+  "verification": {"evidence_level":"locally_verified"}
 - "id": "WORK-cdd95f497497a0b512f83950f5a8cc8d"
   "title": "DSH-057: Choose the awr, show which one is used, and keep a real model within the files AWR accepts"
-  "status": "planned"
+  "status": "completed"
   "acceptance": ["The plugin can be told which awr to use, the panel shows which awr it uses and how the takeover runs, and a file the reviewer writes that AWR does not accept is dropped and reported instead of stopping the run at accept.","This is shown in the real DeepSeek Harness desktop app with a real model and an awr built from the changed code."]
   "depends_on": ["WORK-75524ae8d9d61067cb6f9293f0b8bfe3"]
   "goal": ["intake-goal"]
@@ -414,13 +418,17 @@ work_items:
   "next_action": "Complete DSH-057 with the registered evidence"
   "priority": "P0"
   "summary": "Two findings of the first real run in the desktop app: the plugin used the released awr 0.7.0 although an awr built from the changed code was first on the PATH of the app, because DSH replaces the PATH of its runtime with the login shell PATH, and nothing in the UI said which awr ran; and a real model wrote WORK_ITEMS.md, which AWR refuses, so the takeover stopped at accept."
+  "evidence": ["docs/evidence/DSH-057/completion-report.json"]
+  "verification": {"evidence_level":"locally_verified"}
 - "id": "WORK-5fbaebd1b940cce21825828254ef68e6"
   "title": "DSH-058: Claim, checkpoint and end from the panel work on a project that was just taken over"
-  "status": "draft"
+  "status": "completed"
   "acceptance": ["From the panel of a conversation in a project that was just taken over, a claim names the work the session is bound to, a checkpoint on a context AWR marks incomplete is saved as AWR says (marked incomplete, each gap an open loop), and ending the session works; each leaves one readable line in the conversation and the panel shows the new state without asking the host.","This is shown in the real DeepSeek Harness desktop app with a real model, and AWR itself shows the claim, the checkpoint and the ended session."]
   "depends_on": ["WORK-98192defe36aa6433e78538b159fdcbb"]
   "goal": ["intake-goal"]
   "kind": "defect"
-  "next_action": "Register the real-app evidence and complete DSH-058"
+  "next_action": "Complete DSH-058 with the registered evidence"
   "priority": "P0"
   "summary": "Found by pressing the buttons in the real desktop app after a takeover: /awr claim without an argument stopped with 'Name the work to claim' because the binding a takeover makes names no work although the AWR session is bound to one, and /awr checkpoint was refused with ContextIncomplete although AWR says an incomplete checkpoint is allowed. A 50-character work key also broke the claim button, and the receipt showed the raw state needs_organization."
+  "evidence": ["docs/evidence/DSH-058/completion-report.json"]
+  "verification": {"evidence_level":"locally_verified"}
