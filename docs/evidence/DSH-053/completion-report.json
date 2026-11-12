@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "work_item": "WORK-ba1600bbdba57b75d8c27731019f7ccf",
+  "source_sha": "6ef0c8b77b7d1a05b0d30fc47b399053cd7f5841",
+  "command": "node --test (234 tests); awr takeover --reviewer <script returning a ledger whose new work item has no priority or required> on a throwaway project, then awr work show",
+  "scope": [
+    "lib/takeover-host.js",
+    "test/takeover-host.test.js",
+    "docs/evidence/DSH-022/REVIEW.md",
+    "docs/evidence/DSH-053"
+  ],
+  "verified_at": 1794485607263,
+  "checks": [
+    {
+      "name": "The reviewer prompt says to set priority and required only when the material states them",
+      "passed": true,
+      "details": "The review prompt in lib/takeover-host.js has the rule 'Set priority and required on a work item only when the material states them. Otherwise leave both out; AWR accepts an item without them, and the owner sets them later.' test/takeover-host.test.js pins it by matching the rule's wording in the built prompt. The full suite passes: 234 tests, 0 failures. Limit: the prompt change was not re-run with a real model, so whether the model now leaves the fields out is unverified.",
+      "criteria": [
+        "The reviewer prompt tells the reviewer to set priority and required on a work item only when the material states them, and a test pins that rule."
+      ]
+    },
+    {
+      "name": "AWR accepts a reviewed ledger whose new work items carry neither field",
+      "passed": true,
+      "details": "With a real awr (the lab build of the takeover branch) a takeover on a throwaway project with a reviewer that returned a ledger whose only new work item W-EXPORT had id, title, status planned, goal and acceptance but no priority and no required completed (state needs_organization); awr work show W-EXPORT reported status planned, ready true, priority null, required null, and awr status counted it as planned. Limit: one work item shape on one throwaway project.",
+      "criteria": [
+        "AWR accepts a reviewed ledger whose new work items carry neither field, checked with a real awr."
+      ]
+    }
+  ]
+}
