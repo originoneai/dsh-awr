@@ -1,0 +1,39 @@
+{
+  "closed_claim_ids": [
+    "01M76XB00SXFTQNAQ3ZV38VV5S"
+  ],
+  "event": {
+    "artifact_id": null,
+    "branch_id": null,
+    "checkpoint_id": null,
+    "created_at": 1794454692864,
+    "id": "01M76XB900G21ZEG4RYV856FG5",
+    "importance": "normal",
+    "project_revision": 12,
+    "session_id": "01M76XB00R2JSFX65ENS6GRMF7",
+    "source_id": null,
+    "summary": "Ended agent work session",
+    "type": "session.ended",
+    "work_item_id": "01M76X7RRHX1P6V9Q9S8BRQBC8"
+  },
+  "freshness_basis": "runtime_database",
+  "ok": true,
+  "project_revision": 12,
+  "session": {
+    "agent_id": "dsh-primary",
+    "branch_id": null,
+    "end_project_revision": 12,
+    "ended_at": 1794454692863,
+    "id": "01M76XB00R2JSFX65ENS6GRMF7",
+    "last_checkpoint_id": "01M76XB6CTQ3FQEFK2MS2M7HEM",
+    "model": "deepseek-v4.1-flash",
+    "project_id": "01M76X7RPD0C8WNTE0AX7JTJ7V",
+    "provider": "deepseek",
+    "revision": 3,
+    "start_project_revision": 8,
+    "started_at": 1794454683672,
+    "status": "incomplete",
+    "work_item_id": "01M76X7RRHX1P6V9Q9S8BRQBC8"
+  },
+  "source_refresh_performed": false
+}

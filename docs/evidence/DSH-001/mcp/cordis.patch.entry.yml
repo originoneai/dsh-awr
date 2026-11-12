@@ -1,0 +1,12 @@
+    enabled: true
+- insert:
+    - id: mcp-awr-dsh001
+      name: "@deepseek-ai/dsh-mcp-client"
+      config:
+        serverName: awr
+        transport: stdio
+        command: /Users/mac/Documents/deepseek-harness/dsh001-fixture/receipts/awr-mcp-wrapper.sh
+        args: []
+        cwd: /Users/mac/Documents/deepseek-harness/dsh001-fixture
+        env:
+          PATH: /opt/homebrew/bin:/usr/bin:/bin

@@ -1,0 +1,37 @@
+{
+  "claim": null,
+  "event": {
+    "artifact_id": null,
+    "branch_id": null,
+    "checkpoint_id": null,
+    "created_at": 1794454875646,
+    "id": "01M76XGVFY43KWAV1YEHM19DAQ",
+    "importance": "normal",
+    "project_revision": 13,
+    "session_id": "01M76XGVFYWM5Z7V82YVDV0NJC",
+    "source_id": null,
+    "summary": "Started agent work session",
+    "type": "session.started",
+    "work_item_id": "01M76X7RRHX1P6V9Q9S8BRQBC8"
+  },
+  "freshness_basis": "source_refresh",
+  "ok": true,
+  "project_revision": 13,
+  "session": {
+    "agent_id": "dsh-sandbox-check",
+    "branch_id": null,
+    "end_project_revision": null,
+    "ended_at": null,
+    "id": "01M76XGVFYWM5Z7V82YVDV0NJC",
+    "last_checkpoint_id": null,
+    "model": "deepseek-v4.1-flash",
+    "project_id": "01M76X7RPD0C8WNTE0AX7JTJ7V",
+    "provider": "deepseek",
+    "revision": 1,
+    "start_project_revision": 12,
+    "started_at": 1794454875646,
+    "status": "active",
+    "work_item_id": "01M76X7RRHX1P6V9Q9S8BRQBC8"
+  },
+  "source_refresh_performed": true
+}

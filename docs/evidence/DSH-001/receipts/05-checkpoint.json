@@ -1,0 +1,61 @@
+{
+  "actor": {
+    "agent_id": null,
+    "identity_verified": false,
+    "origin": "undeclared"
+  },
+  "checkpoint": {
+    "changed_entities": [],
+    "context_hash": "e6c318a6ce723fb1765457ce0b2cc4a68f4013bb559a14000d1efd5c6a64155a",
+    "created_at": 1794454690202,
+    "digest": "Created hello.txt containing the text hello, satisfying the acceptance criterion that the file exists and contains the word hello.",
+    "id": "01M76XB6CTQ3FQEFK2MS2M7HEM",
+    "next_action": "End the session as incomplete and report the project_id, session id, and checkpoint id.",
+    "open_loops": [],
+    "project_revision": 9,
+    "revision": 1,
+    "session_id": "01M76XB00R2JSFX65ENS6GRMF7"
+  },
+  "checkpoint_save": {
+    "actor": {
+      "agent_id": null,
+      "identity_verified": false,
+      "origin": "undeclared"
+    },
+    "after_revision": 8,
+    "attempt_id": "01M76XB6CSWFFCZMX9T2R1PD3G",
+    "context_hash_verified": false,
+    "delta_bytes": 1148,
+    "delta_recorded": true,
+    "event_id": "01M76XB6CTBSGR4GJZXGA9YQNS",
+    "observed_changed_entity_count": 0,
+    "reported_changed_entity_count": 0,
+    "session_event_count": 1,
+    "source_observation_count": 0,
+    "source_work_updated": false,
+    "through_revision": 9,
+    "warning": "Progress record only: context hash and caller identity are not independently verified. Saving a checkpoint does not update source-backed work or prove tests passed or work completed."
+  },
+  "context_hash_basis": "caller_supplied_last_used_context",
+  "context_hash_verified": false,
+  "event": {
+    "artifact_id": null,
+    "branch_id": null,
+    "checkpoint_id": "01M76XB6CTQ3FQEFK2MS2M7HEM",
+    "created_at": 1794454690202,
+    "id": "01M76XB6CTBSGR4GJZXGA9YQNS",
+    "importance": "normal",
+    "project_revision": 11,
+    "session_id": "01M76XB00R2JSFX65ENS6GRMF7",
+    "source_id": null,
+    "summary": "Saved session checkpoint and observed delta",
+    "type": "checkpoint.created",
+    "work_item_id": "01M76X7RRHX1P6V9Q9S8BRQBC8"
+  },
+  "freshness_basis": "source_refresh",
+  "ok": true,
+  "project_revision": 11,
+  "save_status": "completed",
+  "source_refresh_performed": true,
+  "warning": "Progress record only: context hash and caller identity are not independently verified. Saving a checkpoint does not update source-backed work or prove tests passed or work completed."
+}

@@ -31,7 +31,7 @@ work_items:
   priority: P0
   required: true
   goal: intake-goal
-  depends_on: []
+  depends_on: [DSH-004]
   summary: Nothing in this repository has been run against DSH. Establish the baseline on a disposable project before writing plugin code.
   acceptance:
   - The DSH version, install source and check date are recorded in this repository.
@@ -265,3 +265,16 @@ work_items:
   acceptance:
   - A panel shows the bound work item, claim expiry and blockers, and matches awr status for the same project.
   next_action: Confirm the client and slot surfaces in DSH-002, then design the panel.
+- id: DSH-004
+  title: Get stock awr-mcp accepted by DSH's MCP client
+  kind: defect
+  status: ready
+  priority: P0
+  required: true
+  goal: intake-goal
+  depends_on: []
+  summary: DSH 0.2.2-rc.1 rejects the tools/list result of awr-mcp 0.7.0 because ttlMs and cacheScope are missing under protocol 2026-07-28, so the server is reported as disconnected. Found in the DSH-001 check; see docs/dsh-001-l0-check.md. The fix most likely belongs in originoneai/agent-work-runtime.
+  acceptance:
+  - Without any shim, an awr-mcp entry in a DSH 0.2.2-rc.1 profile stays connected and awr_query with child_tool awr_project_status returns the fixture project's identity.
+  - The decision on where the fix lives (AWR or this plugin) and its reason are recorded.
+  next_action: Report the defect to the AWR repository with the captured error and wire logs, and ask the owner where the fix should live.

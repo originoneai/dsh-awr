@@ -1,0 +1,217 @@
+{
+  "checkpoint_id": null,
+  "completeness": {
+    "acceptance_complete": true,
+    "assessment_scope": "Completeness of current required context facts and associations. Known unresolved dependencies and evidence gaps are retained; this does not certify task completion, verification execution or release readiness.",
+    "branch_context": {
+      "branch_id": null,
+      "branch_revision": null,
+      "creation_event_id": null,
+      "fork_project_revision": 0,
+      "git_binding": null,
+      "git_ref": null,
+      "name": "main",
+      "parent_branch_id": null,
+      "runtime_scope": "exact_branch; no parent or sibling runtime inheritance; delta never precedes fork",
+      "source_basis": "shared_current_sources; git_ref is a creation observation, not a frozen source snapshot"
+    },
+    "branch_id": null,
+    "complete": true,
+    "decision_context_complete": true,
+    "dependencies_complete": true,
+    "evidence_gaps": [
+      {
+        "code": "no_evidence",
+        "reason": "no evidence is associated with this work",
+        "reference": "EXAMPLE-001"
+      }
+    ],
+    "freshness_basis": "source_refresh_at_project_revision",
+    "goal_context_complete": true,
+    "issues": [],
+    "project_id": "01M76X7RPD0C8WNTE0AX7JTJ7V",
+    "project_revision": 9,
+    "rules_complete": true,
+    "source_fresh": true,
+    "source_refresh_performed": true,
+    "source_versions": [
+      {
+        "fingerprint": "sha256:70261a8fa6c854c337dcabed0e1245874d4d6b9cf79928c65cd6e69c4018afc6",
+        "freshness": "fresh",
+        "id": "01M76X7RPDCXBT684RC4CDXAK9",
+        "locator": "file:///Users/mac/Documents/deepseek-harness/dsh001-fixture/.awr/intake/work-ledger.yaml",
+        "revision": 2
+      },
+      {
+        "fingerprint": "sha256:8a93ca71f49f7e0d4c5809fd7cd9d500fb7fc76e942e40d27d337149f0689534",
+        "freshness": "fresh",
+        "id": "01M76X7RPFJ18YFF3ZDWZZGZVQ",
+        "locator": "file:///Users/mac/Documents/deepseek-harness/dsh001-fixture/README.md",
+        "revision": 1
+      }
+    ],
+    "status": "CONTEXT COMPLETE",
+    "unresolved_required_dependencies": [],
+    "work_item_found": true,
+    "work_item_key": "EXAMPLE-001",
+    "work_state_complete": true
+  },
+  "delta_after_revision": 8,
+  "diagnostic_text": null,
+  "freshness_basis": "source_refresh",
+  "goal_selection_basis": "work_goal_links",
+  "level": "L1",
+  "ok": true,
+  "omitted_refs": [],
+  "project_revision": 9,
+  "read_only": false,
+  "selection_basis": "explicit_work",
+  "session_id": "01M76XB00R2JSFX65ENS6GRMF7",
+  "source_refresh_performed": true,
+  "work_context": {
+    "context_hash": "e6c318a6ce723fb1765457ce0b2cc4a68f4013bb559a14000d1efd5c6a64155a",
+    "identity": {
+      "branch_id": null,
+      "project_id": "01M76X7RPD0C8WNTE0AX7JTJ7V",
+      "project_key": "dsh001-fixture",
+      "project_revision": 9,
+      "source_versions": [
+        {
+          "fingerprint": "sha256:70261a8fa6c854c337dcabed0e1245874d4d6b9cf79928c65cd6e69c4018afc6",
+          "freshness": "fresh",
+          "id": "01M76X7RPDCXBT684RC4CDXAK9",
+          "locator": "file:///Users/mac/Documents/deepseek-harness/dsh001-fixture/.awr/intake/work-ledger.yaml",
+          "revision": 2
+        },
+        {
+          "fingerprint": "sha256:8a93ca71f49f7e0d4c5809fd7cd9d500fb7fc76e942e40d27d337149f0689534",
+          "freshness": "fresh",
+          "id": "01M76X7RPFJ18YFF3ZDWZZGZVQ",
+          "locator": "file:///Users/mac/Documents/deepseek-harness/dsh001-fixture/README.md",
+          "revision": 1
+        }
+      ],
+      "work_item_id": "01M76X7RRHX1P6V9Q9S8BRQBC8",
+      "work_item_key": "EXAMPLE-001",
+      "work_item_revision": 1
+    },
+    "omitted_chunks": [],
+    "policy": "awr.whole_chunks.v1",
+    "rendered_context": "Project: dsh001-fixture [01M76X7RPD0C8WNTE0AX7JTJ7V] r9\nWork: EXAMPLE-001 [01M76X7RRHX1P6V9Q9S8BRQBC8] r1\nBranch: main\nSources:\n01M76X7RPDCXBT684RC4CDXAK9 r2 sha256:70261a8fa6c854c337dcabed0e1245874d4d6b9cf79928c65cd6e69c4018afc6 Fresh file:///Users/mac/Documents/deepseek-harness/dsh001-fixture/.awr/intake/work-ledger.yaml\n01M76X7RPFJ18YFF3ZDWZZGZVQ r1 sha256:8a93ca71f49f7e0d4c5809fd7cd9d500fb7fc76e942e40d27d337149f0689534 Fresh file:///Users/mac/Documents/deepseek-harness/dsh001-fixture/README.md\n\n## Goal\n[goal-body:intake-goal]\ngoal:01M76X7RPET54JQYCY6ENGCVPT@r1\nCheck the AWR session workflow from DeepSeek Harness\n\nProvenance: explicit --goal input. Existing implementation progress remains unverified until reviewed against source and evidence.\n[goal:intake-goal]\ngoal:01M76X7RPET54JQYCY6ENGCVPT@r1\nCheck the AWR session workflow from DeepSeek Harness\nStatus: active\nSuccess criteria:\nCheck the AWR session workflow from DeepSeek Harness\n\n## Current Work\n[EXAMPLE-001]\nwork_item:01M76X7RRHX1P6V9Q9S8BRQBC8@r1\nStatus: \"ready\"\nRaw status: \"ready\"\nBlocker present: false\nBlocker:\n\nNext Action:\nCreate hello.txt containing hello.\n\n## Acceptance\n[acceptance]\nwork_item:01M76X7RRHX1P6V9Q9S8BRQBC8@r1\n1. hello.txt exists and contains the word hello.\n\n## Dependencies\n[dependency-summary]\nRequired dependencies: 0 unresolved, 0 resolved; 0 missing, 0 cycle members.\n\n## Recent Delta\n[delta-baseline]\nAfter project revision 8 (session_start) through 9. Checkpoint: none. Important events: 0; omitted by event limit: 0.\n[folded-process-history]\nsession.started normal: 0 at/before baseline, 1 after\n\n## Evidence\n[evidence-gaps]\nno_evidence [EXAMPLE-001]: no evidence is associated with this work\n\n## Metadata\n[branch-context]\nWork branch: main | revision: None | fork: 0 | parent: main\nGit ref at creation: unbound; recorded commit: unverified\nSource basis: shared_current_sources; git_ref is a creation observation, not a frozen source snapshot\nRuntime scope: exact_branch; no parent or sibling runtime inheritance; delta never precedes fork\n[completeness]\nCONTEXT COMPLETE\n\nCompleteness of current required context facts and associations. Known unresolved dependencies and evidence gaps are retained; this does not certify task completion, verification execution or release readiness.\n[context-profile]\nContext profile: minimal. Separate plan/rule sources are optional; every configured hard rule still applies. Check project organization before business execution.\n[identity]\nIntent: work\nSelection: explicit_work\nSession: 01M76XB00R2JSFX65ENS6GRMF7\nPhase: unknown\nTitle: Write a greeting file\n\nOptional chunks omitted: 0. Full details remain available through explicit queries.\n",
+    "required_tokens": 708,
+    "selected_chunks": [
+      {
+        "entities": [
+          {
+            "id": "01M76X7RPET54JQYCY6ENGCVPT",
+            "kind": "goal",
+            "revision": 1
+          }
+        ],
+        "key": "goal-body:intake-goal",
+        "required": false,
+        "section": "goal"
+      },
+      {
+        "entities": [
+          {
+            "id": "01M76X7RPET54JQYCY6ENGCVPT",
+            "kind": "goal",
+            "revision": 1
+          }
+        ],
+        "key": "goal:intake-goal",
+        "required": true,
+        "section": "goal"
+      },
+      {
+        "entities": [
+          {
+            "id": "01M76X7RRHX1P6V9Q9S8BRQBC8",
+            "kind": "work_item",
+            "revision": 1
+          }
+        ],
+        "key": "EXAMPLE-001",
+        "required": true,
+        "section": "work"
+      },
+      {
+        "entities": [
+          {
+            "id": "01M76X7RRHX1P6V9Q9S8BRQBC8",
+            "kind": "work_item",
+            "revision": 1
+          }
+        ],
+        "key": "acceptance",
+        "required": true,
+        "section": "acceptance"
+      },
+      {
+        "entities": [],
+        "key": "dependency-summary",
+        "required": true,
+        "section": "dependencies"
+      },
+      {
+        "entities": [],
+        "key": "delta-baseline",
+        "required": true,
+        "section": "delta"
+      },
+      {
+        "entities": [],
+        "key": "folded-process-history",
+        "required": false,
+        "section": "delta"
+      },
+      {
+        "entities": [],
+        "key": "evidence-gaps",
+        "required": true,
+        "section": "evidence"
+      },
+      {
+        "entities": [],
+        "key": "branch-context",
+        "required": true,
+        "section": "metadata"
+      },
+      {
+        "entities": [],
+        "key": "completeness",
+        "required": true,
+        "section": "metadata"
+      },
+      {
+        "entities": [],
+        "key": "context-profile",
+        "required": true,
+        "section": "metadata"
+      },
+      {
+        "entities": [],
+        "key": "identity",
+        "required": true,
+        "section": "metadata"
+      }
+    ],
+    "selected_entities": [
+      {
+        "id": "01M76X7RPET54JQYCY6ENGCVPT",
+        "kind": "goal",
+        "revision": 1
+      },
+      {
+        "id": "01M76X7RRHX1P6V9Q9S8BRQBC8",
+        "kind": "work_item",
+        "revision": 1
+      }
+    ],
+    "token_budget": 5000,
+    "token_count_scope": "Exact o200k_base ordinary-text token count of rendered_context, including headings, references and omission footer. JSON transport/envelope, tool framing and surrounding conversation are excluded. Counts for other model tokenizers may differ; no cross-tokenizer error bound is claimed.",
+    "token_estimate": 792,
+    "tokenizer": "o200k_base"
+  }
+}
