@@ -144,8 +144,8 @@ test('the updater describes what is installed and remembers the check; a check o
   const { dir, root } = await profile('github:originoneai/dsh-awr#main', `  version: https://codeload.github.com/originoneai/dsh-awr/tar.gz/${A}\n`)
   try {
     let time = 1000
-    const updater = createPluginUpdater({ where: { root, profileDir: dir }, runner: lsRemote([`${B}\trefs/heads/main`]), now: () => time })
-    assert.deepEqual(await updater.describe(), { kind: 'github', version: '0.1.0', repo: 'originoneai/dsh-awr', ref: 'main', installed: A })
+    const updater = createPluginUpdater({ where: { root, profileDir: dir }, runner: lsRemote([`${B}\trefs/heads/main`]), now: () => time, running: '0.1.0' })
+    assert.deepEqual(await updater.describe(), { kind: 'github', version: '0.1.0', running: '0.1.0', repo: 'originoneai/dsh-awr', ref: 'main', installed: A })
     const answer = await updater.check()
     assert.equal(answer.kind, 'github')
     assert.deepEqual(answer.check, { checkedAt: 1000, ref: 'main', latest: B, available: true, spec: `github:originoneai/dsh-awr#${B}` })
@@ -154,6 +154,29 @@ test('the updater describes what is installed and remembers the check; a check o
     assert.equal((await same.check()).check.available, false, 'the same commit is not an update')
     const checkout = createPluginUpdater({ where: { root, profileDir: undefined } })
     assert.deepEqual(await checkout.check(), { kind: 'checkout' })
+  } finally {
+    await rm(dir, { recursive: true, force: true })
+  }
+})
+
+test('an update that was installed since the check is no longer on offer, and a host still running the old code says so', async () => {
+  const { dir, root } = await profile('github:originoneai/dsh-awr#main', `  version: https://codeload.github.com/originoneai/dsh-awr/tar.gz/${A}\n`)
+  try {
+    const updater = createPluginUpdater({ where: { root, profileDir: dir }, runner: lsRemote([`${B}\trefs/heads/main`]), now: () => 5, running: '0.1.0' })
+    await updater.check()
+    assert.equal((await updater.describe()).check.available, true, 'B is newer than the installed A')
+    // The plugin manager installs B: the lockfile names it and the package on disk has a new version.
+    await writeFile(join(dir, 'pnpm-lock.yaml'), `  version: https://codeload.github.com/originoneai/dsh-awr/tar.gz/${B}\n`)
+    await writeFile(join(root, 'package.json'), JSON.stringify({ name: '@originoneai/dsh-awr', version: '0.1.1' }))
+    const after = await updater.describe()
+    assert.equal(after.check.available, false, 'what was offered is what is installed: the answer of the old check is not still an update')
+    assert.equal(after.installed, B)
+    assert.equal(after.version, '0.1.1', 'the version on disk is read again, not remembered')
+    assert.equal(after.running, '0.1.0', 'the code this process loaded is the old one, and the panel can tell')
+    assert.deepEqual({ ...after.check, available: undefined }, { checkedAt: 5, ref: 'main', latest: B, available: undefined, spec: `github:originoneai/dsh-awr#${B}` })
+    // An installed commit the lockfile does not name leaves the answer as the check gave it.
+    await rm(join(dir, 'pnpm-lock.yaml'))
+    assert.equal((await updater.describe()).check.available, true)
   } finally {
     await rm(dir, { recursive: true, force: true })
   }
