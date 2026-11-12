@@ -4,9 +4,14 @@ A [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) (DSH) plug
 [AWR (Agent Work Runtime)](https://github.com/originoneai/agent-work-runtime) manage work state
 for projects developed inside DSH.
 
-Status: **skeleton only.** The package loads in DeepSeek Harness `0.2.2-rc.1` and does nothing yet.
-The capabilities below are added one work item at a time; the ledger is
-`.awr/intake/work-ledger.yaml`.
+Status: **working, not released.** Checked in DeepSeek Harness `0.2.2-rc.1`: in the signed-in desktop app with a
+real model (the one-click takeover on public projects, `docs/evidence/DSH-022`) and in the web and headless profiles
+with a local stand-in model (everything else). It binds each conversation to an AWR session, puts the AWR work
+context in the prompt, gives the model the `awr` tools and a workflow skill, offers `/awr` commands and a state panel,
+takes a project over in one click with a restricted reviewer subagent, asks for checkpoints, reports compactions,
+suggests evidence and handles forks. The repository is private and `package.json` is `UNLICENSED` and `private`; the
+license, visibility and a release are the owner's decisions ([docs/owner-decisions.md](docs/owner-decisions.md)).
+The ledger is `.awr/intake/work-ledger.yaml`.
 
 ## Develop
 

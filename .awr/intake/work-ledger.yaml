@@ -260,7 +260,7 @@ work_items:
   summary: The module is written host-independent so it can become an awr takeover command. The owner decides after it has been proven on real projects.
   acceptance:
   - The owner's decision and its reason are recorded, and if accepted a work item exists in the AWR repository.
-  next_action: Present the DSH-022 results to the owner and record the decision.
+  next_action: "Owner: decide with docs/owner-decisions.md (facts and a recommendation to keep it in the plugin for now), then record the decision and its reason"
 - id: DSH-041
   title: Choose the license and visibility, then publish an installable release
   kind: release
@@ -273,7 +273,7 @@ work_items:
   acceptance:
   - The owner's license and visibility choices are recorded and applied.
   - A tagged release installs through dsh plugin add from its published source on a clean DSH install.
-  next_action: Ask the owner for the license and visibility decisions.
+  next_action: "Owner: choose license and visibility with docs/owner-decisions.md, then publish a tagged release; not done by the agent"
 - id: DSH-050
   title: Suggest evidence candidates from tool results
   kind: implementation
