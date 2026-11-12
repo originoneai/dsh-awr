@@ -64,5 +64,7 @@ conversation's checkpoints belong to. It is a plugin policy, not an AWR rule.
 - **Forked conversations.** A fork gets a new DSH session id, so it would be bound as a new
   conversation; carrying the parent's AWR session over with `--from-session` needs the parent's id,
   and no way to create a fork or read its parent was exercised. Tracked as `DSH-016`.
-- The desktop app was not used; the check ran the dev profile headless, which creates the agent
-  before the model call.
+- The check in `docs/evidence/DSH-013` ran the dev profile headless, which creates the agent before
+  the model call. The desktop app was used later, for DSH-015 (`docs/evidence/DSH-015`): a new
+  conversation there was bound too (`/awr status` reported the bound AWR session, and `client show`
+  returned the binding for its `dsh:<session id>`).

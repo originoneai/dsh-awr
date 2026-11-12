@@ -1,0 +1,55 @@
+{
+  "note": "DeepSeek Harness 0.2.2-rc.1 desktop app, plugin @originoneai/dsh-awr 0.0.1 installed from the local directory through Plugins > Install third-party plugin, workspace dsh001-fixture (a disposable AWR project). Commands typed in the message box; entries are the session log's command/run and command/done events.",
+  "commands": [
+    {
+      "typed": "/awr status",
+      "source": {
+        "kind": "user"
+      },
+      "outcome": "success",
+      "text": "Project 01M76X7RPD0C8WNTE0AX7JTJ7V, revision 27\n0 in progress, 1 ready, 1 blocked\nNext: Create hello.txt containing hello.\nThis conversation is bound to AWR session 01M773WP2041G509N06CN5J4MH (work EXAMPLE-001)"
+    },
+    {
+      "typed": "/awr claim",
+      "source": {
+        "kind": "user"
+      },
+      "outcome": "success",
+      "text": "Claimed EXAMPLE-001 for AWR session 01M773WP2041G509N06CN5J4MH (project revision 28)."
+    },
+    {
+      "typed": "/awr checkpoint Ran the AWR commands from DeepSeek Harness :: Review the receipts and end the session",
+      "source": {
+        "kind": "user"
+      },
+      "outcome": "success",
+      "text": "Checkpoint saved for AWR session 01M773WP2041G509N06CN5J4MH (01M773YA7VDBTNEQVKEPEFFNZS)."
+    },
+    {
+      "typed": "/awr end interrupted",
+      "source": {
+        "kind": "user"
+      },
+      "outcome": "success",
+      "text": "Ended AWR session 01M773WP2041G509N06CN5J4MH as interrupted. Work is not completed by ending a session."
+    }
+  ],
+  "awr_readback": {
+    "session": {
+      "id": "01M773WP2041G509N06CN5J4MH",
+      "status": "interrupted",
+      "agent_id": "generic:dsh:session-5dc394ae-efec-4b32-96a8-3d3eb49151d9"
+    },
+    "checkpoint": {
+      "id": "01M773YA7VDBTNEQVKEPEFFNZS",
+      "digest": "Ran the AWR commands from DeepSeek Harness",
+      "next_action": "Review the receipts and end the session"
+    },
+    "claims": [
+      {
+        "status": "released",
+        "work_item_id": "01M76X7RRHX1P6V9Q9S8BRQBC8"
+      }
+    ]
+  }
+}
