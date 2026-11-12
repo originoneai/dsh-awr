@@ -16,12 +16,14 @@ work_items:
   id: INTAKE-001
   goal: intake-goal
   kind: intake
-  next_action: Run awr intake inspect and read sources for each gap; add goal references, acceptance criteria, and next actions, then inspect again.
+  next_action: Complete INTAKE-001 with the registered report
   priority: P0
   required: true
-  status: ready
+  status: completed
   summary: This is a new intake task; it does not establish whether existing functionality is implemented or accepted.
   title: Verify project goals, current state, and the next deliverable
+  "evidence": ["docs/evidence/INTAKE-001.json"]
+  "verification": {"evidence_level":"locally_verified"}
 - id: DSH-001
   title: Run the AWR L0 session workflow from a real DeepSeek Harness install
   kind: verification

@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "work_item": "INTAKE-001",
+  "source_sha": "8b30816e5e02263c419132dd7268a7560582b1fd",
+  "command": "awr source reindex; awr intake inspect --json; git ls-files",
+  "scope": [
+    ".awr/intake/work-ledger.yaml",
+    "README.md",
+    "repository file list"
+  ],
+  "verified_at": 1794454096522,
+  "checks": [
+    {
+      "name": "goal, implementation, unfinished work and blockers recorded with sources",
+      "passed": true,
+      "details": "The ledger holds one goal (intake-goal) whose provenance is the owner's 2026-11-11 instructions. git ls-files showed only .gitignore, README.md and AWR source files, so there is no existing implementation. Unfinished work is recorded as DSH-001 to DSH-051, each linked to intake-goal. No blocker on DSH-001; open owner decisions (license, visibility, orchestration home) are recorded in DSH-040 and DSH-041. Details in docs/evidence/INTAKE-001.md.",
+      "criteria": [
+        "Confirm goals, existing implementation, unfinished work, and blockers with source references."
+      ]
+    },
+    {
+      "name": "uncertain progress marked unverified and next task has acceptance",
+      "passed": true,
+      "details": "README.md and the DSH-002 summary state that every DSH surface name comes from documentation and is unverified on a real install. intake inspect at project revision 9 returned state ready with business_execution_ready true and DSH-001 as executable work; DSH-001 has three acceptance criteria and a next action in the ledger.",
+      "criteria": [
+        "Mark uncertain progress as unverified and define acceptance criteria for the next executable task."
+      ]
+    }
+  ]
+}
