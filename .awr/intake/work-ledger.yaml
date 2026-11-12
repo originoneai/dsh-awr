@@ -193,7 +193,7 @@ work_items:
 - id: DSH-022
   title: Prove the one-click takeover on real existing projects
   kind: verification
-  status: planned
+  status: blocked
   priority: P0
   required: true
   goal: intake-goal
@@ -202,7 +202,8 @@ work_items:
   - On at least two existing projects with prior development history, one click reaches a final organization state with no human input, and the receipts are retained.
   - For each project the resulting goals and work items are reviewed against its README and history, and any invented or wrong intent is recorded as a defect.
   - After takeover, a new DSH conversation on the project shows the AWR context without further setup.
-  next_action: Pick two existing projects with the owner, run the takeover on copies, and record the results.
+  next_action: "Owner: approve the desktop run (plugin in the desktop profile, app relaunch, account usage), then run /awr takeover on the staged copies in the signed-in app and review the receipts against each README and history"
+  "blocker": "A real model is needed for the reviewer, and only the owner's signed-in DeepSeek Harness desktop app has one (the CLI, headless and web profiles cannot use the account sign-in). A run there needs the plugin added to the desktop profile, a relaunch of the owner's app, full control of the app (requested twice, unanswered; the window is on another Space) and the owner's account usage."
 - id: DSH-030
   title: Prompt for AWR checkpoints at turn boundaries
   kind: implementation
@@ -299,7 +300,7 @@ work_items:
 - id: DSH-004
   title: Get stock awr-mcp accepted by DSH's MCP client
   kind: defect
-  status: in_progress
+  status: completed
   priority: P0
   required: true
   goal: intake-goal
@@ -308,7 +309,9 @@ work_items:
   acceptance:
   - Without any shim, an awr-mcp entry in a DSH 0.2.2-rc.1 profile stays connected and awr_query with child_tool awr_project_status returns the fixture project's identity.
   - The decision on where the fix lives (AWR or this plugin) and its reason are recorded.
-  next_action: "Wait for originoneai/awr PR 614 (the fix) to merge and for a release that contains it; then rerun the DSH MCP check with the released awr-mcp and no shim, and complete this item. Until then DSH work uses the lab build (docs/lab-environment.md)."
+  next_action: "Complete DSH-004 with the registered evidence"
+  "evidence": ["docs/evidence/DSH-004/completion-report.json"]
+  "verification": {"evidence_level":"locally_verified"}
 - id: DSH-016
   title: Map a forked DSH conversation to the parent's AWR session
   kind: implementation

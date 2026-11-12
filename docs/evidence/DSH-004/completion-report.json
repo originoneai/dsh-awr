@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "work_item": "DSH-004",
+  "source_sha": "c3beb489d55457f0417bdf13b0038548eceb615d",
+  "command": "dsh headless --patch <probe.yml> (DeepSeek Harness 0.2.2-rc.1 runtime, failOnStartupError) with awr-mcp built from origin/main 1880dbda and with the released 0.7.0 native binary; then one mcp__awr__awr_query call through DSH from a local model stand-in (docs/evidence/DSH-004)",
+  "scope": [
+    "docs/evidence/DSH-004",
+    "docs/dsh-001-l0-check.md"
+  ],
+  "verified_at": 1794475317615,
+  "checks": [
+    {
+      "name": "awr-mcp stays connected in DSH without a shim and returns the fixture identity",
+      "passed": true,
+      "criteria": [
+        "Without any shim, an awr-mcp entry in a DSH 0.2.2-rc.1 profile stays connected and awr_query with child_tool awr_project_status returns the fixture project's identity."
+      ],
+      "details": "With awr-mcp built unmodified from origin/main at 1880dbda (the merged form of PR 614, the fix for originoneai/awr#613) as a dsh-mcp-client stdio entry, dsh headless started with exit 0 and no activation warning (failOnStartupError true, reconnect disabled). One call of mcp__awr__awr_query with child_tool awr_project_status through DSH returned project dsh001-fixture, id 01M77EVTNG6516D36FK41FEVKS, revision 52, equal to awr status at that moment. No shim, wrapper or modified binary was in the path; the server offered its eight domain tools. The same probe with the released native awr-mcp 0.7.0 still fails with 1 entry did not activate (tools/list lacks ttlMs and cacheScope). Limits: the criterion was checked with a build of main, not with a released package, because the latest release (0.7.0) predates the fix; an installable fix needs an AWR release containing PR 614, which this project does not make. The connection was exercised by the headless profile for one task with a local stand-in for the model API, not by a desktop conversation with a real model (the earlier desktop check on 2026-11-11 used a build of main plus the fix commit before merge). Streamable HTTP was not checked."
+    },
+    {
+      "name": "Where the fix lives and why is recorded",
+      "passed": true,
+      "criteria": [
+        "The decision on where the fix lives (AWR or this plugin) and its reason are recorded."
+      ],
+      "details": "The ledger summary of DSH-004 records the owner decision of 2026-11-11: the fix lives in AWR and not in this plugin, because every host that speaks protocol 2026-07-28 hits the same missing ttlMs and cacheScope fields; it was reported as originoneai/awr#613 and fixed by PR 614, which is merged (71c1acfe on main). docs/dsh-001-l0-check.md keeps the diagnosis and the shim experiment that showed the missing fields were the only cause."
+    }
+  ]
+}
