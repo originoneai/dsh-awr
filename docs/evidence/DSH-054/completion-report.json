@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "work_item": "WORK-75524ae8d9d61067cb6f9293f0b8bfe3",
+  "source_sha": "fe77b4774dc6a2a28b3fd6878236ef9ae4399580",
+  "command": "node --test (248 tests; 245 pass and 3 skipped without AWR_TAKEOVER_BIN, 248 pass with it set to an awr built from the originoneai/awr branches that add awr takeover, --await-review/--reviewed and the intake.takeover capability); five mutations of lib/takeover-cli.js and lib/takeover-host.js, each restored",
+  "scope": [
+    "lib/takeover-cli.js",
+    "lib/takeover-host.js",
+    "test/takeover-cli.test.js",
+    "docs/takeover-cli.md",
+    "docs/lab-environment.md",
+    "README.md",
+    "docs/evidence/DSH-054"
+  ],
+  "verified_at": 1794489896949,
+  "checks": [
+    {
+      "name": "The plugin runs the takeover through awr takeover when the awr has it, a subagent still reviews, and otherwise its own implementation runs",
+      "passed": true,
+      "details": "createTakeoverController decides per project: it reads `awr capabilities` and uses the CLI only when intake.takeover is available and lists takeover, takeover --await-review and takeover --reviewed; the command itself is never run to find out (the older lab awr answers an unknown subcommand with Unsupported, which stops the plugin's use of awr for the project; my first probe did that and broke three existing tests, which is how it was found). With the CLI the controller runs `awr takeover --await-review`, hands the request's draft to the same read-only DeepSeek Harness subagent, writes its answer to a file and runs `awr takeover --reviewed <file>`; on a real awr the goal the subagent called active ended as candidate (capped by the CLI) and nothing was committed. With no subagent service the plain `awr takeover` runs and the receipt says reviewed.byReviewer false. With the older lab awr detection returns false, awr stays usable for the project, and the 234 earlier tests pass unchanged. Limits: the subagent service is a stand-in, not DeepSeek Harness itself.",
+      "criteria": [
+        "When the installed awr has awr takeover with --await-review, the plugin runs the takeover through it, a DeepSeek Harness subagent still reviews the draft, and otherwise the plugin keeps using its own implementation."
+      ]
+    },
+    {
+      "name": "The view of a CLI run matches the plugin's own, including a failed review, and the CLI path is verified end to end on a real awr",
+      "passed": true,
+      "details": "The CLI's snake_case record and receipt are mapped to the shape that describeRun feeds to the panel and to /awr takeover status (goal_total to goalTotal, awaiting_confirmation to awaitingConfirmation, a run waiting for the review counts as running, interrupted when no process of the plugin is reviewing it). A review that fails cannot be recorded in the CLI's record because the run is paused, so the reason is kept in host.json and shown as the stop: on a real awr the controller's status showed state stopped, step review, reason review_failed and the model's message while the project had no .awr; the next start reviewed again and completed, and nothing was applied unreviewed in between. 14 new tests (11 with a scripted awr, 3 on a real awr). One bug only the real awr showed: --state-dir has to precede the status subcommand; the test now checks argument order. Five mutations (the reviewed-command requirement, the host.json merge, --await-review, the stop on a failed review, the CLI path itself) each turned a test red. Limits: checked at the level of the view data both the panel and the command read, not in the rendered panel inside DeepSeek Harness; no released awr has the commands yet (originoneai/awr #621, #623, #626 are open), so until one does the plugin's own implementation runs.",
+      "criteria": [
+        "The panel and /awr takeover status show the same view for a takeover run through the CLI as for the plugin's own, including a review that failed, and the CLI path is verified end to end against a real awr that has these flags."
+      ]
+    }
+  ]
+}

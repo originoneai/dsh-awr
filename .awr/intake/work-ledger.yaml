@@ -374,11 +374,13 @@ work_items:
   "verification": {"evidence_level":"locally_verified"}
 - "id": "WORK-75524ae8d9d61067cb6f9293f0b8bfe3"
   "title": "DSH-054: Run the takeover through awr takeover when the installed awr has it"
-  "status": "in_progress"
+  "status": "completed"
   "acceptance": ["When the installed awr has awr takeover with --await-review, the plugin runs the takeover through it, a DeepSeek Harness subagent still reviews the draft, and otherwise the plugin keeps using its own implementation.","The panel and /awr takeover status show the same view for a takeover run through the CLI as for the plugin's own, including a review that failed, and the CLI path is verified end to end against a real awr that has these flags."]
   "depends_on": ["DSH-040"]
   "goal": ["intake-goal"]
   "kind": "implementation"
-  "next_action": "Implement lib/takeover-cli.js and wire it into the controller"
+  "next_action": "Complete WORK-75524ae8d9d61067cb6f9293f0b8bfe3 with the registered evidence"
   "priority": "P1"
   "summary": "The owner decided (DSH-040) that the takeover orchestration moves into the AWR CLI (awr takeover, originoneai/awr#620). The plugin keeps its own implementation until an AWR release has the command, so it detects it and uses it when present; the draft review stays a DSH subagent through --await-review and --reviewed (originoneai/awr#626)."
+  "evidence": ["docs/evidence/DSH-054/completion-report.json"]
+  "verification": {"evidence_level":"locally_verified"}
