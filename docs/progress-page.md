@@ -71,7 +71,7 @@ the drawer. Focus rings are the host's.
 - In the desktop app, real data: this project (30 of 31 done), the demo project after a real takeover, and the 597-item
   AWR project (479 done, 21 stuck): the three views, the drawer on a blocked card with its real criteria, the chain of a
   card, the keyboard. In a browser harness with the host's own theme: four fixtures (an empty project, a dozen items, the
-  demo, 597 items), light and dark, English and Chinese, at phone width.
+  demo, 597 items), light and dark, English and Chinese.
 
 ## Not checked
 

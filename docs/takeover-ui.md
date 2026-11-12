@@ -180,7 +180,9 @@ the real model (DeepSeek-V4.1-Flash) as the reviewer:
   goal waiting for confirmation. (They had not at first: the tab called the two items ready because AWR's dependency
   graph does, and `awr status` counted them blocked because the project is incomplete. The tab now holds ready work back
   while AWR starts none.)
-- The 597-item AWR project: the card's numbers are the whole queue (24, 23, 39), not the five listed; the tab drew the
-  mainlines, the dependency graph (with the chain of a card picked out) and the lanes, and the detail of a card.
+- The 597-item AWR project: the tab drew the mainlines, the dependency graph (with the chain of a card picked out) and the
+  lanes, and the detail of a card. The host's view of the same project, read with the real awr, has the totals 24, 23 and
+  39 (the lists it also returns are five each); the card shows those, as the tests check, but it was not opened on this
+  project in the app.
 - The plugin installed from a GitHub branch replaced the local link in one step, and **Check for updates** / **Update**
   worked across five commits (`docs/panel.md`).

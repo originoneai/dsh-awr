@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "work_item": "WORK-a43160fad9c0441bee19896d8349f88e",
+  "source_sha": "96050d2b11807afb88d87e4a15bb02c015e00a45",
+  "command": "node --test (366 tests pass, 0 skipped, with AWR_TAKEOVER_BIN set to an awr built from the modified originoneai/awr code); mutations of the new behaviour (38 earlier and 33 new in lib/ and client/, each restored; three that survived were found and their tests strengthened, 0 survive); and runs in the real DeepSeek Harness 0.2.2-rc.2 desktop app with DeepSeek-V4.1-Flash as the reviewer and DSH_AWR_CLI naming that awr",
+  "scope": [
+    "lib/plugin-update.js",
+    "lib/commands.js",
+    "lib/panel-snapshot.js",
+    "client/40-popover.js",
+    "client/10-text.js",
+    "client.js",
+    "index.js",
+    "test/plugin-update.test.js",
+    "test/client.test.js",
+    "docs/panel.md",
+    "docs/dsh-surfaces.md",
+    "docs/evidence/DSH-059"
+  ],
+  "verified_at": 1794503801249,
+  "checks": [
+    {
+      "name": "The card shows the plugin's version (the commit and repository in the technical details), checks the followed branch on GitHub, installs the newest commit with the plugin manager, leaves the installed version alone when the update fails, and offers nothing to a checkout",
+      "passed": true,
+      "details": "test/plugin-update.test.js (14 tests) and test/client.test.js: the repository and branch in every form pnpm saves a dependency, the commit the lockfile names, git ls-remote without credentials or prompts (a peeled tag, no credential in an error), the exact spec github:owner/repo#<40 hex> as the only thing ever sent to installBundle, restart-required / failed / network / refused results said in words with the version unchanged, a link: or registry install offering no update and saying why, no raw dependency spec in the panel's data. Mutations: the same commit offered, a credential kept in an error, the tag object instead of the commit, prompts allowed, another package's lockfile line, any spec installed, the stale answer kept, the branch not remembered, the installed state cached all fail a test.",
+      "criteria": [
+        "The panel shows the version and the GitHub commit of the installed plugin, a Check button asks GitHub whether the branch the plugin follows has a newer commit, and an Update button installs that commit with DeepSeek Harness's plugin manager; a failed update leaves the installed version as it was, and a plugin that runs from a local checkout offers no update."
+      ]
+    },
+    {
+      "name": "A plugin installed from GitHub is updated from the card to a newer commit of the same repository and the new version runs",
+      "passed": true,
+      "details": "In the real desktop app the plugin was installed from a throwaway branch of originoneai/dsh-awr (Plugins > Install third-party plugin replaced the local link in one step) and updated from the card with Check for updates and Update to newer commits of that branch (0.1.0 to 0.1.1, and 0.1.3 to 0.1.4 to 0.1.5 with the follow-the-branch fix in place): each time the profile's package.json named the new commit and node_modules held that version, and after the 0.1.3 to 0.1.4 update the host reported 0.1.4 as the version it runs while the runtime process was the one started with the app, so the update is live without a restart. Updating found four defects, fixed with tests in the same change: the card kept offering the update it had just installed; the first update pinned the dependency to a commit so the next check asked the default branch and offered a downgrade (it installed main once); the host described the installed state from a 30 s cache; the card said the update failed when the answer of the call was lost because the plugin reloaded mid-call. The lost-answer fix was run with the real client.js in a browser against a stand-in host (an answer lost after the files changed shows Plugin 0.1.1, Up to date and no failure; a genuine failure still shows its line); it was not run in the desktop app again because the app's window was on another desktop.",
+      "criteria": [
+        "This is shown in the real DeepSeek Harness desktop app: a plugin installed from GitHub is updated from the panel to a newer commit of the same repository, and the new version runs."
+      ]
+    }
+  ]
+}

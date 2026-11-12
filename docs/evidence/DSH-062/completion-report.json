@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "work_item": "WORK-56d72728d6800d54c4bbc95cb35f8d18",
+  "source_sha": "96050d2b11807afb88d87e4a15bb02c015e00a45",
+  "command": "node --test (366 tests pass, 0 skipped, with AWR_TAKEOVER_BIN set to an awr built from the modified originoneai/awr code); mutations of the new behaviour (38 earlier and 33 new in lib/ and client/, each restored; three that survived were found and their tests strengthened, 0 survive); and runs in the real DeepSeek Harness 0.2.2-rc.2 desktop app with DeepSeek-V4.1-Flash as the reviewer and DSH_AWR_CLI naming that awr",
+  "scope": [
+    "client/50-page.js",
+    "client/30-data.js",
+    "client/20-core.js",
+    "client/90-tail.js",
+    "client.js",
+    "lib/progress-view.js",
+    "lib/progress.js",
+    "lib/takeover-cli.js",
+    "index.js",
+    "test/progress-view.test.js",
+    "test/client-page.test.js",
+    "test-support/client-harness.js",
+    "docs/progress-page.md",
+    "docs/evidence/DSH-062"
+  ],
+  "verified_at": 1794503801249,
+  "checks": [
+    {
+      "name": "A tab beside Chat and Trajectory shows the gauge, what needs the person and the work as mainlines, a dependency graph and lanes, with a drawer, search, filters, zoom and keyboard use, from a file, with identifiers folded",
+      "passed": true,
+      "details": "test/progress-view.test.js (12 tests): the six states and their order, layers and a cycle, the mainlines (a generated key, small lanes), the criteria (AWR's placeholder dropped, a written one kept), what needs the person, an unknown edge, an empty project; test/client-page.test.js (21 tests): the gauge and legend, needs, the three views, no identifier visible by default, the drawer and its links and Escape, the keyboard (tabs, arrows, Home, End), the layout and the chain of a card, search and the legend as filters, the asks of the host (missing, old, other schema, once a minute, refresh, sync), an unmanaged project, an old awr, the zoom, both languages, an incomplete project. The availability of awr overview snapshot is read from awr capabilities, never by running it. Mutations: finished work drawn by default, another schema accepted, asking every tick or never, progress asked for an unmanaged project, keys on the cards, no chain, the placeholder criterion kept, ready not held back, tabs ignoring keys all fail a test.",
+      "criteria": [
+        "A tab beside Chat and Trajectory shows a gauge, what needs the person, and the work as mainlines, a dependency graph and lanes, with the details of a card in a drawer, search, filters, zoom and keyboard use; it reads a file the host writes, puts nothing in the conversation, and shows identifiers only under Technical details."
+      ]
+    },
+    {
+      "name": "This is shown in the real app on a project that was just taken over and on the 597-item AWR project",
+      "passed": true,
+      "details": "In the real app: the demo project after a real takeover (1 of 3 done, needs you, two cards), this project (30 of 31 done, one card), and the 597-item AWR project (479 of 597 done, 21 needing the person, the mainlines, the dependency graph with the chain of a card picked out, the lanes, the drawer on a blocked card with its real criteria and next step, switching views with the keyboard). A card's drawer on the demo project showed a hash as its criterion (AWR's placeholder): found in the app, dropped with a test, confirmed in the app afterwards.",
+      "criteria": [
+        "This is shown in the real DeepSeek Harness desktop app on a project that was just taken over and on the 597-item AWR project."
+      ]
+    }
+  ]
+}

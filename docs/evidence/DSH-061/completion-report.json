@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "work_item": "WORK-9a4aef712b2c52ec6de831e2558e9100",
+  "source_sha": "96050d2b11807afb88d87e4a15bb02c015e00a45",
+  "command": "node --test (366 tests pass, 0 skipped, with AWR_TAKEOVER_BIN set to an awr built from the modified originoneai/awr code); mutations of the new behaviour (38 earlier and 33 new in lib/ and client/, each restored; three that survived were found and their tests strengthened, 0 survive); and runs in the real DeepSeek Harness 0.2.2-rc.2 desktop app with DeepSeek-V4.1-Flash as the reviewer and DSH_AWR_CLI naming that awr",
+  "scope": [
+    "client/40-popover.js",
+    "client/10-text.js",
+    "client/50-page.js",
+    "client.js",
+    "lib/state-view.js",
+    "lib/panel-text.js",
+    "lib/commands.js",
+    "test/client.test.js",
+    "test/client-page.test.js",
+    "test/state-view.test.js",
+    "test/panel-text.test.js",
+    "test/product-text.test.js",
+    "docs/panel.md",
+    "docs/evidence/DSH-061"
+  ],
+  "verified_at": 1794503801249,
+  "checks": [
+    {
+      "name": "The card says in plain words how the project stands with the whole-queue numbers, folds every engineering fact, and has no controls for the agent's actions",
+      "passed": true,
+      "details": "test/client.test.js (24 tests): the light, the three numbers (the totals AWR counts, not the length of the five-item samples; red only when something is recorded as blocking), what needs the person, the incomplete-project line said once, no identifier visible until Technical details is opened, no buttons or fields for claim, checkpoint or end, the offer and the running takeover, every sentence in both languages; test/state-view.test.js, test/panel-text.test.js and test/product-text.test.js: the totals, whether work can start and the structural codes are passed on as awr gave them, and the typed state and status count the whole queue. Against the real awr on the 597-item AWR project the host's view reads totals 24 / 23 / 39 / 32 (the lists are five each), organization ready true. Mutations: counts as list lengths, the incomplete project not said, held work always red, the light ignoring an incomplete project or amber for work that is only not ready, the typed counts of the sample all fail a test.",
+      "criteria": [
+        "The card of a project AWR manages says in plain words how the project stands, with the numbers AWR counts for the whole queue (not the five it lists), and shows every identifier, revision, path and awr detail only under Technical details, closed by default; it has no buttons or fields for claiming work, saving a checkpoint or ending a session."
+      ]
+    },
+    {
+      "name": "The card and the Progress tab tell one story, also right after a takeover when the project is incomplete, in the real app",
+      "passed": true,
+      "details": "In the real app after a real takeover of the demo project the card said 0 in progress, 0 ready, 2 not ready (not red), one line that work cannot start until 8 details are filled in, and one goal waiting; the tab said not started 2, done 1 and, under Needs you, the project is not complete yet (8 details) and the unconfirmed goal. Before the fix they disagreed (the tab said ready 2 because AWR's dependency graph does, the card said 2 blocked because awr status does for an incomplete project): found in the app, fixed with tests. The card was not opened on the 597-item project in the app; its numbers there are checked through the host's view and the tests.",
+      "criteria": [
+        "The card and the Progress tab tell one story, also right after a takeover when the project is incomplete; this is shown in the real DeepSeek Harness desktop app."
+      ]
+    }
+  ]
+}

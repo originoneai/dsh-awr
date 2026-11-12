@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "work_item": "WORK-781e65aefd79bf9a44f35b8ce8254c55",
+  "source_sha": "96050d2b11807afb88d87e4a15bb02c015e00a45",
+  "command": "node --test (366 tests pass, 0 skipped, with AWR_TAKEOVER_BIN set to an awr built from the modified originoneai/awr code); mutations of the new behaviour (38 earlier and 33 new in lib/ and client/, each restored; three that survived were found and their tests strengthened, 0 survive); and runs in the real DeepSeek Harness 0.2.2-rc.2 desktop app with DeepSeek-V4.1-Flash as the reviewer and DSH_AWR_CLI naming that awr",
+  "scope": [
+    "lib/binding.js",
+    "lib/conversation.js",
+    "lib/panel-snapshot.js",
+    "lib/commands.js",
+    "lib/tools.js",
+    "test/conversation.test.js",
+    "test/panel-snapshot.test.js",
+    "docs/panel.md",
+    "docs/evidence/DSH-063"
+  ],
+  "verified_at": 1794503801249,
+  "checks": [
+    {
+      "name": "The binding store looks a conversation up in awr, read-only and for an active session only, when it holds none",
+      "passed": true,
+      "details": "test/conversation.test.js: a conversation the instance never bound is found through client show and session show only (no bind, no start, no claim), the answer is kept so the next question asks awr nothing, an ended session, a conversation never bound, a directory outside a project and a failing awr give no binding and nothing is kept; test/panel-snapshot.test.js: the panel's data has its work for such a conversation. Mutations: an ended session bound, the found binding not kept, ensure never used, the lookup creating a binding all fail a test.",
+      "criteria": [
+        "After DeepSeek Harness loads an updated plugin without a restart, a conversation that was open keeps the project's numbers on the card and its AWR context, because the binding store looks the conversation up in awr (read-only, an active session only) when it holds none."
+      ]
+    },
+    {
+      "name": "The card after an update from GitHub still has its counts, in the real app",
+      "passed": true,
+      "details": "In the real app an update from GitHub (0.1.3 to 0.1.4) left the open conversation without a binding (the panel's data had no work, and the card lost its numbers and its 'this conversation is on' line); after the next update, which installed this change (0.1.4 to 0.1.5), the card had its counts again (0 in progress, 0 ready, 2 not ready, and Search endpoint as the work of the conversation) with the runtime process unchanged since the app started.",
+      "criteria": [
+        "This is shown in the real DeepSeek Harness desktop app: the card after an update from GitHub still has its counts."
+      ]
+    }
+  ]
+}

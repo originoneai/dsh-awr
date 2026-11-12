@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "work_item": "WORK-7c4cce55e95a18971d1d221afbf2ec35",
+  "source_sha": "96050d2b11807afb88d87e4a15bb02c015e00a45",
+  "command": "node --test (366 tests pass, 0 skipped, with AWR_TAKEOVER_BIN set to an awr built from the modified originoneai/awr code); mutations of the new behaviour (38 earlier and 33 new in lib/ and client/, each restored; three that survived were found and their tests strengthened, 0 survive); and runs in the real DeepSeek Harness 0.2.2-rc.2 desktop app with DeepSeek-V4.1-Flash as the reviewer and DSH_AWR_CLI naming that awr",
+  "scope": [
+    "client/60-rows.js",
+    "client/20-core.js",
+    "client/90-tail.js",
+    "client.js",
+    "lib/commands.js",
+    "lib/panel-text.js",
+    "lib/panel-snapshot.js",
+    "lib/progress.js",
+    "test/client-rows.test.js",
+    "test/product-text.test.js",
+    "test/panel-snapshot.test.js",
+    "docs/conversation-rows.md",
+    "docs/evidence/DSH-060"
+  ],
+  "verified_at": 1794503801249,
+  "checks": [
+    {
+      "name": "The plugin's own questions and buttons draw no row, a typed command is one quiet line with its details folded, and rows of earlier versions read as sentences or are hidden",
+      "passed": true,
+      "details": "test/client-rows.test.js (9 tests): internal commands (panel, progress, --ui, --json) draw nothing whether they succeed or fail, JSON and the data comment of earlier versions are hidden, a typed command is one line with the rest folded, the known answers of earlier versions get a plain sentence, the running and failed states; test/product-text.test.js (10 tests): every command answers a sentence first, in the language of the interface, and the details after it. Mutations: internal rows drawn, old JSON drawn, details open by default, old answers left as they are, the whole answer on the line, --ui left in the line, details first all fail a test.",
+      "criteria": [
+        "A conversation in which the plugin's interface reads the project, presses buttons and runs a whole takeover shows no row for any of it; a command a person typed is one quiet line with its technical details folded; rows written by earlier versions read as plain sentences or are hidden."
+      ]
+    },
+    {
+      "name": "This is shown in the real desktop app with a real model on a conversation that had 35 raw JSON rows",
+      "passed": true,
+      "details": "In the real app the ui-demo conversation went from about 35 raw JSON and log rows to eight one-line sentences with their details folded; reading the project, opening the card and the Progress tab, and a whole takeover started from the tab (real DeepSeek-V4.1-Flash reviewer, three subagents, about 20 s) added no row to the conversation.",
+      "criteria": [
+        "This is shown in the real DeepSeek Harness desktop app with a real model, on a conversation that had 35 raw JSON rows."
+      ]
+    }
+  ]
+}

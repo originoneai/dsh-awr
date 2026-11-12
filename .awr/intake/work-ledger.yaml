@@ -434,17 +434,19 @@ work_items:
   "verification": {"evidence_level":"locally_verified"}
 - "id": "WORK-a43160fad9c0441bee19896d8349f88e"
   "title": "DSH-059: Update the plugin from GitHub in the AWR panel"
-  "status": "draft"
+  "status": "completed"
   "acceptance": ["The panel shows the version and the GitHub commit of the installed plugin, a Check button asks GitHub whether the branch the plugin follows has a newer commit, and an Update button installs that commit with DeepSeek Harness's plugin manager; a failed update leaves the installed version as it was, and a plugin that runs from a local checkout offers no update.","This is shown in the real DeepSeek Harness desktop app: a plugin installed from GitHub is updated from the panel to a newer commit of the same repository, and the new version runs."]
   "depends_on": ["WORK-5fbaebd1b940cce21825828254ef68e6"]
   "goal": ["intake-goal"]
   "kind": "feature"
-  "next_action": "Build the update check on the host and the Update button in the panel, then verify it in the real app against a throwaway branch"
+  "next_action": "Complete DSH-059 with the registered evidence"
   "priority": "P0"
   "summary": "Asked by the owner: DeepSeek Harness's plugin page has no update for a plugin installed from GitHub (the package version stays 0.1.0 and its update works only for registry packages), so the AWR panel offers one. The update installs the same repository pinned to the newest commit of the followed branch with the plugin manager's installBundle, which replaces the dependency in one operation and restores the profile if it fails."
+  "evidence": ["docs/evidence/DSH-059/completion-report.json"]
+  "verification": {"evidence_level":"locally_verified"}
 - "id": "WORK-7c4cce55e95a18971d1d221afbf2ec35"
   "title": "DSH-060: The conversation shows what AWR does in plain words and nothing the interface asked"
-  "status": "draft"
+  "status": "completed"
   "acceptance": ["A conversation in which the plugin's interface reads the project, presses buttons and runs a whole takeover shows no row for any of it; a command a person typed is one quiet line with its technical details folded; rows written by earlier versions read as plain sentences or are hidden.","This is shown in the real DeepSeek Harness desktop app with a real model, on a conversation that had 35 raw JSON rows."]
   "depends_on": ["WORK-5fbaebd1b940cce21825828254ef68e6"]
   "goal": ["intake-goal"]
@@ -452,9 +454,11 @@ work_items:
   "next_action": "Complete DSH-060 with the registered evidence"
   "priority": "P0"
   "summary": "Owner feedback: the conversation was full of AWR engineering information (JSON, revisions, hashes, run logs). DeepSeek Harness records every command as a row and no plugin can switch that off, so the plugin draws its own rows through the conversation.chat.commandview slot and keeps the data of the card and the tab in files."
+  "evidence": ["docs/evidence/DSH-060/completion-report.json"]
+  "verification": {"evidence_level":"locally_verified"}
 - "id": "WORK-9a4aef712b2c52ec6de831e2558e9100"
   "title": "DSH-061: The AWR card is for people: plain words, engineering facts folded, no controls for the agent's own actions"
-  "status": "draft"
+  "status": "completed"
   "acceptance": ["The card of a project AWR manages says in plain words how the project stands, with the numbers AWR counts for the whole queue (not the five it lists), and shows every identifier, revision, path and awr detail only under Technical details, closed by default; it has no buttons or fields for claiming work, saving a checkpoint or ending a session.","The card and the Progress tab tell one story, also right after a takeover when the project is incomplete; this is shown in the real DeepSeek Harness desktop app."]
   "depends_on": ["WORK-5fbaebd1b940cce21825828254ef68e6"]
   "goal": ["intake-goal"]
@@ -462,9 +466,11 @@ work_items:
   "next_action": "Complete DSH-061 with the registered evidence"
   "priority": "P0"
   "summary": "Owner feedback: what opened from the AWR light was engineering, not product, and a takeover left two long text inputs (a digest and a next action) that nobody should have to fill in. The card now speaks in words, folds the facts, and the claim, checkpoint and end controls are gone (typed commands remain). Found in the real app: the counts were the length of the five-item samples, and the card said blocked where AWR meant the project is incomplete."
+  "evidence": ["docs/evidence/DSH-061/completion-report.json"]
+  "verification": {"evidence_level":"locally_verified"}
 - "id": "WORK-56d72728d6800d54c4bbc95cb35f8d18"
   "title": "DSH-062: A Progress tab shows the whole project the way AWR's overview does"
-  "status": "draft"
+  "status": "completed"
   "acceptance": ["A tab beside Chat and Trajectory shows a gauge, what needs the person, and the work as mainlines, a dependency graph and lanes, with the details of a card in a drawer, search, filters, zoom and keyboard use; it reads a file the host writes, puts nothing in the conversation, and shows identifiers only under Technical details.","This is shown in the real DeepSeek Harness desktop app on a project that was just taken over and on the 597-item AWR project."]
   "depends_on": ["WORK-5fbaebd1b940cce21825828254ef68e6"]
   "goal": ["intake-goal"]
@@ -472,9 +478,11 @@ work_items:
   "next_action": "Complete DSH-062 with the registered evidence"
   "priority": "P0"
   "summary": "Owner: AWR needs a complete visual page embedded in DeepSeek Harness, like AWR's Project Progress Overview, and that is the more important way to show a project. The tab is built from awr overview snapshot, detected through awr capabilities, and held to what AWR starts."
+  "evidence": ["docs/evidence/DSH-062/completion-report.json"]
+  "verification": {"evidence_level":"locally_verified"}
 - "id": "WORK-781e65aefd79bf9a44f35b8ce8254c55"
   "title": "DSH-063: A conversation that was open when the plugin was loaded anew finds its AWR session again"
-  "status": "draft"
+  "status": "completed"
   "acceptance": ["After DeepSeek Harness loads an updated plugin without a restart, a conversation that was open keeps the project's numbers on the card and its AWR context, because the binding store looks the conversation up in awr (read-only, an active session only) when it holds none.","This is shown in the real DeepSeek Harness desktop app: the card after an update from GitHub still has its counts."]
   "depends_on": ["WORK-5fbaebd1b940cce21825828254ef68e6"]
   "goal": ["intake-goal"]
@@ -482,3 +490,5 @@ work_items:
   "next_action": "Complete DSH-063 with the registered evidence"
   "priority": "P0"
   "summary": "Found by updating the real app from GitHub (DSH-059): the host loads the updated plugin without a restart and a conversation that was open then has no agent/created for the new instance, so the card lost the project's numbers and the agent its AWR context until DeepSeek Harness restarted."
+  "evidence": ["docs/evidence/DSH-063/completion-report.json"]
+  "verification": {"evidence_level":"locally_verified"}

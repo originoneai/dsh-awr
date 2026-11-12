@@ -102,9 +102,11 @@ and DeepSeek Harness's plugin page updates registry packages only. The card ther
 - `test/conversation.test.js`, `test/panel-snapshot.test.js`: a conversation the instance never bound is found in awr
   without starting or claiming anything, and the panel's data has its work.
 - In DeepSeek Harness 0.2.2-rc.2 with the real model (DeepSeek-V4.1-Flash) and an awr built from the modified code
-  (`DSH_AWR_CLI`): the card on a taken-over project, on this project and on the 597-item AWR project; the plugin
-  installed from a GitHub branch, **Check for updates** and **Update** from the card across five commits, which found
-  the three defects fixed above (the stale answer, the lost branch, the lost binding) and, in a fourth, the lost answer.
+  (`DSH_AWR_CLI`): the card on a taken-over project (the three numbers, the incomplete-project line, the plugin line,
+  the technical details), and the host's view of the 597-item AWR project read with the real awr (totals 24, 23 and 39,
+  five items in each list); the plugin installed from a GitHub branch, **Check for updates** and **Update** from the card
+  across five commits, which found the stale answer, the lost branch and the lost binding fixed above and, in a fourth, the
+  lost answer. The lost-answer fix was run with the real `client.js` in a browser against a stand-in host.
 
 ## Not checked
 
