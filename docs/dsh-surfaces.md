@@ -42,6 +42,19 @@ Third-party web pages read earlier are not used for any row below.
 
 ## Corrections this makes to the design
 
+- Client UI is exercised (DSH-021): a plugin's `client.js` (`window.__ModuleLoader__.load`, `dsh.client` in
+  `package.json`) registers into `conversation.session.header.actions` and receives `sessionId` and the
+  session hooks as props; `ctx.remote.commands.execute(sessionId, line, [])` runs a host command and
+  returns `{ ok, value: { result: { kind, text } } }` (or `{ ok: false, error }`). Every command run is a
+  line in the conversation's timeline and an entry in its log. The `web` profile serves the same client and
+  can be opened in a browser: `dsh <profile> --no-open --host 127.0.0.1 --port N`. The web client's "add
+  workspace" needs a native folder dialog.
+- Subagents (DSH-021): `ctx.subagents.startActivation({ provider: 'spawn', label, request: { cwd, prompt,
+  parent }, signal, delivery: 'caller' })` starts a child whose `agent/created` carries `parentSession` and
+  `origin` in the header; its header `cwd` is the parent's until DSH moves it to `request.cwd`. Its tools are
+  restricted with `agent.ctx.tools.restrict({ allow })` (needs the agent's own context) in that listener, and
+  `ctx.tools.guard((exec) => reason)` sees `exec.agent`, `exec.name` and `exec.arguments`.
+
 - DSH-012 no longer mounts `awr-mcp`: a static `dsh-mcp-client` row serves one project for every
   conversation, and `tools/pre-execute` cannot rewrite arguments, so the plugin registers its own tools
   (`ctx.tools.register(definition, { when })`, project taken from the binding). `defineTool` is not

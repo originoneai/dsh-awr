@@ -57,7 +57,7 @@ test('apply runs against a stub context and registers the conversation listener 
   })
   module.apply(ctx)
   assert.deepEqual(messages, ['dsh-awr loaded'])
-  assert.deepEqual(listeners, ['agent/created', 'agent/pre-step', 'agent/disposed'], 'the listeners are the binding one and the two the prompt context uses')
+  assert.deepEqual(listeners, ['agent/created', 'agent/pre-step', 'agent/disposed', 'agent/created'], 'the listeners: binding, the two of the prompt context, and the takeover reviewer\'s restriction')
 })
 
 test('apply tolerates a context without a logger', async () => {

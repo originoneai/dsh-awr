@@ -2,11 +2,13 @@
 //
 // Capabilities are added one work item at a time, using the surfaces recorded in
 // docs/dsh-surfaces.md. Loaded so far: binding each conversation to an AWR session (DSH-013), the /awr
-// command (DSH-015), the AWR work context in the prompt (DSH-014) and the AWR tools for the model (DSH-012).
+// command (DSH-015), the AWR work context in the prompt (DSH-014), the AWR tools for the model (DSH-012) and
+// the one-click takeover (DSH-021, with the header button in client.js).
 import { appendFileSync } from 'node:fs'
 import { createAwr } from './lib/awr-runtime.js'
 import { registerAwrCommand, watchConversations } from './lib/conversation.js'
 import { registerPromptContext } from './lib/prompt-context.js'
+import { createReviewerPolicy, createTakeoverController } from './lib/takeover-host.js'
 import { registerAwrTools } from './lib/tools.js'
 
 export const name = 'dsh-awr'
@@ -38,6 +40,32 @@ export function apply(ctx) {
   // DSH_AWR_CONTEXT_BUDGET: the token budget for the AWR context compiled into the prompt (default 5000).
   const budget = Number.parseInt(process.env.DSH_AWR_CONTEXT_BUDGET ?? '', 10)
   const context = registerPromptContext(ctx, { awr, bindings, trace, ...(budget > 0 ? { budget } : {}) })
-  registerAwrCommand(ctx, { awr, bindings, context })
+  // The one-click takeover (DSH-021): started by `/awr takeover` or the header button, reviewed by a subagent
+  // that can only read inside the project.
+  const policy = createReviewerPolicy()
+  const takeover = createTakeoverController({
+    awr,
+    policy,
+    getSubagents: () => ctx.get?.('subagents'),
+    rebind: (agent) => bindings.rebind(agent),
+    trace,
+    warn: (message) => ctx.logger?.warn?.(message),
+  })
+  ctx.on('agent/created', ({ agent } = {}) => {
+    try {
+      policy.restrict(agent)
+    } catch (error) {
+      // A reviewer that could not be restricted must not run unrestricted: refuse its first step.
+      ctx.logger?.warn?.(`The takeover reviewer could not be restricted: ${error?.message ?? error}`)
+      throw error
+    }
+  })
+  const guardMount = (scope) => {
+    const register = () => scope.tools.guard(policy.guard)
+    return typeof scope.effect === 'function' ? scope.effect(register) : register()
+  }
+  if (typeof ctx.inject === 'function') ctx.inject(['tools'], guardMount)
+  else if (ctx.tools?.guard) guardMount(ctx)
+  registerAwrCommand(ctx, { awr, bindings, context, takeover })
   registerAwrTools(ctx, { awr, bindings })
 }

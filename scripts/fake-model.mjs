@@ -19,7 +19,7 @@ const textOf = (content) => typeof content === 'string' ? content : (content ?? 
 createServer((req, res) => {
   const chunks = []
   req.on('data', (c) => chunks.push(c))
-  req.on('end', () => {
+  req.on('end', async () => {
     const raw = Buffer.concat(chunks).toString()
     let body; try { body = JSON.parse(raw) } catch { body = undefined }
     appendFileSync(log, JSON.stringify({ at: Date.now(), method: req.method, url: req.url, body }) + '\n')
@@ -31,6 +31,50 @@ createServer((req, res) => {
     // so a check can change what the stand-in does without restarting it.
     let cfg = process.env
     if (process.env.FAKE_CONTROL) { try { cfg = { ...process.env, ...JSON.parse(readFileSync(process.env.FAKE_CONTROL, 'utf8')) } } catch { /* keep the environment */ } }
+    // The takeover reviewer (DSH-021): a conversation whose first message holds [AWR-TAKEOVER-REVIEW] reads two
+    // project files, then answers with the draft's intake files rewritten from the README it read.
+    const firstText = textOf((body.messages ?? [])[0]?.content)
+    if (firstText.includes('[AWR-TAKEOVER-REVIEW]') && (body.tools ?? []).length > 0) {
+      // FAKE_REVIEW_DELAY_MS slows the reviewer down so that a check can use the conversation while it works.
+      if (Number(cfg.FAKE_REVIEW_DELAY_MS) > 0) await new Promise((resolve) => setTimeout(resolve, Number(cfg.FAKE_REVIEW_DELAY_MS)))
+      const done = (body.messages ?? []).flatMap((m) => (Array.isArray(m.content) ? m.content.filter((b) => b.type === 'tool_result') : [])).length
+      const root = firstText.match(/project at (\S+?)\.\n/)?.[1] ?? '.'
+      const steps = [['read', { file_path: `${root}/README.md` }], ['read', { file_path: `${root}/docs/plan.md` }], ['read', { file_path: '/etc/hosts' }], ['read', { file_path: `${root}/.env` }], ['bash', { command: 'echo not allowed' }]]
+      if (done < steps.length) {
+        const [name, input] = steps[done]
+        res.writeHead(200, { 'content-type': 'text/event-stream', 'cache-control': 'no-cache' })
+        const send = (event, data) => res.write(`event: ${event}\ndata: ${JSON.stringify({ type: event, ...data })}\n\n`)
+        send('message_start', { message: { id: 'msg_r', type: 'message', role: 'assistant', model: body.model, content: [], stop_reason: null, stop_sequence: null, usage: { input_tokens: 10, output_tokens: 1 } } })
+        send('content_block_start', { index: 0, content_block: { type: 'tool_use', id: `toolu_review_${done}`, name, input: {} } })
+        send('content_block_delta', { index: 0, delta: { type: 'input_json_delta', partial_json: JSON.stringify(input) } })
+        send('content_block_stop', { index: 0 })
+        send('message_delta', { delta: { stop_reason: 'tool_use', stop_sequence: null }, usage: { output_tokens: 5 } })
+        send('message_stop', {})
+        res.end()
+        return
+      }
+      let draft = {}
+      try { draft = JSON.parse(firstText.split('<draft>')[1].split('</draft>')[0]) } catch { /* keep empty */ }
+      const files = { ...(draft.generated_files ?? {}) }
+      let purpose = 'the purpose stated in the README'
+      try { purpose = readFileSync(`${root}/README.md`, 'utf8').split('\n').find((l) => l.trim() && !l.startsWith('#'))?.trim() ?? purpose } catch { /* keep default */ }
+      for (const path of Object.keys(files)) {
+        if (path.endsWith('GOALS.md')) files[path] = `# ${purpose.slice(0, 80)} {#portal status=candidate}\n\n${purpose}\n\nProvenance: README.md and docs/plan.md, read by the takeover reviewer; candidate until the owner confirms.\n`
+      }
+      const answer = `I read README.md and docs/plan.md.\n\n\`\`\`json\n${JSON.stringify({ generated_files: files, notes: 'Based on README.md and docs/plan.md; the goal is a candidate until the owner confirms it.' })}\n\`\`\`\n`
+      const stream = body.stream !== false
+      if (!stream) { res.writeHead(200, { 'content-type': 'application/json' }); res.end(JSON.stringify({ id: 'msg_r', type: 'message', role: 'assistant', model: body.model, content: [{ type: 'text', text: answer }], stop_reason: 'end_turn', stop_sequence: null, usage: { input_tokens: 10, output_tokens: 5 } })); return }
+      res.writeHead(200, { 'content-type': 'text/event-stream', 'cache-control': 'no-cache' })
+      const send = (event, data) => res.write(`event: ${event}\ndata: ${JSON.stringify({ type: event, ...data })}\n\n`)
+      send('message_start', { message: { id: 'msg_r', type: 'message', role: 'assistant', model: body.model, content: [], stop_reason: null, stop_sequence: null, usage: { input_tokens: 10, output_tokens: 1 } } })
+      send('content_block_start', { index: 0, content_block: { type: 'text', text: '' } })
+      send('content_block_delta', { index: 0, delta: { type: 'text_delta', text: answer } })
+      send('content_block_stop', { index: 0 })
+      send('message_delta', { delta: { stop_reason: 'end_turn', stop_sequence: null }, usage: { output_tokens: 5 } })
+      send('message_stop', {})
+      res.end()
+      return
+    }
     const last = (body.messages ?? []).at(-1)
     const results = Array.isArray(last?.content) ? last.content.filter((b) => b.type === 'tool_result') : []
     const offered = (body.tools ?? []).map((t) => t.name)

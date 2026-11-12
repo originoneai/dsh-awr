@@ -1,0 +1,149 @@
+{
+  "version": 1,
+  "run": "3adb5da693ae",
+  "project": "/Users/mac/Documents/deepseek-harness/dsh001-fixture",
+  "startedAt": 1794468854466,
+  "finishedAt": 1794468864188,
+  "result": "needs_organization",
+  "mapped": {
+    "sources": [
+      {
+        "path": "docs/PLAN.md",
+        "domain": "plan",
+        "adapter": "markdown-heading-v1",
+        "role": "primary"
+      },
+      {
+        "path": "TODO.md",
+        "domain": "ledger",
+        "adapter": "markdown-ledger-v1",
+        "role": "primary"
+      },
+      {
+        "path": ".awr/intake/GOALS.md",
+        "domain": "goal",
+        "adapter": "markdown-heading-v1",
+        "role": "primary"
+      },
+      {
+        "path": "README.md",
+        "domain": "plan",
+        "adapter": "markdown-heading-v1",
+        "role": "supporting"
+      }
+    ],
+    "inventory": 4
+  },
+  "created": {
+    "writes": [
+      {
+        "action": "create",
+        "path": ".awr/project.toml"
+      },
+      {
+        "action": "create",
+        "path": ".gitignore"
+      },
+      {
+        "action": "create",
+        "path": ".awr/intake/GOALS.md"
+      },
+      {
+        "action": "create",
+        "path": ".awr/intake/inventory.json"
+      },
+      {
+        "action": "create",
+        "path": ".awr/intake/project.toml"
+      }
+    ],
+    "writtenOutsideAwr": [
+      ".gitignore"
+    ],
+    "recovered": false
+  },
+  "reviewed": {
+    "byCallback": true,
+    "changedFiles": [
+      ".awr/intake/GOALS.md"
+    ],
+    "rounds": 1
+  },
+  "organization": {
+    "state": "needs_organization",
+    "gapTotal": 8,
+    "goalTotal": 1,
+    "executableWorkTotal": 0,
+    "rounds": 0,
+    "actions": [
+      "goals",
+      "work",
+      "evidence",
+      "recheck"
+    ],
+    "gaps": [
+      {
+        "code": "goal_unconfirmed",
+        "action": "goals",
+        "detail": "Goal is a draft, unknown, stale, empty or an intake placeholder. Preserve uncertain intent and record its source before declaring it active.",
+        "target": "file:///Users/mac/Documents/deepseek-harness/dsh001-fixture/.awr/intake/GOALS.md#portal"
+      },
+      {
+        "code": "work_structure_incomplete",
+        "action": "work",
+        "detail": "Missing or invalid: nonempty unique acceptance, next_action",
+        "target": "md-01da5526bf2dd4bcdcdb8025c57c2c24fcc89747307b1e6e452e330fc92b8694"
+      },
+      {
+        "code": "work_goal_missing",
+        "action": "work",
+        "detail": "Link this work to its goal using goal/goals in YAML or a goal column in the Markdown table. Do not infer a business relationship from filenames.",
+        "target": "md-01da5526bf2dd4bcdcdb8025c57c2c24fcc89747307b1e6e452e330fc92b8694"
+      },
+      {
+        "code": "work_structure_incomplete",
+        "action": "work",
+        "detail": "Missing or invalid: nonempty unique acceptance, next_action",
+        "target": "md-0bf1d245547b7b2a2c59d3c80a6348ffddb8d38f8e19046aff89ef34fc6fc4e0"
+      },
+      {
+        "code": "work_goal_missing",
+        "action": "work",
+        "detail": "Link this work to its goal using goal/goals in YAML or a goal column in the Markdown table. Do not infer a business relationship from filenames.",
+        "target": "md-0bf1d245547b7b2a2c59d3c80a6348ffddb8d38f8e19046aff89ef34fc6fc4e0"
+      },
+      {
+        "code": "work_structure_incomplete",
+        "action": "work",
+        "detail": "Missing or invalid: nonempty unique acceptance",
+        "target": "md-a63ef00cfb9bd38370c1c79dbf7061d163c74c831f702054fd5a99a9093ad355"
+      },
+      {
+        "code": "work_goal_missing",
+        "action": "work",
+        "detail": "Link this work to its goal using goal/goals in YAML or a goal column in the Markdown table. Do not infer a business relationship from filenames.",
+        "target": "md-a63ef00cfb9bd38370c1c79dbf7061d163c74c831f702054fd5a99a9093ad355"
+      },
+      {
+        "code": "completion_not_checked",
+        "action": "evidence",
+        "detail": "Not checked in this query: no explicit source SHA was supplied. This is neither a verification failure nor proof of completion. Inspect the original report and its recorded source version; never fill historical evidence with current HEAD.",
+        "target": "md-a63ef00cfb9bd38370c1c79dbf7061d163c74c831f702054fd5a99a9093ad355"
+      }
+    ]
+  },
+  "awaitingConfirmation": [
+    {
+      "key": "file:///Users/mac/Documents/deepseek-harness/dsh001-fixture/.awr/intake/GOALS.md#portal",
+      "status": "candidate",
+      "title": "A document portal for the support team. Readers should be able to find a documen"
+    }
+  ],
+  "git": {
+    "headBefore": "3adc098642e960f63ff6c3203fffe1b25a030f33",
+    "headAfter": "3adc098642e960f63ff6c3203fffe1b25a030f33",
+    "committed": false,
+    "pushed": false,
+    "headMoved": false
+  }
+}

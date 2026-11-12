@@ -1,0 +1,62 @@
+{
+ "note": "DeepSeek Harness 0.2.2-rc.1, the web profile (dsh-awr-web) opened in the app browser pane, with scripts/fake-model.mjs standing in for the model (127.0.0.1, dummy key). A conversation was started in an uninitialized project with two commits (README, docs/plan.md, TODO.md), the AWR header button was opened and its start button clicked. Nothing left the machine.",
+ "panel_states_seen": [
+  "not_initialized (start button shown)",
+  "running (Taking the project over in the background. You can keep working.)",
+  "completed (receipt shown)"
+ ],
+ "panel_text_when_done": "AWR / The takeover is done. / Steps: all six done / Receipt: needs_organization; 1 goal(s), 8 open gap(s); read as docs/PLAN.md, TODO.md, .awr/intake/GOALS.md, README.md; created .awr/project.toml, .gitignore, .awr/intake/GOALS.md, .awr/intake/inventory.json, .awr/intake/project.toml; waiting for you to confirm: the portal goal (candidate); Git: nothing committed, nothing pushed. (shown in the app's Chinese UI)",
+ "reviewer_subagent": {
+  "tool_sets_offered_across_all_its_requests": [
+   [
+    "glob",
+    "read"
+   ]
+  ],
+  "calls_and_results": [
+   {
+    "tool": "read",
+    "input": {
+     "file_path": "/Users/mac/Documents/deepseek-harness/dsh001-fixture/README.md"
+    },
+    "result": "<path>/Users/mac/Documents/deepseek-harness/dsh001-fixture/README.md</path> <type>file</type> <content> 1: # Portal 2:  3: A document portal for the support team. Readers should be able to find a docu"
+   },
+   {
+    "tool": "read",
+    "input": {
+     "file_path": "/Users/mac/Documents/deepseek-harness/dsh001-fixture/docs/plan.md"
+    },
+    "result": "<path>/Users/mac/Documents/deepseek-harness/dsh001-fixture/docs/plan.md</path> <type>file</type> <content> 1: # Plan 2:  3: ## Milestone 1: Upload 4: Upload and store documents. 5:  6: ## Milestone 2:"
+   },
+   {
+    "tool": "read",
+    "input": {
+     "file_path": "/etc/hosts"
+    },
+    "result": "Error: The takeover reviewer may only read inside /Users/mac/Documents/deepseek-harness/dsh001-fixture."
+   },
+   {
+    "tool": "read",
+    "input": {
+     "file_path": "/Users/mac/Documents/deepseek-harness/dsh001-fixture/.env"
+    },
+    "result": "Error: That file may hold credentials and is not available to the takeover reviewer."
+   },
+   {
+    "tool": "bash",
+    "input": {
+     "command": "echo not allowed"
+    },
+    "result": "Error: The takeover reviewer may only use read, glob."
+   }
+  ]
+ },
+ "conversation_stayed_usable": "a message sent in the same conversation while the reviewer was working was answered at once (earlier run with FAKE_REVIEW_DELAY_MS=4000)",
+ "after_the_takeover": {
+  "awr_tools_offered": [
+   "awr",
+   "awr_project_status"
+  ],
+  "context_header": "# AWR work context\nThis conversation is bound to AWR (Agent Work Runtime) session 01M77AVR7JS355RVM2Z2B33BS7: project dsh001-fixture, work md-01da5526bf2dd4bcdcdb8025c57c2c24fcc89747307b1e6e452e330fc92b8694, project revision 15.\nAWR records the project's work state; the text below is its compiled context for that work. When the project changes, a newer AWR work context supersedes this one. Read and update it with the awr_project_status and awr tools; never edit .awr/state.db*.\nAWR marked this context INCOMPLETE (CONTEXT INCOMPLETE). Its sources are current, but required facts are missing:\n- acceptance_missing_or_stale: Current work needs fresh, nonempty acceptance criteria with no blank entries\n- goal_state_incomplete: Goal title/status must be declared and its source current; drafts and intake placeholders do not establish business intent. Run awr intake inspect --json and record source-backed goal confirmation before business executi\n- work_state_incomplete: Status and next action must be known/current; blocked work needs a reason\nWork from it, treat what is missing as unknown, and"
+ }
+}

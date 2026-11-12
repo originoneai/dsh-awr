@@ -63,8 +63,16 @@ No AWR context is in this prompt until that is resolved. Do not assume what the 
 open loops are; tell the user.
 ```
 
-The same happens for `SourceStale`, `ContextIncomplete` (a ledger AWR cannot read), a missing or
-incompatible `awr`, and a failed binding. The previously compiled text is not served while the project
+The same happens for `SourceStale`, `ContextIncomplete` when AWR's sources are not current (a ledger it
+cannot parse), a missing or incompatible `awr`, and a failed binding.
+
+`ContextIncomplete` with current sources is different. AWR answers it with the context it could compile
+and the list of gaps (exit code 1, the document on stdout, `incomplete_checkpoint_allowed`), and a
+project that was just taken over looks like this: its goals are unconfirmed and its work has no
+acceptance yet. That context is injected, headed by "AWR marked this context INCOMPLETE" and the issues
+(code and reason, up to eight), with the instruction to treat what is missing as unknown and to record
+each gap as an open loop. A notice there would leave the model blind exactly when it has to organize the
+project. The runner keeps the stdout document of such an error (`error.details.awrDocument`). The previously compiled text is not served while the project
 cannot be compiled, and the budget is never raised on AWR's behalf. The cause is also logged as a
 warning, and `/awr status` ends with one line saying what the prompt carries.
 

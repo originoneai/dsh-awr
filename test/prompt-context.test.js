@@ -10,6 +10,7 @@ import { fileURLToPath } from 'node:url'
 import { AwrError, createAwr } from '../lib/awr-runtime.js'
 import { bindConversation } from '../lib/binding.js'
 import { createAwrCommand } from '../lib/commands.js'
+import { runTakeover } from '../lib/takeover.js'
 import {
   CONTEXT_NAME,
   CONTEXT_ORDER,
@@ -226,6 +227,43 @@ test('after a failure the old compiled text is not served again, and a later suc
   await prompt.refresh('c1', { force: true })
   assert.match(prompt.text('c1'), /Recovered/)
   assert.doesNotMatch(prompt.text('c1'), /unavailable/)
+})
+
+function incompleteError(document) {
+  return new AwrError('failed', 'ContextIncomplete: context incomplete', { code: 'ContextIncomplete', awrMessage: 'context incomplete: L1 has required gaps', awrDocument: document })
+}
+const incompleteDocument = (extra = {}) => ({
+  ...compiled(5, 'Next Action:\nInspect the gaps'),
+  completeness: { status: 'CONTEXT INCOMPLETE', complete: false, source_fresh: true, issues: [{ code: 'goal_state_incomplete', reason: 'Goal title/status must be declared and its source current' }, { code: 'acceptance_missing_or_stale', reason: 'Current work needs acceptance criteria' }] },
+  ...extra,
+})
+
+test('a context AWR marks incomplete but whose sources are current is injected with its gaps, not replaced by a notice', async () => {
+  const awr = scripted({ compile: () => { throw incompleteError(incompleteDocument()) } })
+  const prompt = createPromptContext({ awr, bindings: bindingsOf({ c1: bound }) })
+  await prompt.refresh('c1', { force: true })
+  const text = prompt.text('c1')
+  assert.match(text, /^# AWR work context\n/)
+  assert.match(text, /AWR marked this context INCOMPLETE \(CONTEXT INCOMPLETE\)/)
+  assert.match(text, /- goal_state_incomplete: Goal title\/status must be declared/)
+  assert.match(text, /- acceptance_missing_or_stale: Current work needs acceptance criteria/)
+  assert.match(text, /record each gap as an open loop/)
+  assert.match(text, /Next Action:\nInspect the gaps/, 'the compiled context itself is there')
+  assert.match(prompt.describe('c1'), /marked incomplete by AWR/)
+  // Unchanged project: not compiled again.
+  const calls = awr.calls.length
+  await prompt.refresh('c1', { force: true })
+  assert.equal(awr.calls.length, calls + 1, 'only awr status ran')
+})
+
+test('an incomplete context whose sources are not current, or that has no document, is still a notice', async () => {
+  for (const document of [incompleteDocument({ completeness: { status: 'CONTEXT INCOMPLETE', source_fresh: false, issues: [] } }), undefined, { ...incompleteDocument(), work_context: {} }]) {
+    const awr = scripted({ compile: () => { throw incompleteError(document) } })
+    const prompt = createPromptContext({ awr, bindings: bindingsOf({ c1: bound }) })
+    await prompt.refresh('c1', { force: true })
+    assert.match(prompt.text('c1'), /^# AWR work context unavailable/)
+    assert.match(prompt.text('c1'), /ContextIncomplete/)
+  }
 })
 
 test('an awr that is missing or incompatible gives a notice in AWR\'s own words', async () => {
@@ -470,4 +508,34 @@ real('against the real awr: the prompt gets the next action, then the open loops
   assert.match(tight.text('conv-1'), /^# AWR work context unavailable/)
   assert.match(tight.text('conv-1'), /BudgetExceeded: context budget exceeded: required \d+, budget 50/)
   assert.match(tight.text('conv-1'), /AWR suggests: awr context compile --session \S+ --intent work --budget \d+/)
+})
+
+real('against the real awr: a project that was just taken over, with unconfirmed goals, gets its incomplete context and its gaps', async (t) => {
+  const state = mkdtempSync(join(tmpdir(), 'dsh-awr-ctx-takeover-state-'))
+  const root = mkdtempSync(join(tmpdir(), 'dsh-awr-ctx-takeover-proj-'))
+  const local = mkdtempSync(join(tmpdir(), 'dsh-awr-ctx-takeover-local-'))
+  t.after(() => {
+    for (const dir of [state, root, local]) rmSync(dir, { recursive: true, force: true })
+  })
+  const env = { ...process.env, AWR_LOCAL_HOME: local, AWR_LOCAL_WEB: '0', PATH: `${dirname(lab)}:${process.env.PATH}` }
+  execFileSync('git', ['init', '-q', '-b', 'main'], { cwd: root })
+  writeFileSync(join(root, 'README.md'), '# Portal\n\nA document portal for the support team.\n')
+  writeFileSync(join(root, 'TODO.md'), '# TODO\n- [ ] Search endpoint\n- [ ] Access control\n')
+  execFileSync('git', ['-c', 'user.email=a@b.c', '-c', 'user.name=n', 'add', '-A'], { cwd: root })
+  execFileSync('git', ['-c', 'user.email=a@b.c', '-c', 'user.name=n', 'commit', '-q', '-m', 'first'], { cwd: root })
+  const awr = createAwr({ env })
+  const taken = await runTakeover({ awr, projectRoot: root, stateDir: state })
+  assert.equal(taken.outcome, 'completed', JSON.stringify(taken.record.stop))
+  assert.equal(taken.record.steps.organize.result.state, 'needs_organization')
+
+  const binding = { projectRoot: root, ...(await bindConversation(awr, { projectRoot: root, conversationId: 'conv-1' })) }
+  assert.equal(binding.outcome, 'created')
+  const prompt = createPromptContext({ awr, bindings: bindingsOf({ 'conv-1': binding }) })
+  await prompt.refresh('conv-1', { force: true })
+  const text = prompt.text('conv-1')
+  assert.match(text, /^# AWR work context\n/, 'not a notice')
+  assert.match(text, /AWR marked this context INCOMPLETE/)
+  assert.match(text, /- goal_state_incomplete:/)
+  assert.match(text, /Next Action:/)
+  assert.doesNotMatch(text, /unavailable/)
 })

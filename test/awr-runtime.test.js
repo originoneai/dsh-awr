@@ -232,6 +232,26 @@ test('the real awr prints an error on stderr with a non-zero exit; its code, mes
   assert.deepEqual(await awr.run(root, ['runtime', 'binding']), BINDING_REPORT, 'the plugin goes on after an ordinary error')
 })
 
+test('an error document on stdout that carries a result is kept for callers that can use it; stderr-only errors have none', async (t) => {
+  const dir = scratch(t)
+  const document = { ok: false, error: { code: 'ContextIncomplete', message: 'context incomplete', details: { incomplete_checkpoint_allowed: true } }, work_context: { rendered_context: 'Next Action:\nx' }, completeness: { source_fresh: true } }
+  writeFileSync(join(dir, 'awr'), `#!/bin/sh\ncase "$*" in\n  *"runtime binding"*) printf '%s' '${JSON.stringify(BINDING_REPORT)}'; exit 0;;\n  *compile*) printf '%s' '${JSON.stringify(document)}'; printf '%s\\n' '{"code":"ContextIncomplete","message":"context incomplete"}' >&2; exit 1;;\n  *) printf '%s\\n' '{"code":"NotFound","message":"nope"}' >&2; exit 1;;\nesac\n`)
+  chmodSync(join(dir, 'awr'), 0o755)
+  const awr = createAwr({ env: { PATH: dir } })
+  const root = project(t)
+  await assert.rejects(awr.run(root, ['context', 'compile']), (error) => {
+    assert.equal(error.details.code, 'ContextIncomplete')
+    assert.equal(error.details.awrDocument.work_context.rendered_context, 'Next Action:\nx')
+    assert.equal(error.details.awrDocument.completeness.source_fresh, true)
+    return true
+  })
+  await assert.rejects(awr.run(root, ['work', 'show', 'X']), (error) => {
+    assert.equal(error.details.code, 'NotFound')
+    assert.equal(error.details.awrDocument, undefined)
+    return true
+  })
+})
+
 test('an error document after a warning line on stderr is still read, and the nested error form too', async (t) => {
   const dir = scratch(t)
   failingAwr(dir, `warning: slow disk\n${JSON.stringify({ ok: false, error: { code: 'NotFound', message: 'not found: work X' } })}`)
