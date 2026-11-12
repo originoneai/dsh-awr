@@ -14,6 +14,7 @@ work_items:
   - Mark uncertain progress as unverified and define acceptance criteria for the next executable task.
   depends_on: []
   id: INTAKE-001
+  goal: intake-goal
   kind: intake
   next_action: Run awr intake inspect and read sources for each gap; add goal references, acceptance criteria, and next actions, then inspect again.
   priority: P0
@@ -21,3 +22,244 @@ work_items:
   status: ready
   summary: This is a new intake task; it does not establish whether existing functionality is implemented or accepted.
   title: Verify project goals, current state, and the next deliverable
+- id: DSH-001
+  title: Run the AWR L0 session workflow from a real DeepSeek Harness install
+  kind: verification
+  status: ready
+  priority: P0
+  required: true
+  goal: intake-goal
+  depends_on: []
+  summary: Nothing in this repository has been run against DSH. Establish the baseline on a disposable project before writing plugin code.
+  acceptance:
+  - The DSH version, install source and check date are recorded in this repository.
+  - From a DSH conversation, awr session start, context compile, session checkpoint and session end succeed on a disposable AWR project and their receipts are retained.
+  - awr-mcp is connected to DSH and awr_project_status returns the disposable project's identity.
+  next_action: Install a pinned DSH release, create a disposable AWR project, and run the L0 session workflow from DSH's shell tool and over MCP.
+- id: DSH-002
+  title: Confirm the DSH plugin surfaces the design relies on
+  kind: verification
+  status: planned
+  priority: P0
+  required: true
+  goal: intake-goal
+  depends_on: [DSH-001]
+  summary: The surface names in README.md come from documentation summaries. Each must be checked against the pinned DSH version's source or a running instance.
+  acceptance:
+  - Every DSH surface in the README capability table is marked confirmed, changed or absent, with a source file or doc reference for the pinned version.
+  - The README open questions on a blockable pre-tool-call hook, the MCP config format and subagent permission presets are answered or explicitly left open with the reason.
+  next_action: Read the pinned DSH source for session, system-prompt, mcp, commands, compaction, tools and subagent subsystems and update README.md.
+- id: DSH-003
+  title: Add the DeepSeek Harness L1 host note to the AWR repository
+  kind: documentation
+  status: planned
+  priority: P1
+  required: false
+  goal: intake-goal
+  depends_on: [DSH-001]
+  summary: AWR's integration rules ask for an L1 note that records only host-specific differences and a dated check. It lives in originoneai/agent-work-runtime, not here.
+  acceptance:
+  - A pull request to originoneai/agent-work-runtime adds docs/integrations/deepseek-harness.md with merge paths, native session IDs, the dated DSH version check and known limits.
+  next_action: Draft the note from the DSH-001 record and open the pull request in the AWR repository.
+- id: DSH-010
+  title: Create the plugin package skeleton that DSH loads
+  kind: implementation
+  status: planned
+  priority: P0
+  required: true
+  goal: intake-goal
+  depends_on: [DSH-002]
+  acceptance:
+  - The package builds, declares its dsh manifest in package.json, and exports name and apply.
+  - After a local link install, the plugin appears in the DSH composition dump and its apply function runs.
+  - A test command runs in CI or locally and is documented in README.md.
+  next_action: Scaffold the package with the make-dsh-plugin skill and install it through a local link.
+- id: DSH-011
+  title: Select the awr binary and refuse to run on an incompatible runtime
+  kind: implementation
+  status: planned
+  priority: P0
+  required: true
+  goal: intake-goal
+  depends_on: [DSH-010]
+  acceptance:
+  - The plugin uses the cli path from .awr/runtime-binding.json when present and awr on PATH otherwise.
+  - A missing binary, schema mismatch, Unsupported result or migration prompt stops the plugin with a visible message and performs no migrate, restore or downgrade.
+  - Tests cover the bound, unbound, missing and mismatch cases.
+  next_action: Implement the resolver and an argv runner that every other capability calls.
+- id: DSH-012
+  title: Mount awr-mcp for the session's project
+  kind: implementation
+  status: planned
+  priority: P0
+  required: true
+  goal: intake-goal
+  depends_on: [DSH-011]
+  acceptance:
+  - In a DSH conversation opened on an initialized AWR project, the model can call awr_project_status and receives that project's identity.
+  - Two conversations on different projects do not see each other's project.
+  next_action: Register the stdio server through the confirmed MCP manager surface, keyed by project root.
+- id: DSH-013
+  title: Bind each DSH conversation to an AWR session without claiming
+  kind: implementation
+  status: planned
+  priority: P0
+  required: true
+  goal: intake-goal
+  depends_on: [DSH-011]
+  acceptance:
+  - A new DSH conversation produces an AWR client binding with client generic and external session dsh:<session id>.
+  - Binding never acquires a claim and never takes over another active session's claim.
+  - A forked or resumed DSH conversation maps to the correct AWR session, shown by session show.
+  next_action: Implement the bind call on the confirmed session-created surface and persist the mapping.
+- id: DSH-014
+  title: Inject AWR work context into the DSH prompt
+  kind: implementation
+  status: planned
+  priority: P0
+  required: true
+  goal: intake-goal
+  depends_on: [DSH-013]
+  acceptance:
+  - The assembled prompt contains the bound work's next action, open loops and compiled context.
+  - After a native compaction the injected context is present again in the next request.
+  - SourceStale and BudgetExceeded are surfaced to the conversation and are not bypassed or truncated away.
+  next_action: Register a required prompt context that renders from awr status and context compile, cached by project revision.
+- id: DSH-015
+  title: Provide /awr slash commands for status, claim, checkpoint and end
+  kind: implementation
+  status: planned
+  priority: P0
+  required: true
+  goal: intake-goal
+  depends_on: [DSH-013]
+  acceptance:
+  - Each command runs the matching awr operation and shows its result or error.
+  - Every mutating command sends the current expected revision and reports a revision conflict instead of retrying blindly.
+  next_action: Register the commands on the confirmed command registry surface.
+- id: DSH-020
+  title: Build the unattended takeover orchestration as a host-independent module
+  kind: implementation
+  status: planned
+  priority: P0
+  required: true
+  goal: intake-goal
+  depends_on: [DSH-011]
+  summary: Preflight, init preview, draft handoff, fingerprint-checked accept and the bounded intake inspect loop. It calls awr only through argv and uses no DSH API, so it can later move into the AWR CLI.
+  acceptance:
+  - Given a draft-review callback, the module takes an uninitialized fixture project to an accepted init and a final intake inspect result with no human input.
+  - Each step is persisted and a run interrupted at any step resumes from that step.
+  - A failure before accept leaves the fixture project byte-identical.
+  - Secret-boundary hits, source_unreadable, Unsupported, migration prompts and an existing active session each stop the run with a recorded reason.
+  - Default runs write only under .awr/ and never commit or push.
+  next_action: Define the step state machine and its persisted record, then implement it against fixture projects.
+- id: DSH-021
+  title: Add the takeover button, background subagent and receipt panel in DSH
+  kind: implementation
+  status: planned
+  priority: P0
+  required: true
+  goal: intake-goal
+  depends_on: [DSH-020, DSH-002]
+  acceptance:
+  - One click on an uninitialized project starts the run in the background and the user's conversation stays usable.
+  - The draft-review step runs in a subagent limited to reading files, calling awr and writing the takeover scope.
+  - Goals the material cannot establish are recorded as candidate or needs_confirmation and no question is asked during the run.
+  - The receipt lists what was mapped, what was created and what awaits confirmation.
+  next_action: Wire the DSH-020 module to a DSH command and client entry point using the surfaces confirmed in DSH-002.
+- id: DSH-022
+  title: Prove the one-click takeover on real existing projects
+  kind: verification
+  status: planned
+  priority: P0
+  required: true
+  goal: intake-goal
+  depends_on: [DSH-021, DSH-012, DSH-013, DSH-014]
+  acceptance:
+  - On at least two existing projects with prior development history, one click reaches a final organization state with no human input, and the receipts are retained.
+  - For each project the resulting goals and work items are reviewed against its README and history, and any invented or wrong intent is recorded as a defect.
+  - After takeover, a new DSH conversation on the project shows the AWR context without further setup.
+  next_action: Pick two existing projects with the owner, run the takeover on copies, and record the results.
+- id: DSH-030
+  title: Prompt for AWR checkpoints at turn boundaries
+  kind: implementation
+  status: planned
+  priority: P1
+  required: false
+  goal: intake-goal
+  depends_on: [DSH-013]
+  summary: DSH documents no blockable hook before compaction, so checkpoints have to be saved ahead of it.
+  acceptance:
+  - After meaningful turns the model is prompted to checkpoint and the saved digest, next action and open loops are written by the model from the conversation, not generated by the plugin.
+  - A session disposal never ends the AWR session as completed.
+  next_action: Listen to persisted turn-end events and define when a prompt is issued.
+- id: DSH-031
+  title: Report native compactions to AWR
+  kind: implementation
+  status: planned
+  priority: P1
+  required: false
+  goal: intake-goal
+  depends_on: [DSH-013]
+  acceptance:
+  - Each completed DSH compaction is recorded through AWR's context-continuity protocol with the measurement scope and basis DSH actually provides.
+  - Estimated values are reported as estimated and are never presented as host-reported occupancy.
+  next_action: Map DSH compaction session events to the observation request and confirm which token figures exist.
+- id: DSH-032
+  title: Bundle a skill that teaches the AWR workflow
+  kind: implementation
+  status: planned
+  priority: P1
+  required: false
+  goal: intake-goal
+  depends_on: [DSH-010]
+  acceptance:
+  - The skill is discovered by DSH and covers preview then accept, expected revisions, evidence registration and the conditions for work complete.
+  next_action: Write the skill and confirm DSH's skill discovery path for plugin-bundled skills.
+- id: DSH-040
+  title: Decide whether the takeover orchestration moves into the AWR CLI
+  kind: decision
+  status: planned
+  priority: P1
+  required: false
+  goal: intake-goal
+  depends_on: [DSH-022]
+  summary: The module is written host-independent so it can become an awr takeover command. The owner decides after it has been proven on real projects.
+  acceptance:
+  - The owner's decision and its reason are recorded, and if accepted a work item exists in the AWR repository.
+  next_action: Present the DSH-022 results to the owner and record the decision.
+- id: DSH-041
+  title: Choose the license and visibility, then publish an installable release
+  kind: release
+  status: planned
+  priority: P1
+  required: false
+  goal: intake-goal
+  depends_on: [DSH-022]
+  summary: The repository is private and has no LICENSE. Both are owner decisions.
+  acceptance:
+  - The owner's license and visibility choices are recorded and applied.
+  - A tagged release installs through dsh plugin add from its published source on a clean DSH install.
+  next_action: Ask the owner for the license and visibility decisions.
+- id: DSH-050
+  title: Suggest evidence candidates from tool results
+  kind: implementation
+  status: planned
+  priority: P2
+  required: false
+  goal: intake-goal
+  depends_on: [DSH-013]
+  acceptance:
+  - Test runs and commits observed in tool results produce a suggestion to register evidence, and nothing is registered without the model or user doing so.
+  next_action: Define which tool results count as candidates.
+- id: DSH-051
+  title: Show AWR state in a DSH panel
+  kind: implementation
+  status: planned
+  priority: P2
+  required: false
+  goal: intake-goal
+  depends_on: [DSH-013]
+  acceptance:
+  - A panel shows the bound work item, claim expiry and blockers, and matches awr status for the same project.
+  next_action: Confirm the client and slot surfaces in DSH-002, then design the panel.
