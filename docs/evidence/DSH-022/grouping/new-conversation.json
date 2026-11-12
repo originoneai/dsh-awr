@@ -1,0 +1,16 @@
+{
+  "project": "modelcontextprotocol/experimental-ext-grouping (17 commits)",
+  "dsh": "desktop 0.2.2-rc.1, real model DeepSeek-V4.1-Flash via the account provider",
+  "takeover": {
+    "seconds": 68.8,
+    "result": "needs_organization",
+    "steps": "preflight, preview, review, accept, organize, receipt all done, no human input"
+  },
+  "new_conversation_created_after_the_takeover": {
+    "session": "session-beba632e-34f8-4794-b7f6-56a412ef53c4",
+    "bound_in_awr_to": "01M77MWTJN09SHY2DZMJ7YZX6A",
+    "setup_done_by_the_user": "none",
+    "question": "Using only the AWR work context in your prompt (do not read any files), name this project's goal and the work item you are bound to, in two sentences.",
+    "answer": "The project goal is goal:01M77MS0GACXJ7XST6T7SY3EF8@r1 - \"Explore organization of MCP primitives beyond flat lists\" - the Primitive Grouping Interest Group's objective, currently at status candidate, with success criteria spanning requirements/evaluation, a written recommendation, and a demonstrated interoperable convention. The work item I am bound to is REQ-ALIGN (01M77MS0GA0NGBYMA6TQ890GC6@r1), \"Requirements alignment\", status planned (README Work Tracking shows it In Progress under All facilitators), whose next action is to review the approaches in docs/approaches.md and record common requirements and gaps."
+  }
+}

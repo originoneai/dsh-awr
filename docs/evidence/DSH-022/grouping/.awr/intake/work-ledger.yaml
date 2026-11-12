@@ -1,0 +1,77 @@
+goals:
+- id: primitive-grouping-ig
+  status: candidate
+  success_criteria:
+  - 'Short-term: a document records consensus on requirements and an evaluation of existing approaches (README.md).'
+  - 'Medium-term: a written recommendation selects a convention, a protocol extension, or both (README.md).'
+  - 'Long-term: an interoperable grouping convention is demonstrated across MCP servers and clients (README.md).'
+  summary: |-
+    The Primitive Grouping Interest Group explores how MCP Primitives (Tools, Resources, Prompts, Tasks) might be organized beyond the flat lists maintained by the protocol, and how such organization might benefit MCP servers and clients. Its stated outputs are requirements gathering, pattern exploration, and a shared repository of reference implementations and experimental findings; it does not approve spec changes or mandate implementation behavior, and its contents are exploratory rather than official MCP specifications.
+
+    Provenance: README.md, CONTRIBUTING.md, docs/experimental-findings.md, experiments/deterministic-groups/README.md, experiments/deterministic-groups/conformance/README.md
+  title: Explore organization of MCP primitives beyond flat lists
+work_items:
+- acceptance:
+  - 'docs/approaches.md and linked documents record the reviewed approaches, the common requirements they imply, and the gaps found.'
+  - 'The README Work Tracking row for Requirements alignment records the review outcome.'
+  depends_on: []
+  goal: primitive-grouping-ig
+  id: REQ-ALIGN
+  kind: research
+  next_action: 'Review the approaches listed in docs/approaches.md and record common requirements and gaps in the repository.'
+  priority: P0
+  required: true
+  status: planned
+  summary: 'README.md Work Tracking lists this row as In Progress, championed by All facilitators, with the note Review approaches, identify common requirements and gaps; completion is not verified in this checkout.'
+  title: Requirements alignment
+- acceptance:
+  - 'A dedicated repository section lists implementations and evaluation results, and README.md links to it.'
+  - 'Each listed finding states what worked, what did not, and what remains untested.'
+  depends_on: []
+  goal: primitive-grouping-ig
+  id: FINDINGS-SECTION
+  kind: docs
+  next_action: 'Review docs/experimental-findings.md against the README row, add missing evaluation results and links, and record the outcome in README.md Work Tracking.'
+  priority: P1
+  required: false
+  status: planned
+  summary: 'README.md lists Experimental findings repo section as Proposed with champion TBD, noting a dedicated repo section for implementations and evaluation results. docs/experimental-findings.md already contains an Implementations section, but the README row remains Proposed and completion is not verified.'
+  title: Experimental findings repository section
+- acceptance:
+  - 'A v0.1 document describes a grouping pattern for MCP primitives and is explicitly labeled a convention rather than a spec change.'
+  - 'The document is reviewed and linked from the README.md Work Tracking row.'
+  depends_on: []
+  goal: primitive-grouping-ig
+  id: GROUPING-CONVENTION-0.1
+  kind: spec
+  next_action: 'Draft the v0.1 grouping pattern as a convention document and bring it to the group for review.'
+  priority: P1
+  required: false
+  status: planned
+  summary: 'README.md Work Tracking lists MCP Grouping Convention v0.1 as Proposed with champion TBD, described as a documented pattern (not spec) for grouping of primitives.'
+  title: MCP Grouping Convention v0.1
+- acceptance:
+  - 'Canonicalization vectors are exercised by a non-JavaScript implementation, including the unresolved Unicode-code-point versus RFC 8785 ordering question.'
+  - 'An adapter other than reference-adapter.mjs passes the implemented conformance checks reported by experiments/deterministic-groups/conformance/run.mjs.'
+  depends_on: []
+  goal: primitive-grouping-ig
+  id: INTEROP-SECOND-IMPL
+  kind: conformance
+  next_action: 'Add shared cross-language canonicalization vectors and an independent adapter, then run the portable suite and record the result.'
+  priority: P2
+  required: false
+  status: planned
+  summary: 'experiments/deterministic-groups/README.md says shared vectors and a second independent implementation are required before claiming interoperability. conformance/README.md states only JavaScript has been run and that reference-adapter.mjs is not a second implementation.'
+  title: Shared canonicalization vectors and a second independent implementation
+- acceptance:
+  - 'Each gate that conformance/contract.json lists as pending has a passing test instead of a pending entry, covering pagination snapshot semantics, notification delivery, TTL expiry, transport reconnect, and native Host activation.'
+  depends_on: []
+  goal: primitive-grouping-ig
+  id: HOST-INTEGRATION-GATES
+  kind: integration
+  next_action: 'Agree the missing interfaces, add the pending gate tests, and rerun the conformance suite with the gates reported as implemented.'
+  priority: P2
+  required: false
+  status: planned
+  summary: 'experiments/deterministic-groups/conformance/README.md names pagination snapshot semantics, actual notification delivery, TTL expiry, transport reconnect, and native Host activation as the next tests, and contract.json separately lists them as pending gates.'
+  title: Close pending Host integration gates

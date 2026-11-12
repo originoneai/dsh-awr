@@ -1,0 +1,193 @@
+{
+  "version": 1,
+  "id": "cca61bab6823",
+  "projectRoot": "/Users/mac/Documents/deepseek-harness/dsh001-fixture",
+  "startedAt": 1794479191414,
+  "updatedAt": 1794479260233,
+  "status": "completed",
+  "rounds": 1,
+  "steps": {
+    "preflight": {
+      "status": "done",
+      "startedAt": 1794479191414,
+      "finishedAt": 1794479191421,
+      "result": {
+        "initialized": false,
+        "adopted": false,
+        "gitHead": "23ecff1dd5a7f455491f13c3cb922d15139b078b"
+      }
+    },
+    "preview": {
+      "status": "done",
+      "startedAt": 1794479191421,
+      "finishedAt": 1794479191588,
+      "result": {
+        "draftPath": "/Users/mac/.local/state/dsh-awr/takeovers/dsh001-fixture-6d418d8e78f2/draft.json",
+        "inventoryFingerprint": "68381112d91ff45ffd88124ef7954ed12233d94ab9259cb21d948ce1d7005242",
+        "inventory": 36,
+        "sources": [
+          {
+            "path": ".awr/intake/work-ledger.yaml",
+            "domain": "ledger",
+            "adapter": "yaml-ledger-v1",
+            "role": "primary"
+          },
+          {
+            "path": "README.md",
+            "domain": "plan",
+            "adapter": "markdown-heading-v1",
+            "role": "supporting"
+          }
+        ],
+        "ambiguousDomains": [],
+        "gaps": [
+          "No authoritative goal source was identified; the proposed intake source needs review.",
+          "No authoritative ledger source was identified; the proposed intake source needs review."
+        ],
+        "generatedFiles": [
+          ".awr/intake/work-ledger.yaml"
+        ],
+        "git": {
+          "head": "23ecff1dd5a7f455491f13c3cb922d15139b078b",
+          "meaning": "Observed Git state only; implementation and business acceptance have not been inferred.",
+          "tracked_changes": ""
+        }
+      }
+    },
+    "review": {
+      "status": "done",
+      "startedAt": 1794479191589,
+      "finishedAt": 1794479259894,
+      "result": {
+        "reviewedPath": "/Users/mac/.local/state/dsh-awr/takeovers/dsh001-fixture-6d418d8e78f2/reviewed.json",
+        "reviewed": true,
+        "changedFiles": [
+          ".awr/intake/work-ledger.yaml"
+        ],
+        "notes": "Established from README.md (mission, scope, success criteria, Work Tracking), CONTRIBUTING.md, and the deterministic-groups and conformance READMEs; those materials frame the work as exploratory, not accepted protocol. The goal is a candidate becauseREADME states the purpose explicitly, while all work items stay planned since In Progress/Proposed labels are not verified completion. Champions (TBD), dates, and unagreed wire details remain unconfirmed."
+      }
+    },
+    "accept": {
+      "status": "done",
+      "startedAt": 1794479259894,
+      "attempted": true,
+      "fingerprint": "sha256:8ce52a10dbcdd1f7304e19b332b255fed2727b618992a08dd8e9b93af5da828f",
+      "finishedAt": 1794479260193,
+      "result": {
+        "fingerprint": "sha256:8ce52a10dbcdd1f7304e19b332b255fed2727b618992a08dd8e9b93af5da828f",
+        "writes": [
+          {
+            "action": "create",
+            "path": ".awr/project.toml"
+          },
+          {
+            "action": "replace",
+            "path": ".gitignore"
+          },
+          {
+            "action": "create",
+            "path": ".awr/intake/inventory.json"
+          },
+          {
+            "action": "create",
+            "path": ".awr/intake/project.toml"
+          },
+          {
+            "action": "create",
+            "path": ".awr/intake/work-ledger.yaml"
+          }
+        ],
+        "writtenOutsideAwr": [
+          ".gitignore"
+        ]
+      }
+    },
+    "organize": {
+      "status": "done",
+      "startedAt": 1794479260197,
+      "finishedAt": 1794479260225,
+      "result": {
+        "state": "needs_organization",
+        "gapTotal": 6,
+        "goalTotal": 1,
+        "executableWorkTotal": 0,
+        "goals": [
+          {
+            "key": "primitive-grouping-ig",
+            "status": "candidate",
+            "title": "Explore organization of MCP primitives beyond flat lists"
+          }
+        ],
+        "actions": [
+          "goals",
+          "recheck"
+        ],
+        "gaps": [
+          {
+            "code": "goal_unconfirmed",
+            "action": "goals",
+            "detail": "Goal is a draft, unknown, stale, empty or an intake placeholder. Preserve uncertain intent and record its source before declaring it active.",
+            "target": "primitive-grouping-ig"
+          },
+          {
+            "code": "work_goal_unresolved",
+            "action": "goals",
+            "detail": "Goal primitive-grouping-ig is present but not confirmed: status candidate is not confirmed. Record source-backed confirmation before linking open work to it.",
+            "target": "FINDINGS-SECTION"
+          },
+          {
+            "code": "work_goal_unresolved",
+            "action": "goals",
+            "detail": "Goal primitive-grouping-ig is present but not confirmed: status candidate is not confirmed. Record source-backed confirmation before linking open work to it.",
+            "target": "GROUPING-CONVENTION-0.1"
+          },
+          {
+            "code": "work_goal_unresolved",
+            "action": "goals",
+            "detail": "Goal primitive-grouping-ig is present but not confirmed: status candidate is not confirmed. Record source-backed confirmation before linking open work to it.",
+            "target": "HOST-INTEGRATION-GATES"
+          },
+          {
+            "code": "work_goal_unresolved",
+            "action": "goals",
+            "detail": "Goal primitive-grouping-ig is present but not confirmed: status candidate is not confirmed. Record source-backed confirmation before linking open work to it.",
+            "target": "INTEROP-SECOND-IMPL"
+          },
+          {
+            "code": "work_goal_unresolved",
+            "action": "goals",
+            "detail": "Goal primitive-grouping-ig is present but not confirmed: status candidate is not confirmed. Record source-backed confirmation before linking open work to it.",
+            "target": "REQ-ALIGN"
+          }
+        ],
+        "sources": [
+          {
+            "domain": "ledger",
+            "freshness": "fresh",
+            "locator": "file:///Users/mac/Documents/deepseek-harness/dsh001-fixture/.awr/intake/work-ledger.yaml",
+            "revision": 1,
+            "role": "primary"
+          },
+          {
+            "domain": "plan",
+            "freshness": "fresh",
+            "locator": "file:///Users/mac/Documents/deepseek-harness/dsh001-fixture/README.md",
+            "revision": 1,
+            "role": "supporting"
+          }
+        ],
+        "truncated": false,
+        "rounds": 0
+      }
+    },
+    "receipt": {
+      "status": "done",
+      "startedAt": 1794479260226,
+      "finishedAt": 1794479260233,
+      "result": {
+        "receiptPath": "/Users/mac/Documents/deepseek-harness/dsh001-fixture/.awr/takeover/receipt.json"
+      }
+    }
+  },
+  "stop": null
+}

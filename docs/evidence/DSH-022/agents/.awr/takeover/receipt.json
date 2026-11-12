@@ -1,0 +1,112 @@
+{
+  "version": 1,
+  "run": "c4c15c94c535",
+  "project": "/Users/mac/Documents/deepseek-harness/dsh001-fixture",
+  "startedAt": 1794478991214,
+  "finishedAt": 1794479017576,
+  "result": "needs_organization",
+  "mapped": {
+    "sources": [
+      {
+        "path": ".awr/intake/work-ledger.yaml",
+        "domain": "ledger",
+        "adapter": "yaml-ledger-v1",
+        "role": "primary"
+      },
+      {
+        "path": "README.md",
+        "domain": "plan",
+        "adapter": "markdown-heading-v1",
+        "role": "supporting"
+      }
+    ],
+    "inventory": 50
+  },
+  "created": {
+    "writes": [
+      {
+        "action": "create",
+        "path": ".awr/project.toml"
+      },
+      {
+        "action": "replace",
+        "path": ".gitignore"
+      },
+      {
+        "action": "create",
+        "path": ".awr/intake/inventory.json"
+      },
+      {
+        "action": "create",
+        "path": ".awr/intake/project.toml"
+      },
+      {
+        "action": "create",
+        "path": ".awr/intake/work-ledger.yaml"
+      }
+    ],
+    "writtenOutsideAwr": [
+      ".gitignore"
+    ],
+    "recovered": false
+  },
+  "reviewed": {
+    "byCallback": true,
+    "changedFiles": [
+      ".awr/intake/work-ledger.yaml"
+    ],
+    "rounds": 1
+  },
+  "organization": {
+    "state": "needs_organization",
+    "gapTotal": 4,
+    "goalTotal": 1,
+    "executableWorkTotal": 0,
+    "rounds": 0,
+    "actions": [
+      "goals",
+      "work",
+      "recheck"
+    ],
+    "gaps": [
+      {
+        "code": "goal_unconfirmed",
+        "action": "goals",
+        "detail": "Goal is a draft, unknown, stale, empty or an intake placeholder. Preserve uncertain intent and record its source before declaring it active.",
+        "target": "claude-subagent-collection"
+      },
+      {
+        "code": "work_goal_unresolved",
+        "action": "goals",
+        "detail": "Goal claude-subagent-collection is present but not confirmed: status candidate is not confirmed. Record source-backed confirmation before linking open work to it.",
+        "target": "INTAKE-001"
+      },
+      {
+        "code": "intake_work_only",
+        "action": "work",
+        "detail": "This task organizes the project. Complete the organization and create concrete delivery work; an intake task is not business execution readiness.",
+        "target": "INTAKE-001"
+      },
+      {
+        "code": "business_work_missing",
+        "action": "work",
+        "detail": "Only intake work is present. Organizing a baseline does not establish the business delivery scope; add the actual delivery work before claiming project completion.",
+        "target": "project"
+      }
+    ]
+  },
+  "awaitingConfirmation": [
+    {
+      "key": "claude-subagent-collection",
+      "status": "candidate",
+      "title": "Maintain the Claude Code specialist subagent collection"
+    }
+  ],
+  "git": {
+    "headBefore": "d9e72d1879d1d04851d9ffbe1ff65c0b0f78e609",
+    "headAfter": "d9e72d1879d1d04851d9ffbe1ff65c0b0f78e609",
+    "committed": false,
+    "pushed": false,
+    "headMoved": false
+  }
+}

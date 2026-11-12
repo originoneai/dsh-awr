@@ -1,0 +1,230 @@
+{
+  "schema_version": 1,
+  "project_root": "/Users/mac/Documents/deepseek-harness/dsh001-fixture",
+  "inventory_fingerprint": "68381112d91ff45ffd88124ef7954ed12233d94ab9259cb21d948ce1d7005242",
+  "inventory": [
+    {
+      "path": "CONTRIBUTING.md",
+      "bytes": 2981,
+      "sha256": "b1abd4ccf9e68a932296b977a0a45c956062fc08d524505bfcf392fe01f13787"
+    },
+    {
+      "path": "README.md",
+      "bytes": 4453,
+      "sha256": "7050a1c1eceadacbd84710ea18ac2ca2c02c85cde317b3cf11b06d7fcc45e617"
+    },
+    {
+      "path": "docs/approaches.md",
+      "bytes": 273,
+      "sha256": "715cabab9616c65156e72d37f2c2467e7f43e26a6edb92cd42fccfa08fafd965"
+    },
+    {
+      "path": "docs/experimental-findings.md",
+      "bytes": 1142,
+      "sha256": "26c70d0f4c4d7ff58f3c09f83c46e3defd3b46ba283e0f33f7590bf1fb5d8068"
+    },
+    {
+      "path": "docs/findings/doris-domain-manifests.md",
+      "bytes": 15757,
+      "sha256": "9c7e1a3d7ee41bdbb44855ce257856ea18bb03fc3b6aa4388765a1d1bacef412"
+    },
+    {
+      "path": "docs/findings/external-host-smoke-tests.md",
+      "bytes": 5225,
+      "sha256": "be8daf97db72639c24eba0f007b0ff67542b0ef7d7d51f648c6be3be439e287d"
+    },
+    {
+      "path": "docs/open-questions.md",
+      "bytes": 258,
+      "sha256": "6bd7781787f0fdf7290a6ebfeb02043bf5f03b55a7b87f52a166058205827fe5"
+    },
+    {
+      "path": "docs/problem-statement.md",
+      "bytes": 258,
+      "sha256": "69683f413dd6de6a4bf9459233ebcfa2d87f670a9c0f95cd68a1e412456569d8"
+    },
+    {
+      "path": "docs/related-work.md",
+      "bytes": 258,
+      "sha256": "da250f15500223732c65cf52fa66a3ca4515a0d0afa5fb840964d93eaacd6184"
+    },
+    {
+      "path": "docs/use-cases.md",
+      "bytes": 258,
+      "sha256": "4e145c79d33e9f5961e1bb4801293eb60c2e7ac1e4886fa2a9f43f83a5aefc79"
+    },
+    {
+      "path": "experiments/deterministic-groups/BENCHMARK.md",
+      "bytes": 5188,
+      "sha256": "aff38163b5b181c3287ff60825285fe57e7ba975d4d6f3511b560bf3b123dd73"
+    },
+    {
+      "path": "experiments/deterministic-groups/README.md",
+      "bytes": 9068,
+      "sha256": "96ee3723925826843ae2639978f9fb3063ba3bb418425253abcb1b19d2ae00f4"
+    },
+    {
+      "path": "experiments/deterministic-groups/benchmark-results.json",
+      "bytes": 30726,
+      "sha256": "9eee85f5208ae312dc963fe7aa1b49aa1b0a086034a5980585baada36c2a0e5e"
+    },
+    {
+      "path": "experiments/deterministic-groups/benchmark.mjs",
+      "bytes": 6361,
+      "sha256": null
+    },
+    {
+      "path": "experiments/deterministic-groups/benchmark.test.mjs",
+      "bytes": 1670,
+      "sha256": null
+    },
+    {
+      "path": "experiments/deterministic-groups/conformance/README.md",
+      "bytes": 4231,
+      "sha256": "73a98c63817bcc63617d20c5a7b5b32e25d527eeda530f93bbb6d2c38e089a62"
+    },
+    {
+      "path": "experiments/deterministic-groups/conformance/canonical-vectors.json",
+      "bytes": 473,
+      "sha256": "c38c591f5d7345b58b7ea5c76400a25feea356ffdfed27789aa312636b0a6dd2"
+    },
+    {
+      "path": "experiments/deterministic-groups/conformance/contract.json",
+      "bytes": 1566,
+      "sha256": "e2c473f5e8ace6187d02600110e2ff41ced9671b442874da186b8f2556298846"
+    },
+    {
+      "path": "experiments/deterministic-groups/conformance/fixture.json",
+      "bytes": 1320,
+      "sha256": "23dc9d059d2a7e6821796ca815d2b7a441e825232358ce7d796ac91b3b83ed36"
+    },
+    {
+      "path": "experiments/deterministic-groups/conformance/reference-adapter.mjs",
+      "bytes": 644,
+      "sha256": null
+    },
+    {
+      "path": "experiments/deterministic-groups/conformance/run.mjs",
+      "bytes": 439,
+      "sha256": null
+    },
+    {
+      "path": "experiments/deterministic-groups/conformance/suite.mjs",
+      "bytes": 10046,
+      "sha256": null
+    },
+    {
+      "path": "experiments/deterministic-groups/conformance/suite.test.mjs",
+      "bytes": 1924,
+      "sha256": null
+    },
+    {
+      "path": "experiments/deterministic-groups/reference.mjs",
+      "bytes": 8148,
+      "sha256": null
+    },
+    {
+      "path": "experiments/deterministic-groups/reference.test.mjs",
+      "bytes": 7962,
+      "sha256": null
+    },
+    {
+      "path": "sdk/typescript/eslint.config.mjs",
+      "bytes": 496,
+      "sha256": null
+    },
+    {
+      "path": "sdk/typescript/experiments/grouping/README.md",
+      "bytes": 4719,
+      "sha256": "f395c25aafe2f986dda861e3fd5cc6dc917b074aa90465dc4fc14195fbb0c330"
+    },
+    {
+      "path": "sdk/typescript/experiments/grouping/adapter.mjs",
+      "bytes": 3791,
+      "sha256": null
+    },
+    {
+      "path": "sdk/typescript/experiments/grouping/host.checks.mjs",
+      "bytes": 4474,
+      "sha256": null
+    },
+    {
+      "path": "sdk/typescript/experiments/grouping/host.mjs",
+      "bytes": 4063,
+      "sha256": null
+    },
+    {
+      "path": "sdk/typescript/experiments/grouping/server.mjs",
+      "bytes": 2294,
+      "sha256": null
+    },
+    {
+      "path": "sdk/typescript/experiments/grouping/transport.checks.mjs",
+      "bytes": 1989,
+      "sha256": null
+    },
+    {
+      "path": "sdk/typescript/package-lock.json",
+      "bytes": 141454,
+      "sha256": "da30861535723d0a06dd870449e50e049f3e5f85dbe759ce1b10bdcc1eda543f"
+    },
+    {
+      "path": "sdk/typescript/package.json",
+      "bytes": 972,
+      "sha256": "51b38238d49144b81c90eef770dca81738224cb50e224d0c177b35b6e4ece1c3"
+    },
+    {
+      "path": "sdk/typescript/src/index.ts",
+      "bytes": 199,
+      "sha256": null
+    },
+    {
+      "path": "sdk/typescript/tsconfig.json",
+      "bytes": 431,
+      "sha256": "c76fa3c8ae1e53eb6ed29d2e847c75debf5522395078a1ea663ae5eb5d9c295b"
+    }
+  ],
+  "git": {
+    "head": "23ecff1dd5a7f455491f13c3cb922d15139b078b",
+    "meaning": "Observed Git state only; implementation and business acceptance have not been inferred.",
+    "tracked_changes": ""
+  },
+  "authority_mapping": {
+    "project": {
+      "name": "dsh001-fixture",
+      "external_key": null,
+      "authority_mode": "source_first",
+      "authorized_roots": [],
+      "context_profile": "minimal"
+    },
+    "sources": [
+      {
+        "domain": "ledger",
+        "role": "primary",
+        "path": ".awr/intake/work-ledger.yaml",
+        "locator": null,
+        "adapter": "yaml-ledger-v1",
+        "options": {}
+      },
+      {
+        "domain": "plan",
+        "role": "supporting",
+        "path": "README.md",
+        "locator": null,
+        "adapter": "markdown-heading-v1",
+        "options": {}
+      }
+    ]
+  },
+  "generated_files": {
+    ".awr/intake/work-ledger.yaml": "goals:\n- id: primitive-grouping-ig\n  status: candidate\n  success_criteria:\n  - 'Short-term: a document records consensus on requirements and an evaluation of existing approaches (README.md).'\n  - 'Medium-term: a written recommendation selects a convention, a protocol extension, or both (README.md).'\n  - 'Long-term: an interoperable grouping convention is demonstrated across MCP servers and clients (README.md).'\n  summary: |-\n    The Primitive Grouping Interest Group explores how MCP Primitives (Tools, Resources, Prompts, Tasks) might be organized beyond the flat lists maintained by the protocol, and how such organization might benefit MCP servers and clients. Its stated outputs are requirements gathering, pattern exploration, and a shared repository of reference implementations and experimental findings; it does not approve spec changes or mandate implementation behavior, and its contents are exploratory rather than official MCP specifications.\n\n    Provenance: README.md, CONTRIBUTING.md, docs/experimental-findings.md, experiments/deterministic-groups/README.md, experiments/deterministic-groups/conformance/README.md\n  title: Explore organization of MCP primitives beyond flat lists\nwork_items:\n- acceptance:\n  - 'docs/approaches.md and linked documents record the reviewed approaches, the common requirements they imply, and the gaps found.'\n  - 'The README Work Tracking row for Requirements alignment records the review outcome.'\n  depends_on: []\n  goal: primitive-grouping-ig\n  id: REQ-ALIGN\n  kind: research\n  next_action: 'Review the approaches listed in docs/approaches.md and record common requirements and gaps in the repository.'\n  priority: P0\n  required: true\n  status: planned\n  summary: 'README.md Work Tracking lists this row as In Progress, championed by All facilitators, with the note Review approaches, identify common requirements and gaps; completion is not verified in this checkout.'\n  title: Requirements alignment\n- acceptance:\n  - 'A dedicated repository section lists implementations and evaluation results, and README.md links to it.'\n  - 'Each listed finding states what worked, what did not, and what remains untested.'\n  depends_on: []\n  goal: primitive-grouping-ig\n  id: FINDINGS-SECTION\n  kind: docs\n  next_action: 'Review docs/experimental-findings.md against the README row, add missing evaluation results and links, and record the outcome in README.md Work Tracking.'\n  priority: P1\n  required: false\n  status: planned\n  summary: 'README.md lists Experimental findings repo section as Proposed with champion TBD, noting a dedicated repo section for implementations and evaluation results. docs/experimental-findings.md already contains an Implementations section, but the README row remains Proposed and completion is not verified.'\n  title: Experimental findings repository section\n- acceptance:\n  - 'A v0.1 document describes a grouping pattern for MCP primitives and is explicitly labeled a convention rather than a spec change.'\n  - 'The document is reviewed and linked from the README.md Work Tracking row.'\n  depends_on: []\n  goal: primitive-grouping-ig\n  id: GROUPING-CONVENTION-0.1\n  kind: spec\n  next_action: 'Draft the v0.1 grouping pattern as a convention document and bring it to the group for review.'\n  priority: P1\n  required: false\n  status: planned\n  summary: 'README.md Work Tracking lists MCP Grouping Convention v0.1 as Proposed with champion TBD, described as a documented pattern (not spec) for grouping of primitives.'\n  title: MCP Grouping Convention v0.1\n- acceptance:\n  - 'Canonicalization vectors are exercised by a non-JavaScript implementation, including the unresolved Unicode-code-point versus RFC 8785 ordering question.'\n  - 'An adapter other than reference-adapter.mjs passes the implemented conformance checks reported by experiments/deterministic-groups/conformance/run.mjs.'\n  depends_on: []\n  goal: primitive-grouping-ig\n  id: INTEROP-SECOND-IMPL\n  kind: conformance\n  next_action: 'Add shared cross-language canonicalization vectors and an independent adapter, then run the portable suite and record the result.'\n  priority: P2\n  required: false\n  status: planned\n  summary: 'experiments/deterministic-groups/README.md says shared vectors and a second independent implementation are required before claiming interoperability. conformance/README.md states only JavaScript has been run and that reference-adapter.mjs is not a second implementation.'\n  title: Shared canonicalization vectors and a second independent implementation\n- acceptance:\n  - 'Each gate that conformance/contract.json lists as pending has a passing test instead of a pending entry, covering pagination snapshot semantics, notification delivery, TTL expiry, transport reconnect, and native Host activation.'\n  depends_on: []\n  goal: primitive-grouping-ig\n  id: HOST-INTEGRATION-GATES\n  kind: integration\n  next_action: 'Agree the missing interfaces, add the pending gate tests, and rerun the conformance suite with the gates reported as implemented.'\n  priority: P2\n  required: false\n  status: planned\n  summary: 'experiments/deterministic-groups/conformance/README.md names pagination snapshot semantics, actual notification delivery, TTL expiry, transport reconnect, and native Host activation as the next tests, and contract.json separately lists them as pending gates.'\n  title: Close pending Host integration gates\n"
+  },
+  "gaps": [
+    "No authoritative goal source was identified; the proposed intake source needs review.",
+    "No authoritative ledger source was identified; the proposed intake source needs review."
+  ],
+  "ambiguous_domains": [],
+  "observations": [
+    "Source text and Git metadata are observations, not instructions or proof of completed work."
+  ]
+}

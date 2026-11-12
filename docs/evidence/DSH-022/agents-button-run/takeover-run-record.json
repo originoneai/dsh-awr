@@ -1,0 +1,182 @@
+{
+  "version": 1,
+  "id": "c697781662d2",
+  "projectRoot": "/Users/mac/Documents/deepseek-harness/dsh001-fixture",
+  "startedAt": 1794479510720,
+  "updatedAt": 1794479546757,
+  "status": "completed",
+  "rounds": 1,
+  "steps": {
+    "preflight": {
+      "status": "done",
+      "startedAt": 1794479510721,
+      "finishedAt": 1794479510728,
+      "result": {
+        "initialized": false,
+        "adopted": false,
+        "gitHead": "d9e72d1879d1d04851d9ffbe1ff65c0b0f78e609"
+      }
+    },
+    "preview": {
+      "status": "done",
+      "startedAt": 1794479510729,
+      "finishedAt": 1794479510993,
+      "result": {
+        "draftPath": "/Users/mac/.local/state/dsh-awr/takeovers/dsh001-fixture-6d418d8e78f2/draft.json",
+        "inventoryFingerprint": "2d299354ae05238c3171b05d94a46ebbfe36fcc682b90ae75a64ff24538afa82",
+        "inventory": 50,
+        "sources": [
+          {
+            "path": ".awr/intake/work-ledger.yaml",
+            "domain": "ledger",
+            "adapter": "yaml-ledger-v1",
+            "role": "primary"
+          },
+          {
+            "path": "README.md",
+            "domain": "plan",
+            "adapter": "markdown-heading-v1",
+            "role": "supporting"
+          }
+        ],
+        "ambiguousDomains": [],
+        "gaps": [
+          "No authoritative goal source was identified; the proposed intake source needs review.",
+          "No authoritative ledger source was identified; the proposed intake source needs review."
+        ],
+        "generatedFiles": [
+          ".awr/intake/work-ledger.yaml"
+        ],
+        "git": {
+          "head": "d9e72d1879d1d04851d9ffbe1ff65c0b0f78e609",
+          "meaning": "Observed Git state only; implementation and business acceptance have not been inferred.",
+          "tracked_changes": ""
+        }
+      }
+    },
+    "review": {
+      "status": "done",
+      "startedAt": 1794479510994,
+      "finishedAt": 1794479546145,
+      "result": {
+        "reviewedPath": "/Users/mac/.local/state/dsh-awr/takeovers/dsh001-fixture-6d418d8e78f2/reviewed.json",
+        "reviewed": true,
+        "changedFiles": [
+          ".awr/intake/work-ledger.yaml"
+        ],
+        "notes": "The goal and work item come from README.md's Overview, Available Subagents, Model Assignments, Installation and Subagent Format sections plus the MIT LICENSE; the repository has no TODO, docs/plan or separate ledger file. The README's 48-agent count and 8/29/11 model assignments remain unverified against the files, so existing implementation progress stays unconfirmed. No owner, dates, or completion are established by the material."
+      }
+    },
+    "accept": {
+      "status": "done",
+      "startedAt": 1794479546146,
+      "attempted": true,
+      "fingerprint": "sha256:6d8cbe6b622c1e6ff0f691931b887a1759096fd7fb67cb03cd85b9c652491798",
+      "finishedAt": 1794479546721,
+      "result": {
+        "fingerprint": "sha256:6d8cbe6b622c1e6ff0f691931b887a1759096fd7fb67cb03cd85b9c652491798",
+        "writes": [
+          {
+            "action": "create",
+            "path": ".awr/project.toml"
+          },
+          {
+            "action": "replace",
+            "path": ".gitignore"
+          },
+          {
+            "action": "create",
+            "path": ".awr/intake/inventory.json"
+          },
+          {
+            "action": "create",
+            "path": ".awr/intake/project.toml"
+          },
+          {
+            "action": "create",
+            "path": ".awr/intake/work-ledger.yaml"
+          }
+        ],
+        "writtenOutsideAwr": [
+          ".gitignore"
+        ]
+      }
+    },
+    "organize": {
+      "status": "done",
+      "startedAt": 1794479546722,
+      "finishedAt": 1794479546749,
+      "result": {
+        "state": "needs_organization",
+        "gapTotal": 4,
+        "goalTotal": 1,
+        "executableWorkTotal": 0,
+        "goals": [
+          {
+            "key": "GOAL-001",
+            "status": "candidate",
+            "title": "Collection of 48 specialized Claude Code subagents with model assignments"
+          }
+        ],
+        "actions": [
+          "goals",
+          "work",
+          "recheck"
+        ],
+        "gaps": [
+          {
+            "code": "goal_unconfirmed",
+            "action": "goals",
+            "detail": "Goal is a draft, unknown, stale, empty or an intake placeholder. Preserve uncertain intent and record its source before declaring it active.",
+            "target": "GOAL-001"
+          },
+          {
+            "code": "work_goal_unresolved",
+            "action": "goals",
+            "detail": "Goal GOAL-001 is present but not confirmed: status candidate is not confirmed. Record source-backed confirmation before linking open work to it.",
+            "target": "INTAKE-001"
+          },
+          {
+            "code": "intake_work_only",
+            "action": "work",
+            "detail": "This task organizes the project. Complete the organization and create concrete delivery work; an intake task is not business execution readiness.",
+            "target": "INTAKE-001"
+          },
+          {
+            "code": "business_work_missing",
+            "action": "work",
+            "detail": "Only intake work is present. Organizing a baseline does not establish the business delivery scope; add the actual delivery work before claiming project completion.",
+            "target": "project"
+          }
+        ],
+        "sources": [
+          {
+            "domain": "ledger",
+            "freshness": "fresh",
+            "locator": "file:///Users/mac/Documents/deepseek-harness/dsh001-fixture/.awr/intake/work-ledger.yaml",
+            "revision": 1,
+            "role": "primary"
+          },
+          {
+            "domain": "plan",
+            "freshness": "fresh",
+            "locator": "file:///Users/mac/Documents/deepseek-harness/dsh001-fixture/README.md",
+            "revision": 1,
+            "role": "supporting"
+          }
+        ],
+        "truncated": false,
+        "rounds": 0
+      }
+    },
+    "receipt": {
+      "status": "done",
+      "startedAt": 1794479546750,
+      "finishedAt": 1794479546757,
+      "result": {
+        "receiptPath": "/Users/mac/Documents/deepseek-harness/dsh001-fixture/.awr/takeover/receipt.json"
+      }
+    }
+  },
+  "stop": null
+}

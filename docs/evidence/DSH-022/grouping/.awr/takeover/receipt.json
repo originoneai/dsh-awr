@@ -1,0 +1,123 @@
+{
+  "version": 1,
+  "run": "cca61bab6823",
+  "project": "/Users/mac/Documents/deepseek-harness/dsh001-fixture",
+  "startedAt": 1794479191414,
+  "finishedAt": 1794479260232,
+  "result": "needs_organization",
+  "mapped": {
+    "sources": [
+      {
+        "path": ".awr/intake/work-ledger.yaml",
+        "domain": "ledger",
+        "adapter": "yaml-ledger-v1",
+        "role": "primary"
+      },
+      {
+        "path": "README.md",
+        "domain": "plan",
+        "adapter": "markdown-heading-v1",
+        "role": "supporting"
+      }
+    ],
+    "inventory": 36
+  },
+  "created": {
+    "writes": [
+      {
+        "action": "create",
+        "path": ".awr/project.toml"
+      },
+      {
+        "action": "replace",
+        "path": ".gitignore"
+      },
+      {
+        "action": "create",
+        "path": ".awr/intake/inventory.json"
+      },
+      {
+        "action": "create",
+        "path": ".awr/intake/project.toml"
+      },
+      {
+        "action": "create",
+        "path": ".awr/intake/work-ledger.yaml"
+      }
+    ],
+    "writtenOutsideAwr": [
+      ".gitignore"
+    ],
+    "recovered": false
+  },
+  "reviewed": {
+    "byCallback": true,
+    "changedFiles": [
+      ".awr/intake/work-ledger.yaml"
+    ],
+    "rounds": 1
+  },
+  "organization": {
+    "state": "needs_organization",
+    "gapTotal": 6,
+    "goalTotal": 1,
+    "executableWorkTotal": 0,
+    "rounds": 0,
+    "actions": [
+      "goals",
+      "recheck"
+    ],
+    "gaps": [
+      {
+        "code": "goal_unconfirmed",
+        "action": "goals",
+        "detail": "Goal is a draft, unknown, stale, empty or an intake placeholder. Preserve uncertain intent and record its source before declaring it active.",
+        "target": "primitive-grouping-ig"
+      },
+      {
+        "code": "work_goal_unresolved",
+        "action": "goals",
+        "detail": "Goal primitive-grouping-ig is present but not confirmed: status candidate is not confirmed. Record source-backed confirmation before linking open work to it.",
+        "target": "FINDINGS-SECTION"
+      },
+      {
+        "code": "work_goal_unresolved",
+        "action": "goals",
+        "detail": "Goal primitive-grouping-ig is present but not confirmed: status candidate is not confirmed. Record source-backed confirmation before linking open work to it.",
+        "target": "GROUPING-CONVENTION-0.1"
+      },
+      {
+        "code": "work_goal_unresolved",
+        "action": "goals",
+        "detail": "Goal primitive-grouping-ig is present but not confirmed: status candidate is not confirmed. Record source-backed confirmation before linking open work to it.",
+        "target": "HOST-INTEGRATION-GATES"
+      },
+      {
+        "code": "work_goal_unresolved",
+        "action": "goals",
+        "detail": "Goal primitive-grouping-ig is present but not confirmed: status candidate is not confirmed. Record source-backed confirmation before linking open work to it.",
+        "target": "INTEROP-SECOND-IMPL"
+      },
+      {
+        "code": "work_goal_unresolved",
+        "action": "goals",
+        "detail": "Goal primitive-grouping-ig is present but not confirmed: status candidate is not confirmed. Record source-backed confirmation before linking open work to it.",
+        "target": "REQ-ALIGN"
+      }
+    ]
+  },
+  "awaitingConfirmation": [
+    {
+      "key": "primitive-grouping-ig",
+      "status": "candidate",
+      "title": "Explore organization of MCP primitives beyond flat lists"
+    }
+  ],
+  "git": {
+    "headBefore": "23ecff1dd5a7f455491f13c3cb922d15139b078b",
+    "headAfter": "23ecff1dd5a7f455491f13c3cb922d15139b078b",
+    "committed": false,
+    "pushed": false,
+    "headMoved": false
+  }
+}

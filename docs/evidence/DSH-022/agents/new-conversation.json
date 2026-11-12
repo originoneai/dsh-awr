@@ -1,0 +1,18 @@
+{
+  "project": "wshobson/agents (34 commits), run 2 with the fixed plugin",
+  "dsh": "desktop 0.2.2-rc.1, real model DeepSeek-V4.1-Flash via the account provider",
+  "conversation_that_ran_the_takeover": {
+    "session": "session-df8a0afd-5c35-4799-be07-bcbbb48beb16",
+    "bound_after_takeover_to_awr_session": "01M77MHKNWQ2CPE10M34723QNM",
+    "answer_to_the_context_question": "The project's goal is to maintain the Claude Code specialist subagent collection (a candidate goal, not owner-confirmed) ... The next action for work INTAKE-001 is to run awr intake inspect, then compare README.md against the subagent files' frontmatter and record any mismatches in the ledger as unverified rather than asserting completion."
+  },
+  "new_conversation_created_after_the_takeover": {
+    "session": "session-171ae92d-ebed-4802-89a5-9a0a3a79ecef",
+    "created_at_ms": 1794479150340,
+    "bound_in_awr_to": "01M77MNNCBJB05ME82XK8D12PD",
+    "setup_done_by_the_user": "none",
+    "question": "Using only the AWR work context in your prompt (do not read any files), name this project's goal and its next action in two sentences.",
+    "answer": "The project's goal is to maintain the Claude Code specialist subagent collection: 48 specialized subagents, each assigned haiku, sonnet, or opus by task complexity, though AWR records this only as a candidate goal (r1, goal 01M77MHKFPM187KVN2AEKFTR1) whose owner hasn't confirmed it, which is why this work context is flagged INCOMPLETE (goal_state_incomplete). The next action for work item INTAKE-001 is to run awr intake inspect and then compare README.md against the subagent files' frontmatter, recording any gaps as unverified rather than asserting completion."
+  },
+  "before_the_fix_run_1": "the conversation in the same project had no binding and the model said its prompt contained no AWR work context (run1-findings.json)"
+}

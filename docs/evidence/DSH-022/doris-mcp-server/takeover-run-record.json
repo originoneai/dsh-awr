@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "id": "58dc58da6cf2",
+  "projectRoot": "/Users/mac/Documents/deepseek-harness/dsh001-fixture",
+  "startedAt": 1794479425217,
+  "updatedAt": 1794479425252,
+  "status": "stopped",
+  "rounds": 1,
+  "steps": {
+    "preflight": {
+      "status": "done",
+      "startedAt": 1794479425217,
+      "finishedAt": 1794479425224,
+      "result": {
+        "initialized": false,
+        "adopted": false,
+        "gitHead": "067f160b3e072d703ec274f2544978942517600c"
+      }
+    },
+    "preview": {
+      "status": "stopped",
+      "startedAt": 1794479425224,
+      "finishedAt": 1794479425252
+    }
+  },
+  "stop": {
+    "step": "preview",
+    "reason": "secret_boundary",
+    "message": "AWR refused source content that looks like a credential: Real credentials must not be stored or managed by AWR. Keep this file outside registered sources (remove it from the source manifest) and keep real values in env/secret management; inside AWR use only explicit placeholders such as ${VAR} or [redacted].",
+    "detail": {
+      "category": "credential",
+      "path": "README.md",
+      "line": 1468
+    }
+  }
+}

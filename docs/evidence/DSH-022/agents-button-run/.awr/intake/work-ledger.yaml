@@ -1,0 +1,27 @@
+goals:
+- id: GOAL-001
+  status: candidate
+  success_criteria:
+  - README.md links each of the 48 subagent files and every linked path resolves to a file in the repository root.
+  - Each subagent file's YAML frontmatter contains name and description, and its model value, where present, is one of haiku, sonnet or opus.
+  - The Model Assignments totals in README.md (8 haiku, 29 sonnet, 11 opus) match the listed agent names and add up to 48.
+  summary: |-
+    README.md describes the repository as a comprehensive collection of 48 specialized AI subagents for Claude Code that extend development workflows with domain-specific expertise, each configured with a Claude model chosen by task complexity. The Available Subagents, Model Assignments, Installation, Subagent Format and Usage sections define the deliverable and how it is used.
+
+    Provenance: README.md, LICENSE. Status is candidate because the material states this purpose directly; no owner confirmation is recorded, and the README counts and model claims have not yet been checked against every agent file.
+  title: Collection of 48 specialized Claude Code subagents with model assignments
+work_items:
+- acceptance:
+  - Every path linked from README.md's Available Subagents section exists in the repository root, and no additional .md file is left unlisted.
+  - The haiku, sonnet and opus lists in README.md match each agent file's model frontmatter and total 8, 29 and 11 respectively; any mismatch is recorded with the file path.
+  - Review findings are recorded as ledger work items with file references, and no completion beyond observed evidence is claimed.
+  depends_on: []
+  goal: GOAL-001
+  id: INTAKE-001
+  kind: intake
+  next_action: Compare README.md's Available Subagents and Model Assignments lists with the repository's 48 .md files and their frontmatter, then record any mismatch as a follow-up work item referenced to the source lines.
+  priority: P0
+  required: true
+  status: planned
+  summary: README.md states that 48 subagents are present with haiku, sonnet and opus assignments, but that claim has not been checked against the files; this intake records the review and any drift.
+  title: Verify the 48 subagent files and model assignments claimed by README.md

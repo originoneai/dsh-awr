@@ -1,0 +1,28 @@
+goals:
+- id: claude-subagent-collection
+  status: candidate
+  success_criteria:
+  - README.md lists all 48 subagents, and each linked file name resolves to a markdown file in the repository root.
+  - Every subagent markdown file opens with YAML frontmatter that includes name, description, and model, as described in README.md's Subagent Format section.
+  - Each subagent file's model value is one of haiku, sonnet, or opus and matches the assignment given in README.md's Model Assignments section.
+  - LICENSE contains the MIT license text that README.md's License section refers to.
+  summary: |-
+    This repository is a collection of 48 specialized AI subagents that extend Claude Code with domain-specific expertise, with each subagent assigned a Claude model (haiku, sonnet, or opus) by task complexity for cost-effective delegation.
+
+    Provenance: README.md, LICENSE, and the 48 subagent markdown files linked from README.md. The collection's purpose is stated in README.md; the owner has not confirmed this goal.
+  title: Maintain the Claude Code specialist subagent collection
+work_items:
+- acceptance:
+  - Count the root-level subagent markdown files and confirm the 48 files linked under Available Subagents in README.md each exist.
+  - Confirm each subagent file's frontmatter name, description, and model match its entry in README.md's Model Assignments section.
+  - Record any mismatch in the ledger as unverified rather than asserting the work is complete.
+  depends_on: []
+  goal: claude-subagent-collection
+  id: INTAKE-001
+  kind: intake
+  next_action: Run awr intake inspect, then compare README.md against the subagent files' frontmatter and record any gaps as unverified.
+  priority: P0
+  required: true
+  status: planned
+  summary: README.md describes the collection and its model assignments but does not name unfinished work, so this intake item verifies the documented state instead of claiming it.
+  title: Verify subagent files and model assignments against README.md
