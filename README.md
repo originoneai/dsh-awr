@@ -4,7 +4,22 @@ A [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) (DSH) plug
 [AWR (Agent Work Runtime)](https://github.com/originoneai/agent-work-runtime) manage work state
 for projects developed inside DSH.
 
-Status: **design stage, no code yet.** Nothing here has been run against a real DSH install.
+Status: **skeleton only.** The package loads in DeepSeek Harness `0.2.2-rc.1` and does nothing yet.
+The capabilities below are added one work item at a time; the ledger is
+`.awr/intake/work-ledger.yaml`.
+
+## Develop
+
+```sh
+npm test                                   # package tests, Node's built-in runner, no dependencies
+scripts/build-awr-lab.sh <awr-checkout>    # the local AWR this plugin is developed against
+```
+
+- The AWR build used for development and how it differs from the release:
+  [docs/lab-environment.md](docs/lab-environment.md).
+- Loading the plugin into DSH through a dev profile:
+  [docs/dsh-010-skeleton-check.md](docs/dsh-010-skeleton-check.md).
+- What DSH offers a plugin, checked against 0.2.2-rc.1: [docs/dsh-surfaces.md](docs/dsh-surfaces.md).
 
 ## What the plugin is for
 

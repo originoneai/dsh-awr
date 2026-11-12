@@ -1,0 +1,8 @@
+  config:
+    task: !!js ctx.headlessStartup.task
+    sessionId: !!js ctx.headlessStartup.sessionId
+    json: !!js ctx.headlessStartup.json
+# == @originoneai/dsh-awr
+- id: dsh-awr
+  name: '@originoneai/dsh-awr'
+  config: {}

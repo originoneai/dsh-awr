@@ -1,0 +1,4 @@
+- insert:
+    - id: dsh-awr
+      name: '@originoneai/dsh-awr'
+      config: {}

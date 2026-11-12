@@ -1,0 +1,18 @@
+{
+  "name": "dsh-profile-dsh-awr-dev",
+  "private": true,
+  "dependencies": {
+    "@originoneai/dsh-awr": "link:/Users/mac/Documents/OriginOneAI/dsh-awr",
+    "@originoneai/dsh-awr-control": "link:/tmp/claude-501/sp/dsh-awr-control"
+  },
+  "dsh": {
+    "profile": {
+      "bundles": [
+        "@deepseek-ai/dsh-base",
+        "@deepseek-ai/dsh-headless",
+        "@originoneai/dsh-awr",
+        "@originoneai/dsh-awr-control"
+      ]
+    }
+  }
+}
