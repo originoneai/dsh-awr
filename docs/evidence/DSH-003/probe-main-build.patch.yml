@@ -1,0 +1,12 @@
+- insert:
+    - id: mcp-awr-probe
+      name: "@deepseek-ai/dsh-mcp-client"
+      config:
+        serverName: awr
+        transport: stdio
+        command: /private/tmp/claude-501/-Users-mac-Library-Application-Support-Claude-scratch-workspaces-869d37b4-7c03-4b30-a5f3-4d227459491a-1c11c5ae-829f-412a-ab8a-33417c1e331a-scratch-2026-11-12-e6ef56/1197320f-8860-4fa5-9d83-5178490fdad2/scratchpad/awr-pr/target/release/awr-mcp
+        args: ["--project", "/Users/mac/Documents/deepseek-harness/dsh001-fixture"]
+        cwd: /Users/mac/Documents/deepseek-harness/dsh001-fixture
+        failOnStartupError: true
+        reconnect:
+          enabled: false

@@ -1,0 +1,12 @@
+- insert:
+    - id: mcp-awr-probe
+      name: "@deepseek-ai/dsh-mcp-client"
+      config:
+        serverName: awr
+        transport: stdio
+        command: /opt/homebrew/lib/node_modules/@originoneai/awr-darwin-arm64/bin/awr-mcp
+        args: ["--project", "/Users/mac/Documents/deepseek-harness/dsh001-fixture"]
+        cwd: /Users/mac/Documents/deepseek-harness/dsh001-fixture
+        failOnStartupError: true
+        reconnect:
+          enabled: false

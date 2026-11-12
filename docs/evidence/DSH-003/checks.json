@@ -1,0 +1,64 @@
+{
+  "note": "Evidence behind docs/dev/integrations/deepseek-harness.md in the AWR repository (PR originoneai/awr#617; the repository is also reachable as originoneai/agent-work-runtime).",
+  "host": "DeepSeek Harness desktop 0.2.2-rc.1, macOS arm64; checks of 2026-11-11 are in docs/evidence/DSH-001 and docs/dsh-001-l0-check.md",
+  "dsh_startup_probe_2026-11-12": {
+    "method": "dsh headless --patch <probe.yml> with a dsh-mcp-client entry (failOnStartupError: true, reconnect disabled) for the fixture project",
+    "awr_mcp_built_from_main": {
+      "version": "awr-mcp 0.7.0 (1880dbda)",
+      "patch": "probe-main-build.patch.yml",
+      "stderr_file": "probe-main-build.stderr.txt (empty)",
+      "result": "entry activated, exit 0"
+    },
+    "awr_mcp_released": {
+      "version": "awr-mcp 0.7.0 (npm package native binary)",
+      "patch": "probe-released-0.7.0.patch.yml",
+      "stderr_file": "probe-released-0.7.0.stderr.txt",
+      "result": "dsh: warning: 1 entry did not activate; mcp-client(awr): initial connection or tool synchronization failed"
+    }
+  },
+  "mcp_call_through_dsh_2026-11-12": {
+    "caller": "local stand-in for the model API calling the tool once",
+    "tools_offered": [
+      "mcp__awr__awr_change",
+      "mcp__awr__awr_compaction",
+      "mcp__awr__awr_context",
+      "mcp__awr__awr_continuity",
+      "mcp__awr__awr_evidence",
+      "mcp__awr__awr_query",
+      "mcp__awr__awr_session",
+      "mcp__awr__awr_work"
+    ],
+    "call": {
+      "tool": "mcp__awr__awr_query",
+      "input": {
+        "child_tool": "awr_project_status",
+        "arguments": {}
+      }
+    },
+    "result": {
+      "project": "dsh001-fixture",
+      "project_id": "01M77EVTNG6516D36FK41FEVKS",
+      "project_revision": 52
+    },
+    "awr_status_at_the_time": {
+      "project_id": "01M77EVTNG6516D36FK41FEVKS",
+      "project_revision": 52
+    }
+  },
+  "from_session_on_awr_0.7.0_main_1880dbda_2026-11-12": {
+    "active_predecessor": "client bind --from-session <active session> -> predecessor status interrupted; session show on it lists the successor",
+    "ended_predecessor": "client bind --from-session <ended session> -> successor created; session show on the predecessor lists it as resumed_successor"
+  },
+  "fork_in_dsh_web_profile": "see docs/evidence/DSH-016/live-dsh.json: new session ID, isSeeded true, 22 inherited events, no parentSession, agent/created source startup",
+  "pull_request": {
+    "url": "https://github.com/originoneai/awr/pull/617",
+    "adds": "docs/dev/integrations/deepseek-harness.md (the integration notes moved from docs/integrations/ to docs/dev/integrations/ upstream in 24425ce1), plus index rows in docs/dev/integrations/README.md, README.md and README.zh-CN.md",
+    "branch": "docs/deepseek-harness-l1-note"
+  },
+  "local_checks_on_the_pull_request_branch": [
+    "python3 scripts/check_docs_style.py --self-test",
+    "python3 scripts/check_docs_style.py (100 pages)",
+    "python3 scripts/check_public_tree.py",
+    "tests/fixtures/assessment/{counterexamples,contracts,envelope}/verify.py"
+  ]
+}

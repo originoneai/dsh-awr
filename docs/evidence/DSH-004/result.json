@@ -1,0 +1,49 @@
+{
+  "work_item": "DSH-004",
+  "checked_on": "2026-11-12",
+  "dsh": "DeepSeek Harness desktop 0.2.2-rc.1 runtime (dsh headless, the app's own MCP client)",
+  "criterion_1": "Without any shim, an awr-mcp entry in a DSH 0.2.2-rc.1 profile stays connected and awr_query with child_tool awr_project_status returns the fixture project's identity.",
+  "what_ran": [
+    {
+      "step": "awr-mcp built unmodified from origin/main at 1880dbda (awr-mcp --version: awr-mcp 0.7.0 (1880dbda); contains PR 614, the merged fix for issue 613) as a dsh-mcp-client stdio entry, failOnStartupError true, reconnect disabled",
+      "files": [
+        "probe-main-build.patch.yml",
+        "probe-main-build.stderr.txt (empty)"
+      ],
+      "result": "dsh headless started with exit 0 and printed no activation warning: the entry activated"
+    },
+    {
+      "step": "a local stand-in for the model API called mcp__awr__awr_query once with {\"child_tool\":\"awr_project_status\",\"arguments\":{}} through DSH",
+      "result": {
+        "tools_offered_by_the_server": [
+          "awr_change",
+          "awr_compaction",
+          "awr_context",
+          "awr_continuity",
+          "awr_evidence",
+          "awr_query",
+          "awr_session",
+          "awr_work"
+        ],
+        "project": "dsh001-fixture",
+        "project_id": "01M77EVTNG6516D36FK41FEVKS",
+        "project_revision": 52,
+        "awr_cli_status_at_the_same_time": {
+          "project_id": "01M77EVTNG6516D36FK41FEVKS",
+          "project_revision": 52
+        }
+      }
+    },
+    {
+      "step": "the same probe with the released native awr-mcp 0.7.0 from the npm package",
+      "files": [
+        "probe-released-0.7.0.patch.yml",
+        "probe-released-0.7.0.stderr.txt"
+      ],
+      "result": "dsh: warning: 1 entry did not activate; mcp-client(awr): initial connection or tool synchronization failed (the tools/list result lacks ttlMs and cacheScope)"
+    }
+  ],
+  "shim": "none: no proxy, wrapper or modified binary in the path",
+  "limit_to_state_plainly": "The connection was exercised by the headless profile for the length of one task with a model stand-in, not by a desktop conversation with a real model, and with a build of main rather than a released package: the latest release, 0.7.0, still has the defect. An installable fix needs an AWR release that contains PR 614; releasing is not something this project does.",
+  "criterion_2": "Recorded in the ledger summary of DSH-004 (owner decision of 2026-11-11: the fix lives in AWR because every host speaking protocol 2026-07-28 hits the same missing fields; reported as originoneai/awr#613, fixed by PR 614, merged) and in docs/dsh-001-l0-check.md"
+}

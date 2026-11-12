@@ -1,0 +1,36 @@
+dsh: warning: 1 entry did not activate
+mcp-awr-probe (@deepseek-ai/dsh-mcp-client): Error: mcp-client(awr): initial connection or tool synchronization failed
+    at Object.apply [as callback] (file:///Applications/DeepSeek%20Harness.app/Contents/Resources/app.asar/dsh/node_modules/@deepseek-ai/dsh-mcp-client/lib/index.js:833:67)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async Fiber._reload (file:///Applications/DeepSeek%20Harness.app/Contents/Resources/app.asar/dsh/node_modules/@deepseek-ai/cordis/lib/index.js:677:41)
+SdkError: Invalid result for tools/list: [
+  {
+    "expected": "number",
+    "code": "invalid_type",
+    "path": [
+      "ttlMs"
+    ],
+    "message": "Invalid input: expected number, received undefined"
+  },
+  {
+    "code": "invalid_value",
+    "values": [
+      "public",
+      "private"
+    ],
+    "path": [
+      "cacheScope"
+    ],
+    "message": "Invalid option: expected one of \"public\"|\"private\""
+  }
+]
+    at Object.decodeResult (file:///Applications/DeepSeek%20Harness.app/Contents/Resources/app.asar/dsh/node_modules/@modelcontextprotocol/client/dist/src-xKF0PJN-.mjs:4003:12)
+    at file:///Applications/DeepSeek%20Harness.app/Contents/Resources/app.asar/dsh/node_modules/@modelcontextprotocol/client/dist/src-xKF0PJN-.mjs:6203:22
+    at Client._onresponse (file:///Applications/DeepSeek%20Harness.app/Contents/Resources/app.asar/dsh/node_modules/@modelcontextprotocol/client/dist/src-xKF0PJN-.mjs:6048:42)
+    at Client._onresponse (file:///Applications/DeepSeek%20Harness.app/Contents/Resources/app.asar/dsh/node_modules/@modelcontextprotocol/client/dist/index.mjs:4147:9)
+    at _transport.onmessage (file:///Applications/DeepSeek%20Harness.app/Contents/Resources/app.asar/dsh/node_modules/@modelcontextprotocol/client/dist/src-xKF0PJN-.mjs:5840:82)
+    at StdioClientTransport.processReadBuffer (file:///Applications/DeepSeek%20Harness.app/Contents/Resources/app.asar/dsh/node_modules/@modelcontextprotocol/client/dist/stdio.mjs:140:20)
+    at Socket.<anonymous> (file:///Applications/DeepSeek%20Harness.app/Contents/Resources/app.asar/dsh/node_modules/@modelcontextprotocol/client/dist/stdio.mjs:105:11)
+    at Socket.emit (node:events:514:28)
+    at addChunk (node:internal/streams/readable:568:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:519:3)
