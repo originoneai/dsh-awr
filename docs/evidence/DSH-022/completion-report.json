@@ -1,7 +1,7 @@
 {
   "version": 1,
   "work_item": "DSH-022",
-  "source_sha": "c72560b4935e11d5e2121d556da7e40c09f2af14",
+  "source_sha": "dae1c7e5dd83f6bdbc67f8fe45269112b6474323",
   "command": "DeepSeek Harness 0.2.2-rc.1 desktop app (signed in, DeepSeek-V4.1-Flash via the account provider), plugin installed through Plugins > Add plugin from this repository; /awr takeover and the AWR header panel's Take over this project button on fresh public clones; scripts/dsh022-collect.sh; hand review against README and files (docs/evidence/DSH-022/REVIEW.md)",
   "scope": [
     "lib/takeover-host.js",

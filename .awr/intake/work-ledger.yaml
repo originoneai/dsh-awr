@@ -195,7 +195,7 @@ work_items:
 - id: DSH-022
   title: Prove the one-click takeover on real existing projects
   kind: verification
-  status: in_progress
+  status: completed
   priority: P0
   required: true
   goal: intake-goal
@@ -204,7 +204,9 @@ work_items:
   - On at least two existing projects with prior development history, one click reaches a final organization state with no human input, and the receipts are retained.
   - For each project the resulting goals and work items are reviewed against its README and history, and any invented or wrong intent is recorded as a defect.
   - After takeover, a new DSH conversation on the project shows the AWR context without further setup.
-  next_action: "Finish both takeovers, collect receipts, review against README and history, record defects, complete"
+  next_action: "Complete DSH-022 with the registered evidence"
+  "evidence": ["docs/evidence/DSH-022/completion-report.json"]
+  "verification": {"evidence_level":"locally_verified"}
 - id: DSH-030
   title: Prompt for AWR checkpoints at turn boundaries
   kind: implementation
