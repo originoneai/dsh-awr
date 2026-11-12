@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "work_item": "DSH-003",
+  "source_sha": "56f162e1db2ef16ac8bca54e12c8d980d11d299c",
+  "command": "gh pr create / gh pr merge on originoneai/awr (agent-work-runtime); python3 scripts/check_docs_style.py --self-test and without it, scripts/check_public_tree.py, the three assessment verifiers (local, then the repository's public-tree CI job); dsh headless --patch probes and awr client bind --from-session checks for the facts in the note (docs/evidence/DSH-003)",
+  "scope": [
+    "docs/evidence/DSH-003",
+    "docs/dsh-001-l0-check.md"
+  ],
+  "verified_at": 1794475453905,
+  "checks": [
+    {
+      "name": "A pull request to the AWR repository adds the DeepSeek Harness L1 note",
+      "passed": true,
+      "criteria": [
+        "A pull request to originoneai/agent-work-runtime adds docs/dev/integrations/deepseek-harness.md (the integration notes moved there from docs/integrations/ upstream) with merge paths, native session IDs, the dated DSH version check and known limits."
+      ],
+      "details": "Pull request originoneai/awr#617 (the repository agent-work-runtime under its current name) added docs/dev/integrations/deepseek-harness.md, 101 lines, and index rows in docs/dev/integrations/README.md, README.md and README.zh-CN.md; its CI job (public tree, documentation style, assessment verifiers) succeeded and it merged as 037f66c9 on main. The note holds: the MCP merge path (dsh-mcp-client entry in cordis.patch.yml, probe recipe), the scrubbed environment, the tools/list fields DSH requires, tool names, native session IDs and how a fork looks, what --from-session does to a live predecessor, compaction events, a dated check table (2026-11-11 and 2026-11-12, what was called and the results) and a limits section. Each statement was run or read on DeepSeek Harness 0.2.2-rc.1 (macOS arm64); the 2026-11-12 facts were run again against awr-mcp and awr built from main at 1880dbda. The criterion named docs/integrations/deepseek-harness.md; the integration notes moved to docs/dev/integrations/ upstream in 24425ce1, so the criterion was changed to that path and the PR uses it. Limits recorded in the note and not checked: streamable HTTP, a desktop model turn with a build of main, awr-mcp --catalog with DSH, other DSH versions and platforms; the note says the latest release (0.7.0) still lacks the tools/list fix. The repository's regular review process was not involved beyond CI."
+    }
+  ]
+}

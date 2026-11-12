@@ -58,7 +58,7 @@ work_items:
 - id: DSH-003
   title: Add the DeepSeek Harness L1 host note to the AWR repository
   kind: documentation
-  status: planned
+  status: completed
   priority: P1
   required: false
   goal: intake-goal
@@ -66,7 +66,9 @@ work_items:
   summary: AWR's integration rules ask for an L1 note that records only host-specific differences and a dated check. It lives in originoneai/agent-work-runtime, not here.
   acceptance:
   - A pull request to originoneai/agent-work-runtime adds docs/dev/integrations/deepseek-harness.md (the integration notes moved there from docs/integrations/ upstream) with merge paths, native session IDs, the dated DSH version check and known limits.
-  next_action: Complete DSH-003 with docs/evidence/DSH-003.
+  next_action: Complete DSH-003 with the registered evidence
+  "evidence": ["docs/evidence/DSH-003/completion-report.json"]
+  "verification": {"evidence_level":"locally_verified"}
 - id: DSH-010
   title: Create the plugin package skeleton that DSH loads
   kind: implementation
