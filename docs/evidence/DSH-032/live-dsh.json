@@ -1,0 +1,14 @@
+{
+ "note": "DeepSeek Harness 0.2.2-rc.1, web profile, scripts/fake-model.mjs as the model (it called the skill tool with name awr-workflow). The first attempt failed in DSH with \"loaded skill source must be a string\": the skill needs content and source fields, which the registry checks only when a skill is loaded; fixed.",
+ "catalog_entry_in_the_models_request": "- `awr-workflow`: How to work in a project managed by AWR (Agent Work Runtime): read the state, claim, checkpoint, preview then accept, expected revisions, evidence and when work may be completed.\n- `baoyu-image-gen`: AI image generation with OpenAI GPT Image 2, Azure OpenAI, Google, OpenRouter, DashScope, Z.AI GLM-Image, MiniMax, Jimeng, Seedream, Replicate and Agnes APIs. Supports text-to-image, reference images, aspect ratios, and batch generation from saved prompt files. Sequential by default; use batch parallel generation when the user already has multiple prompts or wants stable multi-image throughput. Use when user asks to generate, create, or draw images.",
+ "skill_tool_result_starts": "[tool_result: <skill_content name=\"awr-workflow\">\n<skill_resources>\nResources for this skill are managed by provider \"runtime\".\nLoad referenced resources only as needed.\n</skill_resources>\n\n<skill_instructions>\n# Working in an AWR project\n\nAWR keeps a project's work state in source files (the ledger under .awr/intake/ or the project's own ledger and goal files). The SQLite database next to them is only a projection: never edit .awr/state.db*, and never edit AWR's state by any path other than awr.\n\nYou reach awr through the `awr` tool (`args`: the command without \"awr\"; the project and JSON output are fixed) and `awr_project_status`. The user can run the same as /awr status, /awr state, /awr ",
+ "skill_tool_result_contains": {
+  "## Read before you write": true,
+  "## Expected revisions": true,
+  "## Preview, then accept": true,
+  "## Evidence and completion": true,
+  "work prepare-completion": true,
+  "evidence add": true,
+  "RevisionConflict": true
+ }
+}

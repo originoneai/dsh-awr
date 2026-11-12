@@ -3,12 +3,14 @@
 // Capabilities are added one work item at a time, using the surfaces recorded in
 // docs/dsh-surfaces.md. Loaded so far: binding each conversation to an AWR session (DSH-013), the /awr
 // command (DSH-015), the AWR work context in the prompt (DSH-014), the AWR tools for the model (DSH-012) and
-// the one-click takeover (DSH-021, with the header button in client.js).
+// the one-click takeover (DSH-021, with the header button in client.js) and the skill that teaches the AWR
+// workflow (DSH-032).
 import { appendFileSync } from 'node:fs'
 import { createAwr } from './lib/awr-runtime.js'
 import { registerAwrCommand, watchConversations } from './lib/conversation.js'
 import { registerPromptContext } from './lib/prompt-context.js'
 import { createReviewerPolicy, createTakeoverController } from './lib/takeover-host.js'
+import { registerAwrSkill } from './lib/skill.js'
 import { registerAwrTools } from './lib/tools.js'
 
 export const name = 'dsh-awr'
@@ -68,4 +70,5 @@ export function apply(ctx) {
   else if (ctx.tools?.guard) guardMount(ctx)
   registerAwrCommand(ctx, { awr, bindings, context, takeover })
   registerAwrTools(ctx, { awr, bindings })
+  registerAwrSkill(ctx)
 }
