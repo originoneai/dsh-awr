@@ -98,9 +98,9 @@ work_items:
   "evidence": ["docs/evidence/DSH-011/completion-report.json"]
   "verification": {"evidence_level":"locally_verified"}
 - id: DSH-012
-  title: Mount awr-mcp for the session's project
+  title: Give the model AWR tools bound to the conversation's project
   kind: implementation
-  status: planned
+  status: completed
   priority: P0
   required: true
   goal: intake-goal
@@ -108,7 +108,10 @@ work_items:
   acceptance:
   - In a DSH conversation opened on an initialized AWR project, the model can call awr_project_status and receives that project's identity.
   - Two conversations on different projects do not see each other's project.
-  next_action: Ship a bundle patch row for @deepseek-ai/dsh-mcp-client (ctx.mcpManager does not exist in 0.2.2-rc.1; see docs/dsh-surfaces.md) that starts the native awr-mcp with the project root as --project and cwd.
+  next_action: "Complete DSH-012 with the registered evidence"
+  "summary": "Changed from mounting awr-mcp. A static dsh-mcp-client row serves one project for every conversation, so per-conversation isolation would need awr-mcp --catalog (unreleased, originoneai/awr#616) plus manual registration, plus a guard that cannot rewrite arguments (tools/pre-execute cannot). Tools registered by the plugin resolve the project from the conversation binding, so two conversations cannot see each other's project by construction, and they work with the released awr. Stock awr-mcp with DSH stays tracked by DSH-004."
+  "evidence": ["docs/evidence/DSH-012/completion-report.json"]
+  "verification": {"evidence_level":"locally_verified"}
 - id: DSH-013
   title: Bind each DSH conversation to an AWR session without claiming
   kind: implementation

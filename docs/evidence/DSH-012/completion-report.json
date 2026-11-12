@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "work_item": "DSH-012",
+  "source_sha": "36db12963785be1b8831ca439ccf19559f5acc20",
+  "command": "node --test (95 tests, including the real awr on two disposable projects); dsh dsh-awr-dev headless with scripts/fake-model.mjs standing in for the model (DEEPSEEK_BASE_URL on 127.0.0.1) in two AWR projects and one plain directory",
+  "scope": [
+    "lib/tools.js",
+    "lib/awr-runtime.js",
+    "lib/prompt-context.js",
+    "index.js",
+    "test/tools.test.js",
+    "scripts/fake-model.mjs",
+    "docs/tools.md",
+    "docs/evidence/DSH-012"
+  ],
+  "verified_at": 1794465172130,
+  "checks": [
+    {
+      "name": "The model can call awr_project_status in a conversation on an initialized AWR project and receives that project's identity",
+      "passed": true,
+      "details": "In DeepSeek Harness 0.2.2-rc.1 (headless dev profile, a local stand-in for the model that calls a named tool and answers with what the tool returned), a conversation started in an initialized AWR project was offered awr_project_status and awr; the call returned the project's name (dsh014-fixture), its id 01M77695KTW7SY04V352X99GH1, its root, revision and the AWR session bound to the conversation (docs/evidence/DSH-012/live-dsh.json). Tests against the real awr check that the id is the one awr itself reports. Limits: headless profile and a stand-in that calls the tool it is told to; a real model choosing the tool, and the desktop app with its approval policy, were not exercised. The tool is a plugin tool, not awr-mcp: the ledger item was edited to say why (docs/tools.md); its acceptance criteria were not changed.",
+      "criteria": [
+        "In a DSH conversation opened on an initialized AWR project, the model can call awr_project_status and receives that project's identity."
+      ]
+    },
+    {
+      "name": "Two conversations on different projects do not see each other's project",
+      "passed": true,
+      "details": "Two conversations started in two different AWR projects each called awr_project_status in DeepSeek Harness and each received only its own project (names dsh014-fixture and dsh012-fixture-b, different ids and roots, different sessions). The model has no argument that names a project: --project is refused ('--project is set by the tool'), overview (which lists other projects), workspace, remote and team are refused, and a conversation outside an AWR project was offered no awr tool. A real-awr test does the same for two projects and shows that the conversation for project B never ran a command in project A. Limits: isolation holds for the tools of this plugin; a model with a bash tool can still run awr itself in any directory its sandbox allows, which is DSH's permission model and not something this plugin controls.",
+      "criteria": [
+        "Two conversations on different projects do not see each other's project."
+      ]
+    }
+  ]
+}
