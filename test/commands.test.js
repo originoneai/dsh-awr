@@ -135,6 +135,15 @@ test('an awr that stops the plugin is explained, and an unbound conversation can
   assert.match(refused.text, /no AWR session/)
 })
 
+test('formatStatus tells a fork what it is, and says nothing for a conversation that is not one', () => {
+  const status = { project_id: 'P', project_revision: 3, current: [], ready: [], blocked: [] }
+  const fork = { parentConversation: 'parent-1', parentSession: 'S1', mode: 'parent_active' }
+  const text = formatStatus(status, { sessionId: 'S2', work: { key: 'W-1' }, fork }, 'context line')
+  assert.match(text, /bound to AWR session S2 \(work W-1\)\nThis conversation is a fork of DSH conversation parent-1, whose AWR session S1 is still active/)
+  assert.ok(text.endsWith('context line'), 'the context line stays last')
+  assert.doesNotMatch(formatStatus(status, { sessionId: 'S2' }), /fork/)
+})
+
 test('formatStatus covers an unbound conversation and a project with only a next action', () => {
   const text = formatStatus({ project_id: 'P', project_revision: 3, next_action: 'Do the thing' }, undefined)
   assert.match(text, /Next: Do the thing/)

@@ -37,6 +37,7 @@ function fakeCtx() {
     logger: { warn: (m) => warnings.push(m) },
   }
 }
+const flag = (args, name) => args[args.indexOf(name) + 1]
 const agentIn = (cwd, id = 'session-1') => ({
   agent: { session: { id, header: { cwd } }, model: { current: () => ({ provider: 'deepseek', model: 'deepseek-flash' }) } },
   source: 'startup',
@@ -74,6 +75,77 @@ test('a conversation in a project subdirectory is bound against the project root
   assert.ok(calls.every(([projectRoot]) => projectRoot === root))
   const bind = calls.find((c) => c[2] === 'bind')
   assert.ok(bind.includes('deepseek-flash'), 'the model label is passed on')
+})
+
+/** A fork as the listener sees it: a seeded session with the length of the history it inherited. */
+const forkIn = (cwd, id, inherited = 4) => ({
+  agent: { session: { id, header: { cwd, createdAt: 9_000, isSeeded: true }, inheritedEventCount: inherited }, model: { current: () => ({ provider: 'deepseek', model: 'deepseek-flash' }) } },
+  source: 'startup',
+})
+
+test('a forked conversation is bound with its parent found through the session query, and says so', async (t) => {
+  const { nested } = projectTree(t)
+  const ev = (seq) => ({ type: 'x', seq, time: 1_000 + seq, data: { seq } })
+  const parentEvents = [0, 1, 2, 3, 4, 5].map(ev)
+  const sessions = {
+    parent: { header: { id: 'parent', cwd: nested, createdAt: 900 }, events: parentEvents, inheritedEventCount: 0 },
+    child: { header: { id: 'child', cwd: nested, createdAt: 9_000, isSeeded: true }, events: [...parentEvents.slice(0, 4), { type: 'session/end-seed', seq: 4, time: 1_003, data: {} }], inheritedEventCount: 4 },
+  }
+  const sessionQuery = {
+    listSessions: async () => Object.values(sessions).map(({ header }) => ({ header })),
+    observeSession: async (id) => ({ ...sessions[id], [Symbol.dispose]() {} }),
+  }
+  const calls = []
+  const awr = {
+    async run(root, args) {
+      calls.push(args)
+      if (args[0] === 'client' && args[1] === 'show') return { binding: args.includes('dsh:parent') ? { session_id: 'P1' } : null }
+      if (args[0] === 'session' && args[1] === 'show') return { session: { status: 'ended' } }
+      if (args[0] === 'status') return { current: [{ key: 'W-1', claims: [] }], ready: [] }
+      if (args[1] === 'bind') return { binding: { session_id: 'S2' } }
+      throw new Error(`unexpected ${args.join(' ')}`)
+    },
+  }
+  const ctx = { ...fakeCtx(), get: (name) => (name === 'sessionQuery' ? sessionQuery : undefined) }
+  const traces = []
+  const watcher = watchConversations(ctx, { awr, trace: (entry) => traces.push(entry) })
+  await ctx.handlers['agent/created'](forkIn(nested, 'child'))
+  const result = await watcher.get('child')
+  assert.equal(result.outcome, 'created')
+  assert.deepEqual(result.fork, { parentConversation: 'parent', parentSession: 'P1', mode: 'continued' })
+  assert.equal(flag(calls.find((c) => c[1] === 'bind'), '--from-session'), 'P1')
+  assert.ok(traces.some((entry) => entry.event === 'fork-parent' && entry.parent === 'parent' && entry.inherited === 4))
+
+  // A resumed fork is bound already, and the parent is not looked for again.
+  const reads = []
+  sessionQuery.listSessions = async () => { reads.push('list'); return [] }
+  const again = { ...fakeCtx(), get: () => sessionQuery }
+  const resumed = watchConversations(again, { awr: { run: async (root, args) => (args[1] === 'show' && args[0] === 'client' ? { binding: { session_id: 'S2' } } : { session: { status: 'active' } }) } })
+  await again.handlers['agent/created'](forkIn(nested, 'child'))
+  assert.equal((await resumed.get('child')).outcome, 'existing')
+  assert.deepEqual(reads, [])
+})
+
+test('a fork on a host without the session query, or one whose lookup throws, is bound as a new conversation', async (t) => {
+  const { nested } = projectTree(t)
+  const awr = () => ({
+    async run(root, args) {
+      if (args[0] === 'client' && args[1] === 'show') return { binding: null }
+      if (args[0] === 'status') return { current: [], ready: [{ key: 'W-1' }] }
+      if (args[1] === 'bind') return { binding: { session_id: 'S1' } }
+      throw new Error(`unexpected ${args.join(' ')}`)
+    },
+  })
+  const without = { ...fakeCtx(), get: () => undefined }
+  const w1 = watchConversations(without, { awr: awr() })
+  await without.handlers['agent/created'](forkIn(nested, 'c1'))
+  assert.deepEqual([(await w1.get('c1')).outcome, (await w1.get('c1')).fork], ['created', undefined])
+
+  const throwing = { ...fakeCtx(), get: () => ({ listSessions: async () => { throw new Error('index unavailable') }, observeSession: async () => ({ events: [0, 1, 2, 3].map((seq) => ({ type: 'x', seq, time: 1_000 + seq, data: {} })), inheritedEventCount: 4 }) }) }
+  const w2 = watchConversations(throwing, { awr: awr() })
+  await assert.doesNotReject(throwing.handlers['agent/created'](forkIn(nested, 'c2')))
+  assert.deepEqual([(await w2.get('c2')).outcome, (await w2.get('c2')).fork], ['created', undefined])
+  assert.ok(throwing.warnings.some((message) => /parent of fork c2 could not be looked up/.test(message)))
 })
 
 test('outside an AWR project nothing is run and nothing is recorded', async (t) => {

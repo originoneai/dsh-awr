@@ -81,6 +81,17 @@ test('the context holds the next action, the open loops and the compiled text, a
   assert.match(text, /awr_project_status and awr tools/, 'says which tools reach AWR')
 })
 
+test('the context of a fork says what it is, so the model knows the parent\'s session may hold more', () => {
+  const fork = { parentConversation: 'parent-1', parentSession: 'S1', mode: 'parent_active' }
+  const text = renderWorkContext({ projectRoot: '/p', sessionId: 'S2', compiled: compiled(9), fork })
+  assert.match(text, /This conversation is a fork of DSH conversation parent-1, whose AWR session S1 is still active/)
+  assert.match(text, /progress and claims are not carried over/)
+  assert.doesNotMatch(renderWorkContext({ projectRoot: '/p', sessionId: 'S2', compiled: compiled(9) }), /fork/)
+  const continued = renderWorkContext({ projectRoot: '/p', sessionId: 'S2', compiled: compiled(9), fork: { ...fork, mode: 'continued' }, incomplete: true })
+  assert.match(continued, /S1 had ended, so this one continues it/)
+  assert.match(continued, /INCOMPLETE/, 'the fork note does not replace the incompleteness note')
+})
+
 test('an incomplete or trimmed context says so', () => {
   const text = renderWorkContext({
     projectRoot: '/p',

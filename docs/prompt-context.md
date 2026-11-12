@@ -111,7 +111,8 @@ warning, and `/awr status` ends with one line saying what the prompt carries.
   context well is not measured.
 - `SourceStale` from a real awr: the one real failure that was produced was `ContextIncomplete` (a
   ledger that does not parse); `SourceStale` is covered by a scripted test only.
-- Forked conversations and subagents (DSH-016); a subagent has no binding and gets no context.
+- Subagents: a subagent has no binding and gets no context. A fork is bound and gets the context; its
+  prompt says it is a fork (docs/binding.md, DSH-016).
 - A project whose required context is larger than the budget, other than the artificial budget of 50.
 - Whether DSH removes older snapshots from a conversation that never compacts; the check above shows
   them staying, superseded by the newer one.

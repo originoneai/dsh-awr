@@ -1,0 +1,133 @@
+{
+  "dsh_version": "0.2.2-rc.1 (web profile, dev bundle, local stand-in model)",
+  "how": "Fork session (shift+cmd+F) in the web client, twice, from the same parent conversation; the parent conversation answered one message first.",
+  "agent_created_source_of_a_fork": "startup (the same as a new conversation); the header has no parentSession",
+  "plugin_trace": [
+    {
+      "event": "agent/created",
+      "source": "startup",
+      "header": [
+        "version",
+        "id",
+        "createdAt",
+        "cwd",
+        "isSeeded",
+        "agentPreset"
+      ],
+      "conversationId": "session-bee21096-780f-4470-8c28-c0312d6ab5a0",
+      "cwd": "/Users/mac/Documents/deepseek-harness/dsh001-fixture"
+    },
+    {
+      "event": "bound",
+      "conversationId": "session-bee21096-780f-4470-8c28-c0312d6ab5a0",
+      "projectRoot": "/Users/mac/Documents/deepseek-harness/dsh001-fixture",
+      "outcome": "created",
+      "sessionId": "01M77EXY9QMA7X9A3RQC17ZY9T",
+      "externalSession": "dsh:session-bee21096-780f-4470-8c28-c0312d6ab5a0",
+      "work": {
+        "key": "INTAKE-001",
+        "why": "blocked"
+      }
+    },
+    {
+      "event": "agent/created",
+      "source": "startup",
+      "header": [
+        "version",
+        "id",
+        "createdAt",
+        "cwd",
+        "isSeeded",
+        "agentPreset"
+      ],
+      "conversationId": "session-edce8455-1f40-426b-8ced-32bbc58a06d1",
+      "cwd": "/Users/mac/Documents/deepseek-harness/dsh001-fixture"
+    },
+    {
+      "event": "fork-parent",
+      "conversationId": "session-edce8455-1f40-426b-8ced-32bbc58a06d1",
+      "inherited": 22,
+      "parent": "session-bee21096-780f-4470-8c28-c0312d6ab5a0",
+      "examined": 10
+    },
+    {
+      "event": "bound",
+      "conversationId": "session-edce8455-1f40-426b-8ced-32bbc58a06d1",
+      "projectRoot": "/Users/mac/Documents/deepseek-harness/dsh001-fixture",
+      "outcome": "created",
+      "sessionId": "01M77F0D1P48FTHJFY21R7K6WP",
+      "externalSession": "dsh:session-edce8455-1f40-426b-8ced-32bbc58a06d1",
+      "work": {
+        "key": "INTAKE-001",
+        "why": "blocked"
+      },
+      "fork": {
+        "parentConversation": "session-bee21096-780f-4470-8c28-c0312d6ab5a0",
+        "parentSession": "01M77EXY9QMA7X9A3RQC17ZY9T",
+        "mode": "parent_active"
+      }
+    },
+    {
+      "event": "agent/created",
+      "source": "startup",
+      "header": [
+        "version",
+        "id",
+        "createdAt",
+        "cwd",
+        "isSeeded",
+        "agentPreset"
+      ],
+      "conversationId": "session-66e1355a-7229-47db-99e3-519e5897161d",
+      "cwd": "/Users/mac/Documents/deepseek-harness/dsh001-fixture"
+    },
+    {
+      "event": "fork-parent",
+      "conversationId": "session-66e1355a-7229-47db-99e3-519e5897161d",
+      "inherited": 22,
+      "parent": "session-bee21096-780f-4470-8c28-c0312d6ab5a0",
+      "examined": 10
+    },
+    {
+      "event": "bound",
+      "conversationId": "session-66e1355a-7229-47db-99e3-519e5897161d",
+      "projectRoot": "/Users/mac/Documents/deepseek-harness/dsh001-fixture",
+      "outcome": "created",
+      "sessionId": "01M77F1ZW1W9QJNHEPGFH7Z6AR",
+      "externalSession": "dsh:session-66e1355a-7229-47db-99e3-519e5897161d",
+      "work": {
+        "key": "INTAKE-001",
+        "why": "blocked"
+      },
+      "successorOf": "01M77EXY9QMA7X9A3RQC17ZY9T",
+      "fork": {
+        "parentConversation": "session-bee21096-780f-4470-8c28-c0312d6ab5a0",
+        "parentSession": "01M77EXY9QMA7X9A3RQC17ZY9T",
+        "mode": "continued"
+      }
+    }
+  ],
+  "awr_sessions": {
+    "parent (ended by the CLI before the second fork)": {
+      "id": "01M77EXY9QMA7X9A3RQC17ZY9T",
+      "status": "interrupted",
+      "agent_id": "generic:dsh:session-bee21096-780f-4470-8c28-c0312d6ab5a0",
+      "claims": 0,
+      "resumed_successor": "01M77F1ZW1W9QJNHEPGFH7Z6AR"
+    },
+    "fork 1, parent still active (parent_active)": {
+      "id": "01M77F0D1P48FTHJFY21R7K6WP",
+      "status": "active",
+      "agent_id": "generic:dsh:session-edce8455-1f40-426b-8ced-32bbc58a06d1",
+      "claims": 0,
+      "resumed_successor": null
+    },
+    "fork 2, parent ended (continued)": {
+      "id": "01M77F1ZW1W9QJNHEPGFH7Z6AR",
+      "status": "active",
+      "agent_id": "generic:dsh:session-66e1355a-7229-47db-99e3-519e5897161d",
+      "claims": 0,
+      "resumed_successor": null
+    }
+  }
+}
