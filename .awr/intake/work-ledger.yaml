@@ -112,7 +112,7 @@ work_items:
 - id: DSH-013
   title: Bind each DSH conversation to an AWR session without claiming
   kind: implementation
-  status: planned
+  status: completed
   priority: P0
   required: true
   goal: intake-goal
@@ -121,7 +121,9 @@ work_items:
   - A new DSH conversation produces an AWR client binding with client generic and external session dsh:<session id>.
   - Binding never acquires a claim and never takes over another active session's claim.
   - A resumed DSH conversation maps to the same AWR session, shown by session show. Forked conversations are split out as DSH-016.
-  next_action: Complete with docs/binding.md and docs/evidence/DSH-013 as evidence.
+  next_action: Complete DSH-013 with docs/binding.md and docs/evidence/DSH-013.
+  "evidence": ["docs/evidence/DSH-013/completion-report.json"]
+  "verification": {"evidence_level":"locally_verified"}
 - id: DSH-014
   title: Inject AWR work context into the DSH prompt
   kind: implementation

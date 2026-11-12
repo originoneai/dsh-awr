@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "work_item": "DSH-013",
+  "source_sha": "110bd2d039281e26dd049258c6e0d11a8f5272f3",
+  "command": "npm test; dsh dsh-awr-dev --json \"say ok\" (new and --session-id resumed) with DSH_AWR_TRACE; awr client show and session list read back from outside DSH",
+  "scope": [
+    "lib/binding.js",
+    "lib/conversation.js",
+    "lib/project.js",
+    "lib/awr-runtime.js",
+    "index.js",
+    "test",
+    "docs/binding.md",
+    "docs/evidence/DSH-013"
+  ],
+  "verified_at": 1794461262554,
+  "checks": [
+    {
+      "name": "A new DSH conversation produces a client generic binding with dsh:<session id>",
+      "passed": true,
+      "details": "In DeepSeek Harness 0.2.2-rc.1, booting the dev profile headless in packages/app of a disposable AWR project fired agent/created with source startup; the listener read agent.session.id and agent.session.header.cwd, found the project root, and awr client show read back a binding with client generic, external_session dsh:session-ec86462a-4090-43a3-9995-eacc1c5720bc and an active AWR session on INTAKE-001 (docs/evidence/DSH-013/new-conversation.trace.jsonl, summary.json). The same flow is covered by tests against the real awr. Limits: the desktop app was not used; the headless run creates the agent before the model call, which fails for lack of an API key.",
+      "criteria": [
+        "A new DSH conversation produces an AWR client binding with client generic and external session dsh:<session id>."
+      ]
+    },
+    {
+      "name": "Binding never acquires a claim and never takes over another session's claim",
+      "passed": true,
+      "details": "The bind command carries no claim or session flag (asserted in a test), the bound session has no claims in the DSH run and in the real-awr tests, and a real-awr test starts a claimed session for another agent on INTAKE-001, binds a conversation to that work with an explicit key, and shows the other session's claim still active and the new session holding none. Work with an active claim is also skipped when the plugin chooses the work itself.",
+      "criteria": [
+        "Binding never acquires a claim and never takes over another active session's claim."
+      ]
+    },
+    {
+      "name": "A resumed conversation maps to the same AWR session",
+      "passed": true,
+      "details": "Resuming the same DSH session with --session-id fired agent/created with source resume; the listener returned outcome existing with the same AWR session id, and the project still had one active session (docs/evidence/DSH-013/resumed-conversation.trace.jsonl). A real-awr test also covers resume and continuation after the session ended (dsh:<id>#2 with --from-session). Forked conversations are not covered: that part of the criterion was split out as DSH-016 in the ledger, which is a change to the acceptance criteria made for the reason given in docs/binding.md.",
+      "criteria": [
+        "A resumed DSH conversation maps to the same AWR session, shown by session show. Forked conversations are split out as DSH-016."
+      ]
+    }
+  ]
+}
