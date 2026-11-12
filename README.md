@@ -22,7 +22,8 @@ scripts/build-awr-lab.sh <awr-checkout>    # the local AWR this plugin is develo
 - What DSH offers a plugin, checked against 0.2.2-rc.1: [docs/dsh-surfaces.md](docs/dsh-surfaces.md).
 - How the plugin picks and runs `awr`, and when it refuses to: [docs/awr-runtime.md](docs/awr-runtime.md).
 - Binding a conversation to an AWR session: [docs/binding.md](docs/binding.md). The `/awr` command:
-  [docs/commands.md](docs/commands.md).
+  [docs/commands.md](docs/commands.md). The AWR work context in the prompt:
+  [docs/prompt-context.md](docs/prompt-context.md).
 
 ## What the plugin is for
 
@@ -41,7 +42,7 @@ No DSH-specific client dialect is added to AWR.
 | P0 | One-click project takeover | client slot button (for example `conversation.session.header.actions`) calling a registered command; background child through the `subagents` service | Unattended `init` preview, draft, accept and `intake inspect` loop (see below) |
 | P0 | MCP mount | `@deepseek-ai/dsh-mcp-client` row in the bundle patch | Start the native `awr-mcp --project <cwd>` over stdio (`ctx.mcpManager` does not exist in 0.2.2-rc.1) |
 | P0 | Session binding | event `agent/created` (serial, awaited) | `awr client bind`; bind only, never auto-claim |
-| P0 | Context injection | `ctx.systemPrompt.context` / `section`, `agent.inject` | Inject next action, open loops and compiled work context |
+| P0 | Context injection | `ctx.systemPrompt.context` (required runtime context), refreshed in `agent/pre-step` | Inject next action, open loops and compiled work context; DSH re-adds it after a compaction |
 | P0 | Slash commands | `ctx.commands.register` | `/awr status`, `claim`, `checkpoint`, `end` |
 | P1 | Checkpoints | event `agent/turn-stopping` (listener may `agent.steer`) | Ask the model to checkpoint before a turn closes |
 | P1 | Compaction observation | log-only session events `compaction/*` | Report per AWR's context-continuity protocol; no hook before compaction exists |

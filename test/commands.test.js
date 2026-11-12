@@ -85,6 +85,21 @@ test('checkpoint needs a digest and a next action, and uses a freshly compiled c
   assert.equal(flag(saved, '--expected-revision'), '20')
 })
 
+test('a resumed conversation, whose binding carries no work key, can checkpoint: the session knows its work', async () => {
+  const awr = scripted({
+    status: () => status(20),
+    'context compile': () => ({ work_context: { context_hash: 'b'.repeat(64) } }),
+    'session checkpoint': () => ({ checkpoint: { id: 'C2' } }),
+  })
+  const resumed = { projectRoot: '/p', outcome: 'existing', sessionId: 'S1' }
+  const result = await run(awr, resumed, 'checkpoint Resumed and read the notes :: Continue')
+  assert.equal(result.kind, 'success', result.text)
+  const compile = awr.calls.find((c) => c[1] === 'compile')
+  assert.equal(flag(compile, '--session'), 'S1')
+  assert.ok(!compile.includes('--work'), 'compiled for the session, not for a work key the binding does not have')
+  assert.equal(flag(awr.calls.find((c) => c[1] === 'checkpoint'), '--context-hash'), 'b'.repeat(64))
+})
+
 test('end validates the outcome, sends the current revision, and says that work is not completed', async () => {
   const awr = scripted({ status: () => status(5), 'session end': () => ({ ok: true }) })
   assert.equal((await run(awr, bound, 'end banana')).kind, 'error')

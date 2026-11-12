@@ -1,0 +1,186 @@
+{
+ "note": "DeepSeek Harness 0.2.2-rc.1, dev profile dsh-awr-dev (headless), cwd packages/app of a disposable AWR project. The model is a local stand-in (scripts/fake-model.mjs on 127.0.0.1, dummy key, DEEPSEEK_BASE_URL) that records every request and answers with the next action and first open loop it finds in the messages it was sent. Nothing left the machine. Each request below is what DSH sent to the model.",
+ "runs": {
+  "1 new conversation (request 2 is DSH's own session-title call)": [
+   {
+    "tools": 24,
+    "messages": [
+     {
+      "role": "user",
+      "chars": 19824,
+      "has_awr_context": true,
+      "mentions_open_loop": false,
+      "starts": "What is the next action of the AWR work?Current runtime context. This snapshot supersedes "
+     }
+    ]
+   },
+   {
+    "tools": 0,
+    "messages": [
+     {
+      "role": "user",
+      "chars": 128,
+      "has_awr_context": false,
+      "mentions_open_loop": false,
+      "starts": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"What "
+     }
+    ]
+   }
+  ],
+  "2 same conversation, project unchanged": [
+   {
+    "tools": 24,
+    "messages": [
+     {
+      "role": "user",
+      "chars": 19824,
+      "has_awr_context": true,
+      "mentions_open_loop": false,
+      "starts": "What is the next action of the AWR work?Current runtime context. This snapshot supersedes "
+     },
+     {
+      "role": "assistant",
+      "chars": 160,
+      "has_awr_context": false,
+      "mentions_open_loop": false,
+      "starts": "Next action in my context: Run awr intake inspect and read sources for each gap; add goal "
+     },
+     {
+      "role": "user",
+      "chars": 28,
+      "has_awr_context": false,
+      "mentions_open_loop": false,
+      "starts": "And what are the open loops?"
+     }
+    ]
+   }
+  ],
+  "3 same conversation, project changed (a checkpoint with an open loop was written between runs)": [
+   {
+    "tools": 24,
+    "messages": [
+     {
+      "role": "user",
+      "chars": 19824,
+      "has_awr_context": true,
+      "mentions_open_loop": false,
+      "starts": "What is the next action of the AWR work?Current runtime context. This snapshot supersedes "
+     },
+     {
+      "role": "assistant",
+      "chars": 160,
+      "has_awr_context": false,
+      "mentions_open_loop": false,
+      "starts": "Next action in my context: Run awr intake inspect and read sources for each gap; add goal "
+     },
+     {
+      "role": "user",
+      "chars": 28,
+      "has_awr_context": false,
+      "mentions_open_loop": false,
+      "starts": "And what are the open loops?"
+     },
+     {
+      "role": "assistant",
+      "chars": 160,
+      "has_awr_context": false,
+      "mentions_open_loop": false,
+      "starts": "Next action in my context: Run awr intake inspect and read sources for each gap; add goal "
+     },
+     {
+      "role": "user",
+      "chars": 4428,
+      "has_awr_context": true,
+      "mentions_open_loop": true,
+      "starts": "What changed?Current runtime context. This snapshot supersedes earlier runtime-context sna"
+     }
+    ]
+   }
+  ],
+  "4 same conversation, compaction forced (thresholdRatio 0.001): two summary requests, then the real one": [
+   {
+    "tools": 24,
+    "messages": [
+     {
+      "role": "user",
+      "chars": 19824,
+      "has_awr_context": true,
+      "mentions_open_loop": false,
+      "starts": "What is the next action of the AWR work?Current runtime context. This snapshot supersedes "
+     },
+     {
+      "role": "assistant",
+      "chars": 160,
+      "has_awr_context": false,
+      "mentions_open_loop": false,
+      "starts": "Next action in my context: Run awr intake inspect and read sources for each gap; add goal "
+     },
+     {
+      "role": "user",
+      "chars": 28,
+      "has_awr_context": false,
+      "mentions_open_loop": false,
+      "starts": "And what are the open loops?"
+     },
+     {
+      "role": "assistant",
+      "chars": 160,
+      "has_awr_context": false,
+      "mentions_open_loop": false,
+      "starts": "Next action in my context: Run awr intake inspect and read sources for each gap; add goal "
+     },
+     {
+      "role": "user",
+      "chars": 1815,
+      "has_awr_context": false,
+      "mentions_open_loop": false,
+      "starts": "What changed?You are now acting as a compaction engine for this AI coding assistant. Conde"
+     }
+    ]
+   },
+   {
+    "tools": 24,
+    "messages": [
+     {
+      "role": "user",
+      "chars": 2303,
+      "has_awr_context": false,
+      "mentions_open_loop": false,
+      "starts": "This is an automatically generated checkpoint condensing an earlier span of the conversati"
+     }
+    ]
+   },
+   {
+    "tools": 24,
+    "messages": [
+     {
+      "role": "user",
+      "chars": 4777,
+      "has_awr_context": true,
+      "mentions_open_loop": true,
+      "starts": "This is an automatically generated checkpoint condensing an earlier span of the conversati"
+     },
+     {
+      "role": "assistant",
+      "chars": 206,
+      "has_awr_context": false,
+      "mentions_open_loop": true,
+      "starts": "Next action in my context: Run awr intake inspect and read sources for each gap; add goal "
+     },
+     {
+      "role": "user",
+      "chars": 15697,
+      "has_awr_context": false,
+      "mentions_open_loop": false,
+      "starts": "Anything else?<system-reminder>\nThe available skill catalog changed. This complete catalog"
+     }
+    ]
+   }
+  ]
+ },
+ "after_compaction_first_message": {
+  "chars": 4777,
+  "compacted_summary": "<compacted-summary>I see no AWR context.</compacted-summary>",
+  "awr_section": "# AWR work context\nThis conversation is bound to AWR (Agent Work Runtime) session 01M776CWRYKZ7N6H8QP4GS04XJ: project dsh014-fixture, work INTAKE-001, project revision 14.\nAWR records the project's work state; the text below is its compiled context for that work and is replaced when the project changes. Never edit .awr/state.db*.\n\nProject: dsh014-fixture [01M77695KTW7SY04V352X99GH1] r14\nWork: INTAKE-001 [01M77695KVCJ6KS0PGQQ5MPS8E] r1\nBranch: main\nSources:\n01M77695KT6A4DY3FRYXWW8X86 r1 sha256:9ad65d22edc72432321133f09097efd20226bc6788b4f14362d57225e514a350 Fresh file:///Users/mac/Documents/deepseek-harness/dsh014-fixture/.awr/intake/work-ledger.yaml\n\n## Goal\n[goal-body:intake-goal]\ngoal:01M77695KVB7NQT8RAXEE1459Z@r1\nCheck the AWR prompt context in DSH\n\nProvenance: explicit --goal input. Existing implementation progress remains unverified until reviewed against source and evidence.\n[goal:intake-goal]\ngoal:01M77695KVB7NQT8RAXEE1459Z@r1\nCheck the AWR prompt context in DSH\nStatus: active\nSuccess criteria:\nCheck the AWR prompt context in DSH\n\n## Current Work\n[INTAKE-001]\nwork_item:01M77695KVCJ6KS0PGQQ5MPS8E@r1\nStatus: \"ready\"\nRaw status: \"ready\"\nBlocker present: false\nBlocker:\n\nNext Action:\nRun awr intake inspect and read sources for each gap; add goal references, acceptance criteria, and next actions, then inspect again.\n[work-summary]\nwork_item:01M77695KVCJ6KS0PGQQ5MPS8E@r1\nThis is a new intake task; it does not establish whether existing functionality is implemented or accepted.\n\n## Acceptance\n[acceptance]\nwork_item:01M77695KVCJ6KS0PGQQ5MPS8E@r1\n1. Confirm goals, existing implementation, unfinished work, and blockers with source references.\n2. Mark uncertain progress as unverified and define acceptance criteria for the next executable task.\n\n## Dependencies\n[dependency-summary]\nRequired dependencies: 0 unresolved, 0 resolved; 0 missing, 0 cycle members.\n\n## Recent Delta\n[checkpoint]\ncheckpoint:01M776CY65K0SNJAC9E6NMS61D@r1\nCheckpoint context hash: 61c69a5733ff1f3da83aac7480cb7cb8f0a6753984988056f2f6715ba77ed1b8\nCheckpoint Next Action:\nAdd goal references\nCheckpoint Open Loops:\ndecide the milestone names\n[checkpoint-digest]\ncheckpoint:01M776CY65K0SNJAC9E6NMS61D@r1\n"
+ }
+}

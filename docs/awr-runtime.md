@@ -38,6 +38,14 @@ run `init`.
 | `timeout` | the command did not finish in time | no |
 | `failed` | any other awr error, for example `NotFound` or `InvalidInput` | no |
 
+Where awr reports an error: the real awr prints it as a JSON document on **stderr** with a non-zero
+exit (`{ "code", "message", "details" }`), and for some failures (`ContextIncomplete`) also puts a
+full result with an `error` field on stdout. The runner reads stdout first, then stderr (the document
+may follow a warning line), and keeps awr's own `details` untouched as `error.details.awrDetails`, for
+example the budget a `BudgetExceeded` needs and the command awr suggests. Before DSH-014 only stdout
+was read, so every real awr error was reported as `invalid_output`; the DSH-011 tests used fake awr
+programs that printed errors on stdout and did not show it.
+
 A stopped project is remembered for the life of the plugin: later calls return the same error
 without starting `awr` again. `explain(error)` gives the sentence to show the user. It says that
 the plugin does not migrate, restore or downgrade.
@@ -59,7 +67,8 @@ that case has not been exercised.
 
 - `test/awr-runtime.test.js`: bound, unbound, missing, version, schema and hash mismatch, unsupported
   in both forms, recovery, forbidden commands, ordinary errors, uninitialized projects, invalid
-  output and timeout, against small fake `awr` programs. Removing the forbidden-command check, the
+  output and timeout, against small fake `awr` programs, including errors printed the way the real awr
+  prints them (stderr, exit 1). Removing the forbidden-command check, the
   remembered stop, or the binding lookup each fails tests.
 - `docs/evidence/DSH-011/real-awr-check.out`: the same module against real binaries: the AWR
   repository's pinned build through its binding file (hash, version and schema matched), the lab

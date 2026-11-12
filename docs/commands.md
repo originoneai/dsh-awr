@@ -5,9 +5,9 @@ session and creates no model message. The result is shown by DSH outside the mod
 
 | Command | What it runs |
 | --- | --- |
-| `/awr` or `/awr status` | `awr status`; shows the project, counts, the work in progress or the next action, and which AWR session this conversation is bound to |
+| `/awr` or `/awr status` | `awr status`; shows the project, counts, the work in progress or the next action, which AWR session this conversation is bound to, and what AWR context the prompt carries ([prompt-context.md](prompt-context.md)) |
 | `/awr claim [WORK]` | `awr work claim WORK --session <bound session> --expected-revision <current>`; WORK defaults to the work the conversation was bound to |
-| `/awr checkpoint DIGEST :: NEXT` | `awr context compile` for the bound work to get its hash, then `awr session checkpoint` with your digest and next action |
+| `/awr checkpoint DIGEST :: NEXT` | `awr context compile --session <bound session>` to get the context hash (the session knows its work, so a resumed conversation works too), then `awr session checkpoint` with your digest and next action |
 | `/awr end [ended\|interrupted\|incomplete]` | `awr session end --outcome …` (default `ended`); the reply says that work is not completed by ending a session |
 | `/awr help` | the list above |
 

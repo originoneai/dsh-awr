@@ -206,6 +206,47 @@ test('an ordinary awr error is reported but does not stop the plugin', async (t)
   assert.ok(fake.calls().length > calls)
 })
 
+/** A fake awr that behaves like the real one on failure: nothing on stdout, the error document on stderr, exit 1. */
+function failingAwr(dir, stderrText, { exit = 1 } = {}) {
+  writeFileSync(
+    join(dir, 'awr'),
+    `#!/bin/sh\ncase "$*" in\n  *"runtime binding"*) printf '%s' '${JSON.stringify(BINDING_REPORT)}'; exit 0;;\n  *) printf '%s\\n' '${stderrText}' >&2; exit ${exit};;\nesac\n`,
+  )
+  chmodSync(join(dir, 'awr'), 0o755)
+}
+
+test('the real awr prints an error on stderr with a non-zero exit; its code, message and details are kept', async (t) => {
+  const dir = scratch(t)
+  const document = { code: 'BudgetExceeded', message: 'context budget exceeded: required 783, budget 100', details: { budget: 100, required: 783, next_action: 'awr context compile --budget 783' } }
+  failingAwr(dir, JSON.stringify(document))
+  const awr = createAwr({ env: { PATH: dir } })
+  const root = project(t)
+  await assert.rejects(awr.run(root, ['context', 'compile']), (error) => {
+    assert.equal(error.kind, 'failed')
+    assert.equal(error.stops, false)
+    assert.equal(error.details.code, 'BudgetExceeded')
+    assert.equal(error.details.awrMessage, document.message)
+    assert.deepEqual(error.details.awrDetails, document.details)
+    return true
+  })
+  assert.deepEqual(await awr.run(root, ['runtime', 'binding']), BINDING_REPORT, 'the plugin goes on after an ordinary error')
+})
+
+test('an error document after a warning line on stderr is still read, and the nested error form too', async (t) => {
+  const dir = scratch(t)
+  failingAwr(dir, `warning: slow disk\n${JSON.stringify({ ok: false, error: { code: 'NotFound', message: 'not found: work X' } })}`)
+  await assert.rejects(createAwr({ env: { PATH: dir } }).run(project(t), ['work', 'show', 'X']), { kind: 'failed' })
+})
+
+test('stderr text that is not an error document stays "not JSON", and Unsupported on stderr stops the plugin', async (t) => {
+  const plain = scratch(t)
+  failingAwr(plain, 'thread panicked')
+  await assert.rejects(createAwr({ env: { PATH: plain } }).run(project(t), ['status']), { kind: 'invalid_output' })
+  const unsupported = scratch(t)
+  failingAwr(unsupported, 'Unsupported: this build cannot do that')
+  await assert.rejects(createAwr({ env: { PATH: unsupported } }).run(project(t), ['status']), { kind: 'unsupported', stops: true })
+})
+
 test('an uninitialized project can still run init', async (t) => {
   const dir = scratch(t)
   fakeAwr(dir, 'awr', { 'runtime binding': { code: 'SourceUnavailable', message: 'source unavailable: .awr' }, init: { status: 'preview' } })
