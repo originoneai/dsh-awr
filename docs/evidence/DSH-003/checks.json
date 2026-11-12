@@ -53,7 +53,12 @@
   "pull_request": {
     "url": "https://github.com/originoneai/awr/pull/617",
     "adds": "docs/dev/integrations/deepseek-harness.md (the integration notes moved from docs/integrations/ to docs/dev/integrations/ upstream in 24425ce1), plus index rows in docs/dev/integrations/README.md, README.md and README.zh-CN.md",
-    "branch": "docs/deepseek-harness-l1-note"
+    "branch": "docs/deepseek-harness-l1-note",
+    "number": 617,
+    "state": "merged",
+    "merge_commit": "037f66c97b01045f91e485d8f12a644eccc73a53",
+    "ci": "public-tree (public tree, docs style, assessment verifiers): success",
+    "merge": "squash, head 988793e6f42090ced1d1d6178bda9bb30a4f7c26"
   },
   "local_checks_on_the_pull_request_branch": [
     "python3 scripts/check_docs_style.py --self-test",

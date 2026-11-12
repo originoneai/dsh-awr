@@ -65,8 +65,8 @@ work_items:
   depends_on: [DSH-001]
   summary: AWR's integration rules ask for an L1 note that records only host-specific differences and a dated check. It lives in originoneai/agent-work-runtime, not here.
   acceptance:
-  - A pull request to originoneai/agent-work-runtime adds docs/integrations/deepseek-harness.md with merge paths, native session IDs, the dated DSH version check and known limits.
-  next_action: Draft the note from the DSH-001 record and open the pull request in the AWR repository.
+  - A pull request to originoneai/agent-work-runtime adds docs/dev/integrations/deepseek-harness.md (the integration notes moved there from docs/integrations/ upstream) with merge paths, native session IDs, the dated DSH version check and known limits.
+  next_action: Complete DSH-003 with docs/evidence/DSH-003.
 - id: DSH-010
   title: Create the plugin package skeleton that DSH loads
   kind: implementation
