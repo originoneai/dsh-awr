@@ -377,7 +377,8 @@ real('without a subagent service the draft is applied as generated and says so i
   await controller.idle(f.root)
   const view = await controller.status(agent)
   assert.equal(view.state, 'completed')
-  assert.equal(view.receipt.reviewed.byCallback, false)
+  // The plugin's own implementation says byCallback; through `awr takeover` (awr 0.8.0 or later) the receipt says byReviewer.
+  assert.equal(view.receipt.reviewed.byCallback ?? view.receipt.reviewed.byReviewer, false)
 })
 
 test('a conversation outside any project, in a too-broad directory, or with no directory has nothing to take over', async () => {

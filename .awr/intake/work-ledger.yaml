@@ -504,3 +504,12 @@ work_items:
   "summary": "Owner: publish a new version once the pull requests are merged, name the plugin AWR 项目及上下文管控 and use the supplied logo, white in dark mode. The Progress tab, the plain card, the quiet conversation and the update button of 0.2.0 are DSH-059 to DSH-063; the README tells people to install a release tag, so the update check has to follow release tags too."
   "evidence": ["docs/evidence/DSH-064/completion-report.json"]
   "verification": {"evidence_level":"locally_verified"}
+- "id": "WORK-92d975eb2e77c6c6140496d0e866eead"
+  "title": "DSH-065: The real-awr takeover tests do not depend on which awr the lab holds (0.7.0 or 0.8.0 and later)"
+  "status": "planned"
+  "acceptance": ["The two tests that assumed the lab awr has no awr takeover pass and still test what they say with the lab awr at 0.7.0 and at 0.8.0 or later: the legacy probe test skips itself when the awr has the command, and the no-subagent receipt test reads the field of whichever takeover path ran (byCallback in the plugin's own implementation, byReviewer through awr takeover).","The whole suite passes with the released awr 0.8.0 as the lab awr and with 0.7.0 (369 tests, 3 skipped as before), and the lab awr of this checkout is the released 0.8.0."]
+  "goal": ["intake-goal"]
+  "kind": "test"
+  "next_action": "Edit test/takeover-cli.test.js and test/takeover-host.test.js, run the suite with both awr versions as the lab, move the lab awr to the released 0.8.0, then complete with the evidence"
+  "priority": "P1"
+  "summary": "Found by running the plugin's suite against the packaged awr 0.8.0 before its release: the plugin already drives awr takeover --await-review and --reviewed, and two tests written for the plugin's own implementation fail only because the lab awr now has the command. The suite passed with that awr otherwise (364 of 366, 3 skipped)."

@@ -365,7 +365,9 @@ const legacy = existsSync(lab) ? test : test.skip
 legacy('an awr without the command keeps the plugin\'s own implementation, and the probe does not stop the project', async (t) => {
   const root = tmp(t, 'dsh-awr-cli-legacy-')
   const awr = createAwr({ env: { ...process.env, PATH: `${dirname(lab)}:${process.env.PATH}`, AWR_LOCAL_WEB: '0', AWR_LOCAL_HOME: tmp(t, 'dsh-awr-cli-legacy-home-') } })
-  assert.equal(await cliTakeoverAvailable(awr, root), false)
+  const hasCommand = await cliTakeoverAvailable(awr, root)
   assert.equal(awr.stoppedError(root), undefined, 'asking did not stop awr for the project')
+  // The lab awr moved to 0.8.0, which has `awr takeover`: the plugin then uses it, and there is no older awr to describe.
+  if (hasCommand) return t.skip('the lab awr has awr takeover (0.8.0 or later); the plugin\'s own implementation is for an older awr')
   assert.ok(await awr.run(root, ['capabilities']), 'awr still answers')
 })
