@@ -26,7 +26,7 @@ settled and a second host wants the same flow. If you choose (b), the work item 
 | AWR is Apache-2.0 (contributions are licensed Apache-2.0) | the AWR repository's `CONTRIBUTING.md` |
 | The plugin installs from a local directory through the app's Plugins page and through `dsh plugin add` | `docs/dsh-010-skeleton-check.md`, `docs/evidence/DSH-022` |
 | The plugin needs no AWR release: it runs the `awr` CLI. Only the MCP route needs a release that contains awr#614 | `docs/evidence/DSH-004` |
-| Everything model-driven except the takeover used a local stand-in; the takeover ran on public projects with one model | READMEs of each doc |
+| Everything model-driven except the takeover used a local stand-in; the takeover ran on public projects with one model | the "Not checked" sections of the `docs/*.md` pages |
 
 Options: keep private and unlicensed (internal use); or Apache-2.0 and public, with a tagged release that installs
 through `dsh plugin add` from its published source on a clean DSH install (the item's second criterion).
