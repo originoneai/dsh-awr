@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "work_item": "DSH-016",
+  "source_sha": "ce2297b686b1155b44c9a3ea9a11bcba77d96863",
+  "command": "node --test (199 tests; test/binding.test.js runs the real awr); 14 mutation checks (scratchpad script, all caught); DeepSeek Harness 0.2.2-rc.1 web profile with a local stand-in model: Fork session twice from one conversation, read back with the plugin trace, /awr status and awr session show (docs/evidence/DSH-016/live-dsh.json)",
+  "scope": [
+    "lib/fork.js",
+    "lib/binding.js",
+    "lib/conversation.js",
+    "lib/commands.js",
+    "lib/prompt-context.js",
+    "test/fork.test.js",
+    "test/binding.test.js",
+    "test/conversation.test.js",
+    "docs/binding.md",
+    "docs/evidence/DSH-016"
+  ],
+  "verified_at": 1794473519744,
+  "checks": [
+    {
+      "name": "In DeepSeek Harness, a forked conversation is matched to its parent conversation",
+      "passed": true,
+      "criteria": [
+        "In DeepSeek Harness, a forked conversation is matched to its parent conversation. When the parent's AWR session has ended, the fork is bound with from-session pointing at that session, shown by session show on the parent. When the parent's session is still active, the fork gets its own session and the parent's session and claims are left as they are (from-session would interrupt the parent session and close its claims)."
+      ],
+      "details": "DSH gives a fork no parent (header has no parentSession, agent/created source is startup, traceSession follows subagents only; read in app.asar and seen live), so the plugin finds the parent by content: the one other session of the same cwd whose own events equal the fork's inherited prefix, event by event, unique or none. Live in DSH 0.2.2-rc.1: a conversation answered one message and was bound; Fork session found it (inherited 22, 10 candidates read) and bound the fork parent_active with its own AWR session, the parent's session stayed active (session show). After awr session end on the parent's session, forking it again found it and bound the fork with from-session pointing at the ended session (mode continued); session show on the parent lists the fork's session as resumed_successor. /awr status in the fork names the parent and the mode. awr was run for real in test/binding.test.js: a from-session bind on a live parent marks it interrupted and closes its claims, which is why a live parent is never continued: the criterion was changed for that case (the old text was from-session for every fork), and the fork of a live parent gets its own session on the parent's claimed work with the parent's session and claim untouched (asserted against the real awr). Limits: the model was a stand-in; only the web profile, not the desktop shell; a parent outside the 10 newest sessions of the directory whose history does not begin where the fork's prefix does is not found (bound as new); no link is stored, so a fork whose parent was not found is not marked as one later."
+    },
+    {
+      "name": "A fork whose parent was never bound is bound as a new conversation.",
+      "passed": true,
+      "criteria": [
+        "A fork whose parent was never bound is bound as a new conversation."
+      ],
+      "details": "A fork whose parent has no binding in AWR (latestBinding finds none) is bound as an ordinary new conversation (mode parent_unbound, no from-session, no claim): scripted test, and against the real awr in test/binding.test.js. A fork for which no parent is named (none, ambiguous, lookup failing, host without sessionQuery) is bound exactly as before: tested in test/fork.test.js, test/binding.test.js and test/conversation.test.js. Not exercised live in DSH: the web client binds a conversation as soon as it is opened, so a parent never bound needs a session made without the plugin."
+    }
+  ]
+}

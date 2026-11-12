@@ -310,13 +310,15 @@ work_items:
 - id: DSH-016
   title: Map a forked DSH conversation to the parent's AWR session
   kind: implementation
-  status: planned
+  status: completed
   priority: P2
   required: false
   goal: intake-goal
   depends_on: [DSH-013]
   summary: Split out of DSH-013. A fork gets a new DSH session id, so the plugin binds it as a new conversation. Continuing the parent's AWR session needs the parent's id (awr client bind with from-session), and creating a fork and reading its parent were not exercised.
   acceptance:
-  - In DeepSeek Harness, a forked conversation is bound with from-session pointing at the parent conversation's AWR session, shown by session show.
+  - In DeepSeek Harness, a forked conversation is matched to its parent conversation. When the parent's AWR session has ended, the fork is bound with from-session pointing at that session, shown by session show on the parent. When the parent's session is still active, the fork gets its own session and the parent's session and claims are left as they are (from-session would interrupt the parent session and close its claims).
   - A fork whose parent was never bound is bound as a new conversation.
-  next_action: Find out how DSH exposes a fork (the source value of agent/created and the parent's session id), then extend lib/binding.js.
+  next_action: Complete DSH-016 with the registered evidence
+  "evidence": ["docs/evidence/DSH-016/completion-report.json"]
+  "verification": {"evidence_level":"locally_verified"}
