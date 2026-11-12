@@ -1,8 +1,8 @@
 // What is installed, and whether GitHub has something newer (DSH-059): the host's half of the update.
 import assert from 'node:assert/strict'
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
 import test from 'node:test'
 import { createAwrCommand } from '../lib/commands.js'
 import { createPluginUpdater, latestCommit, locate, lockedCommit, parseGithub, readInstalled, specFor } from '../lib/plugin-update.js'
@@ -144,15 +144,15 @@ test('the updater describes what is installed and remembers the check; a check o
   const { dir, root } = await profile('github:originoneai/dsh-awr#main', `  version: https://codeload.github.com/originoneai/dsh-awr/tar.gz/${A}\n`)
   try {
     let time = 1000
-    const updater = createPluginUpdater({ where: { root, profileDir: dir }, runner: lsRemote([`${B}\trefs/heads/main`]), now: () => time, running: '0.1.0' })
+    const updater = createPluginUpdater({ where: { root, profileDir: dir }, followFile: join(dir, 'follow.json'), runner: lsRemote([`${B}\trefs/heads/main`]), now: () => time, running: '0.1.0' })
     assert.deepEqual(await updater.describe(), { kind: 'github', version: '0.1.0', running: '0.1.0', repo: 'originoneai/dsh-awr', ref: 'main', installed: A })
     const answer = await updater.check()
     assert.equal(answer.kind, 'github')
     assert.deepEqual(answer.check, { checkedAt: 1000, ref: 'main', latest: B, available: true, spec: `github:originoneai/dsh-awr#${B}` })
     assert.deepEqual((await updater.describe()).check, answer.check, 'the answer stays in what the panel reads')
-    const same = createPluginUpdater({ where: { root, profileDir: dir }, runner: lsRemote([`${A}\trefs/heads/main`]) })
+    const same = createPluginUpdater({ where: { root, profileDir: dir }, followFile: join(dir, 'follow.json'), runner: lsRemote([`${A}\trefs/heads/main`]) })
     assert.equal((await same.check()).check.available, false, 'the same commit is not an update')
-    const checkout = createPluginUpdater({ where: { root, profileDir: undefined } })
+    const checkout = createPluginUpdater({ where: { root, profileDir: undefined }, followFile: join(dir, 'follow.json') })
     assert.deepEqual(await checkout.check(), { kind: 'checkout' })
   } finally {
     await rm(dir, { recursive: true, force: true })
@@ -162,7 +162,7 @@ test('the updater describes what is installed and remembers the check; a check o
 test('an update that was installed since the check is no longer on offer, and a host still running the old code says so', async () => {
   const { dir, root } = await profile('github:originoneai/dsh-awr#main', `  version: https://codeload.github.com/originoneai/dsh-awr/tar.gz/${A}\n`)
   try {
-    const updater = createPluginUpdater({ where: { root, profileDir: dir }, runner: lsRemote([`${B}\trefs/heads/main`]), now: () => 5, running: '0.1.0' })
+    const updater = createPluginUpdater({ where: { root, profileDir: dir }, followFile: join(dir, 'follow.json'), runner: lsRemote([`${B}\trefs/heads/main`]), now: () => 5, running: '0.1.0' })
     await updater.check()
     assert.equal((await updater.describe()).check.available, true, 'B is newer than the installed A')
     // The plugin manager installs B: the lockfile names it and the package on disk has a new version.
@@ -182,10 +182,64 @@ test('an update that was installed since the check is no longer on offer, and a 
   }
 })
 
+test('an update pins the dependency to a commit; the branch the plugin followed is remembered, and the next check asks that branch', async () => {
+  const asked = []
+  const runner = async (file, args) => { asked.push(args.at(-1)); return `${B}\trefs/heads/${args.at(-1)}\n${A}\trefs/heads/main\n` }
+  const { dir, root } = await profile('github:originoneai/dsh-awr#verify/update-flow', `  version: https://codeload.github.com/originoneai/dsh-awr/tar.gz/${A}\n`)
+  try {
+    const followFile = join(dir, 'state', 'follow.json')
+    const updater = createPluginUpdater({ where: { root, profileDir: dir }, runner, followFile })
+    assert.equal((await updater.check()).check.latest, B)
+    assert.deepEqual(asked, ['verify/update-flow'], 'the branch the dependency names')
+    assert.deepEqual(JSON.parse(await readFile(followFile, 'utf8')), { 'originoneai/dsh-awr': 'verify/update-flow' }, 'and nothing but the repository and the branch is kept')
+    // The plugin manager installed the pinned spec: the dependency names a commit, not a branch.
+    await writeFile(join(dir, 'package.json'), JSON.stringify({ dependencies: { '@originoneai/dsh-awr': `github:originoneai/dsh-awr#${B}` } }))
+    await writeFile(join(dir, 'pnpm-lock.yaml'), `  version: https://codeload.github.com/originoneai/dsh-awr/tar.gz/${B}\n`)
+    const next = createPluginUpdater({ where: { root, profileDir: dir }, runner, followFile })
+    assert.equal((await next.describe()).ref, 'verify/update-flow', 'the card still follows the branch')
+    const answer = await next.check()
+    assert.deepEqual(asked, ['verify/update-flow', 'verify/update-flow'], 'a commit in the dependency does not send the next check to the default branch')
+    assert.equal(answer.check.ref, 'verify/update-flow')
+    assert.equal(answer.check.available, false, 'the pinned commit is the newest of the branch')
+    // Somebody installs from another branch: that one is followed from now on.
+    await writeFile(join(dir, 'package.json'), JSON.stringify({ dependencies: { '@originoneai/dsh-awr': 'github:originoneai/dsh-awr#release' } }))
+    await next.check()
+    assert.equal(asked.at(-1), 'release')
+    assert.deepEqual(JSON.parse(await readFile(followFile, 'utf8')), { 'originoneai/dsh-awr': 'release' })
+  } finally {
+    await rm(dir, { recursive: true, force: true })
+  }
+})
+
+test('a dependency pinned to a commit that never named a branch follows the default branch; describing writes nothing', async () => {
+  const asked = []
+  const runner = async (file, args) => { asked.push(args.at(-1)); return `${B}\tHEAD\n` }
+  const { dir, root } = await profile(`github:originoneai/dsh-awr#${A}`)
+  try {
+    const followFile = join(dir, 'state', 'follow.json')
+    const updater = createPluginUpdater({ where: { root, profileDir: dir }, runner, followFile })
+    assert.equal('ref' in (await updater.describe()), false)
+    await assert.rejects(readFile(followFile, 'utf8'), 'describing does not write the file')
+    await updater.check()
+    assert.deepEqual(asked, ['HEAD'])
+    await assert.rejects(readFile(followFile, 'utf8'), 'a check of a commit-pinned dependency has no branch to remember')
+    // A file that is not what was written is ignored, not trusted.
+    await mkdir(dirname(followFile), { recursive: true })
+    for (const garbage of ['not json', '[]', '{"originoneai/dsh-awr": 7}']) {
+      await writeFile(followFile, garbage)
+      asked.length = 0
+      await updater.check()
+      assert.deepEqual(asked, ['HEAD'], garbage)
+    }
+  } finally {
+    await rm(dir, { recursive: true, force: true })
+  }
+})
+
 test('the description never carries a raw dependency spec, so a credential in one cannot reach the panel', async () => {
   const { dir, root } = await profile('https://user:secret-token@github.com/originoneai/dsh-awr')
   try {
-    const updater = createPluginUpdater({ where: { root, profileDir: dir } })
+    const updater = createPluginUpdater({ where: { root, profileDir: dir }, followFile: join(dir, 'follow.json') })
     assert.ok(!JSON.stringify(await updater.describe()).includes('secret-token'))
   } finally {
     await rm(dir, { recursive: true, force: true })
@@ -195,7 +249,7 @@ test('the description never carries a raw dependency spec, so a credential in on
 test('/awr update check says in one sentence whether there is something newer, in the interface language', async () => {
   const { dir, root } = await profile('github:originoneai/dsh-awr#main', `  version: https://codeload.github.com/originoneai/dsh-awr/tar.gz/${A}\n`)
   try {
-    const make = (lines) => createAwrCommand({ awr: {}, bindings: { get: () => undefined }, updater: createPluginUpdater({ where: { root, profileDir: dir }, runner: lsRemote(lines) }) })
+    const make = (lines) => createAwrCommand({ awr: {}, bindings: { get: () => undefined }, updater: createPluginUpdater({ where: { root, profileDir: dir }, followFile: join(dir, 'follow.json'), runner: lsRemote(lines) }) })
     const agent = { session: { id: 'c1' } }
     const newer = await make([`${B}\trefs/heads/main`])({ agent, rawInput: 'update check --ui zh' })
     assert.equal(newer.kind, 'success')
@@ -205,7 +259,7 @@ test('/awr update check says in one sentence whether there is something newer, i
     assert.equal(english.text.split('\n')[0], 'A newer version of the plugin is available on GitHub. Press Update to install it.')
     const current = await make([`${A}\trefs/heads/main`])({ agent, rawInput: 'update check --ui zh' })
     assert.equal(current.text.split('\n')[0], '插件已是最新版本。')
-    const failed = await createAwrCommand({ awr: {}, bindings: { get: () => undefined }, updater: createPluginUpdater({ where: { root, profileDir: dir }, runner: async () => { throw Object.assign(new Error('x'), { code: 'ENOENT' }) } }) })({ agent, rawInput: 'update check --ui zh' })
+    const failed = await createAwrCommand({ awr: {}, bindings: { get: () => undefined }, updater: createPluginUpdater({ where: { root, profileDir: dir }, followFile: join(dir, 'follow.json'), runner: async () => { throw Object.assign(new Error('x'), { code: 'ENOENT' }) } }) })({ agent, rawInput: 'update check --ui zh' })
     assert.equal(failed.kind, 'error')
     assert.equal(failed.text.split('\n')[0], '无法检查更新。')
     const none = await createAwrCommand({ awr: {}, bindings: { get: () => undefined } })({ agent, rawInput: 'update' })
