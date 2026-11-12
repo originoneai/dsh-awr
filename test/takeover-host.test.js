@@ -221,12 +221,18 @@ test('what counts as a credential file', () => {
 
 // --- the review by a subagent --------------------------------------------------------------------------------------
 
+/** What the review of a spec asks: the rc.2 shape has the fields on the spec, the rc.1 shape under `request`. */
+const requestOf = (spec) => ({ cwd: spec.cwd, prompt: spec.prompt, parent: spec.parent })
+
 function fakeSubagents(answer, { onStart } = {}) {
   const started = []
   const subagents = {
     started,
     disposed: 0,
     async startActivation(spec) {
+      // Like DeepSeek Harness 0.2.2-rc.2: the exact live parent is read from the spec first, and `spec.parent.id` of a
+      // spec without a parent is a TypeError. The nested-only shape of rc.1 did exactly that in the desktop app.
+      if (spec.parent === undefined || spec.parent === null) throw new TypeError("Cannot read properties of undefined (reading 'id')")
       started.push(spec)
       onStart?.(spec)
       const result = typeof answer === 'function' ? answer(spec) : answer
@@ -249,11 +255,13 @@ test('the review starts a child of the conversation with delivery to the caller,
   const [spec] = subagents.started
   assert.equal(spec.provider, 'spawn')
   assert.equal(spec.delivery, 'caller', 'the conversation is not interrupted by a completion notice')
-  assert.equal(spec.request.parent, parent)
-  assert.ok(spec.request.cwd.startsWith(state) && spec.request.cwd.endsWith('/review'), 'its own directory, outside the project')
-  assert.ok(!spec.request.cwd.startsWith(root))
-  assert.match(spec.request.prompt[0].text, new RegExp(REVIEW_MARKER.replace(/[[\]]/g, '\\$&')))
-  assert.match(spec.request.prompt[0].text, /upload endpoint/, 'the Git history the reviewer cannot read itself')
+  assert.equal(spec.parent, parent)
+  assert.equal(spec.request.parent, parent, 'the rc.1 shape is given too')
+  assert.ok(spec.cwd.startsWith(state) && spec.cwd.endsWith('/review'), 'its own directory, outside the project')
+  assert.equal(spec.request.cwd, spec.cwd)
+  assert.ok(!spec.cwd.startsWith(root))
+  assert.match(spec.prompt[0].text, new RegExp(REVIEW_MARKER.replace(/[[\]]/g, '\\$&')))
+  assert.match(spec.prompt[0].text, /upload endpoint/, 'the Git history the reviewer cannot read itself')
   assert.ok(expectedWhileStarting && policy.reviewers().length === 0, 'the reviewer is forgotten when the review is over')
   assert.equal(subagents.disposed, 1)
 })
@@ -291,7 +299,7 @@ test('a missing subagent service, a failing child, an unusable answer and a time
 /** A reviewer that answers with a candidate goal built from the draft in its prompt. */
 function reviewerFor(draftFromPrompt = true) {
   return fakeSubagents((spec) => {
-    const draft = JSON.parse(spec.request.prompt[0].text.split('<draft>')[1].split('</draft>')[0])
+    const draft = JSON.parse(spec.prompt[0].text.split('<draft>')[1].split('</draft>')[0])
     const files = { ...draft.generated_files }
     for (const path of Object.keys(files)) if (path.endsWith('GOALS.md')) files[path] = '# Deliver a document portal {#portal status=candidate}\n\nThe README says so.\n\nProvenance: README.md; candidate.\n'
     return { output: `\`\`\`json\n${JSON.stringify({ generated_files: files, notes: 'from README.md' })}\n\`\`\`` }

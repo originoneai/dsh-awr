@@ -50,8 +50,11 @@ Third-party web pages read earlier are not used for any row below.
   line in the conversation's timeline and an entry in its log. The `web` profile serves the same client and
   can be opened in a browser: `dsh <profile> --no-open --host 127.0.0.1 --port N`. The web client's "add
   workspace" needs a native folder dialog.
-- Subagents (DSH-021): `ctx.subagents.startActivation({ provider: 'spawn', label, request: { cwd, prompt,
-  parent }, signal, delivery: 'caller' })` starts a child whose `agent/created` carries `parentSession` and
+- Subagents (DSH-021, shape corrected in DSH-055): `ctx.subagents.startActivation({ provider: 'spawn', label,
+  parent, cwd, prompt, request: { cwd, prompt, parent }, signal, delivery: 'caller' })` starts a child. In 0.2.2-rc.2
+  `parent`, `cwd` and `prompt` are fields of the spec itself (it reads `spec.parent.id` first, and a spec without a
+  parent fails with "Cannot read properties of undefined (reading 'id')"); 0.2.2-rc.1 and its documentation read them
+  from `request`, so the plugin gives both. The child whose `agent/created` carries `parentSession` and
   `origin` in the header; its header `cwd` is the parent's until DSH moves it to `request.cwd`. Its tools are
   restricted with `agent.ctx.tools.restrict({ allow })` (needs the agent's own context) in that listener, and
   `ctx.tools.guard((exec) => reason)` sees `exec.agent`, `exec.name` and `exec.arguments`.

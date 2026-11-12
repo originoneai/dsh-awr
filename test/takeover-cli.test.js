@@ -266,6 +266,8 @@ function fakeSubagents(answer) {
   return {
     started,
     async startActivation(spec) {
+      // As in DeepSeek Harness 0.2.2-rc.2: the parent is read from the spec, and a spec without one is a TypeError.
+      if (spec.parent === undefined || spec.parent === null) throw new TypeError("Cannot read properties of undefined (reading 'id')")
       started.push(spec)
       const result = typeof answer === 'function' ? answer(spec) : answer
       return { childId: 'child-1', result: result instanceof Promise ? result : Promise.resolve(result), dispose: async () => {} }
@@ -275,7 +277,7 @@ function fakeSubagents(answer) {
 
 function reviewer() {
   return fakeSubagents((spec) => {
-    const draft = JSON.parse(spec.request.prompt[0].text.split('<draft>')[1].split('</draft>')[0])
+    const draft = JSON.parse(spec.prompt[0].text.split('<draft>')[1].split('</draft>')[0])
     const files = { ...draft.generated_files }
     for (const path of Object.keys(files)) if (path.endsWith('GOALS.md')) files[path] = '# Deliver a document portal {#portal status=active}\n\nThe README says so.\n\nProvenance: README.md.\n'
     return { output: `\`\`\`json\n${JSON.stringify({ generated_files: files, notes: 'from README.md' })}\n\`\`\`` }

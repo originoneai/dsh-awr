@@ -384,3 +384,13 @@ work_items:
   "summary": "The owner decided (DSH-040) that the takeover orchestration moves into the AWR CLI (awr takeover, originoneai/awr#620). The plugin keeps its own implementation until an AWR release has the command, so it detects it and uses it when present; the draft review stays a DSH subagent through --await-review and --reviewed (originoneai/awr#626)."
   "evidence": ["docs/evidence/DSH-054/completion-report.json"]
   "verification": {"evidence_level":"locally_verified"}
+- "id": "WORK-2cf979f9b5a999d59329511e1272f488"
+  "title": "DSH-055: Start the takeover review subagent the way the current DeepSeek Harness expects"
+  "status": "in_progress"
+  "acceptance": ["The takeover's review subagent starts in the DeepSeek Harness desktop app of today (0.2.2-rc.2) and still starts in the version the plugin was first checked against (0.2.2-rc.1).","A test fails when the subagent start has the old nested shape, and the takeover is shown working in the real desktop app with a real model."]
+  "depends_on": ["DSH-021"]
+  "goal": ["intake-goal"]
+  "kind": "defect"
+  "next_action": "Fix createSubagentReview, make the test fake reject the nested shape, verify in the desktop app"
+  "priority": "P0"
+  "summary": "First real operation of the panel in the desktop app (0.2.2-rc.2) with a real model: the takeover stopped at the review with \"The review subagent failed: Cannot read properties of undefined (reading id)\". startActivation now reads spec.parent.id from a flat spec; the plugin sent parent, cwd and prompt nested in request, the shape of rc.1 and of its documentation. The fake subagent service of the tests had the old shape, so every test passed."

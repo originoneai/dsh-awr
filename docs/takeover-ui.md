@@ -75,7 +75,7 @@ costs nothing.
   project of a conversation; the prompt; parsing of the reviewer's answer; the restriction of the next
   child of the expecting conversation and nothing else; the guard (inside the project, symlink out,
   credential files, other tools, other agents untouched); a restriction that fails; the review with a
-  fake subagent service (delivery, `request.cwd` outside the project, a missing service, a failing child,
+  fake subagent service that fails a start without `parent` as DeepSeek Harness 0.2.2-rc.2 does (delivery, `cwd` outside the project, a missing service, a failing child,
   an unusable answer, a timeout); the controller against the real awr (start returns before the run ends,
   a second start is refused while it runs, the receipt, the conversation rebound, nothing committed; a
   failing review stops the run and the next start resumes it; no subagent service); the lowering of goal
