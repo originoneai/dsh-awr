@@ -273,14 +273,16 @@ work_items:
 - id: DSH-050
   title: Suggest evidence candidates from tool results
   kind: implementation
-  status: planned
+  status: completed
   priority: P2
   required: false
   goal: intake-goal
   depends_on: [DSH-013]
   acceptance:
   - Test runs and commits observed in tool results produce a suggestion to register evidence, and nothing is registered without the model or user doing so.
-  next_action: Define which tool results count as candidates.
+  next_action: Complete DSH-050 with the registered evidence
+  "evidence": ["docs/evidence/DSH-050/completion-report.json"]
+  "verification": {"evidence_level":"locally_verified"}
 - id: DSH-051
   title: Show AWR state in a DSH panel
   kind: implementation

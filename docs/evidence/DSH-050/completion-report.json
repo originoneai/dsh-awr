@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "work_item": "DSH-050",
+  "source_sha": "c8ebdd17057782145dfa0d7be7c9ab80c9a20ac7",
+  "command": "node --test (222 tests); 19 mutation checks (scratchpad script, all caught); DeepSeek Harness 0.2.2-rc.1 headless and web profiles with a local stand-in model calling the real bash tool (docs/evidence/DSH-050/live-dsh.json)",
+  "scope": [
+    "lib/evidence-candidates.js",
+    "lib/redact.js",
+    "lib/commands.js",
+    "lib/conversation.js",
+    "index.js",
+    "lib/skill.js",
+    "test/evidence-candidates.test.js",
+    "docs/evidence-candidates.md",
+    "docs/evidence/DSH-050"
+  ],
+  "verified_at": 1794474328986,
+  "checks": [
+    {
+      "name": "Test runs and commits observed in tool results produce a suggestion; nothing is registered by the plugin",
+      "passed": true,
+      "criteria": [
+        "Test runs and commits observed in tool results produce a suggestion to register evidence, and nothing is registered without the model or user doing so."
+      ],
+      "details": "Which results count was defined and documented (docs/evidence-candidates.md): a bash result whose command ran a test suite or made a commit, finished in the foreground with exit 0, in a conversation bound to AWR; masked exit statuses (pipe, ||, ;, background), failed runs and errored calls do not count. Live in DSH 0.2.2-rc.1 with the real bash tool: a headless task that ran python3 -m unittest then git add and git commit produced two candidates (Ran 2 tests in 0.000s, OK; commit c94f649, equal to git log); the two model requests before the bash result carried no suggestion block and every later request carried it, the block saying the plugin registered nothing; the model's tool calls in the conversation contained no evidence add (0 calls). In the web profile /awr evidence listed both candidates and /awr evidence dismiss emptied the list. A call the tool rejected (isError) and an exit 127 produced no candidate. The plugin module has no awr runner and a test fails if the source gains one or its dependencies grow; evidence is registered only through the awr tool by the model, or by the user. 222 tests, 19 mutations (a masked or failed run counted, any tool counted, an unbound conversation shown, a failed registration settling the list, credentials copied, an unbounded list, a required block, dry-run commits, background jobs, ...) each fail a test. Limits: the stand-in model never registers evidence, so the settled-by-evidence-add step is covered by tests, not live; the list is in memory per DSH process; commands are read as text (wrapper scripts, bash -c and subshells are not recognised); node on the bash tool PATH is DSH's wrapper and exits 127, so the live runs used python3 -m unittest; desktop app not used."
+    }
+  ]
+}
