@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "work_item": "DSH-040",
+  "source_sha": "143af928617b1747433984002e8c4be4a46b0123",
+  "command": "the owner's decision in the chat on 2026-11-12; gh issue create on originoneai/agent-work-runtime (docs/evidence/DSH-040)",
+  "scope": [
+    "docs/evidence/DSH-040",
+    "docs/owner-decisions.md"
+  ],
+  "verified_at": 1794480414565,
+  "checks": [
+    {
+      "name": "The owner's decision is recorded and a work item exists in the AWR repository",
+      "passed": true,
+      "criteria": [
+        "The owner's decision and its reason are recorded, and if accepted a work item exists in the AWR repository."
+      ],
+      "details": "Decision (the owner, 2026-11-12, in the chat): move the takeover orchestration into the AWR CLI; recorded in docs/evidence/DSH-040/decision.json and docs/owner-decisions.md. Reason: the owner gave none beyond the decision; the rationale on record in the item's summary is that the module is host-independent by design so it can become an awr takeover command, and the earlier recommendation to wait was overruled. Work item in the AWR repository: issue originoneai/awr#620, with the steps and stop reasons the module has today, the proposed command and reviewer interface, the guards that move into the CLI, the dependency on #618 and a test plan. Not done: the implementation, which is that issue's work."
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "work_item": "DSH-041",
+  "source_sha": "143af928617b1747433984002e8c4be4a46b0123",
+  "command": "gh repo edit/view, gh release create/view, git ls-remote --tags; dsh plugin --profile <new> add github:originoneai/dsh-awr#v0.1.0 and a headless task (docs/evidence/DSH-041)",
+  "scope": [
+    "LICENSE",
+    "package.json",
+    "README.md",
+    "docs/evidence/DSH-041"
+  ],
+  "verified_at": 1794480414565,
+  "checks": [
+    {
+      "name": "The owner's license and visibility choices are recorded and applied",
+      "passed": true,
+      "criteria": [
+        "The owner's license and visibility choices are recorded and applied."
+      ],
+      "details": "The owner decided on 2026-11-12 (chat): MIT license, public repository, publish a release; recorded in docs/owner-decisions.md and docs/evidence/DSH-041/release-check.json. Applied: LICENSE (MIT) and package.json license MIT merged in PR 25 (2821ce9); gh repo view reports visibility PUBLIC and licenseInfo MIT. Before going public the tracked files and history were scanned: no credential, only fake keys in test fixtures; machine-local paths in 40 evidence files and two author identities in the history are now public and were left unchanged. The copyright holder line is 'originoneai' and may need the owner's own wording."
+    },
+    {
+      "name": "A tagged release installs through dsh plugin add from its published source on a clean DSH install",
+      "passed": true,
+      "criteria": [
+        "A tagged release installs through dsh plugin add from its published source on a clean DSH install."
+      ],
+      "details": "Tag v0.1.0 points at 2821ce9 (git ls-remote) and the GitHub release exists. In a new profile (dsh dsh-awr-clean --from-default-profile headless) dsh plugin --profile dsh-awr-clean add github:originoneai/dsh-awr#v0.1.0 installed @originoneai/dsh-awr 0.1.0; the plugin entry is in the composed config; a headless task with a local model stand-in and the released awr 0.7.0 on PATH showed apply, a binding to an AWR session on EXAMPLE-001 and the injected AWR context. Limits: headless profile on DSH 0.2.2-rc.1 macOS arm64; the Plugins-page install from the GitHub URL was not repeated for the tag; no npm publish was made."
+    }
+  ]
+}
