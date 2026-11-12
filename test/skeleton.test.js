@@ -43,12 +43,13 @@ test('icon is an SVG within the 256 KiB limit', () => {
   assert.match(read('icon.svg'), /^<svg[\s>]/)
 })
 
-test('apply runs against a stub context and registers nothing yet', async () => {
+test('apply runs against a stub context and registers only the conversation listener', async () => {
   const module = await import('../index.js')
   assert.equal(module.name, 'dsh-awr')
   assert.equal(typeof module.apply, 'function')
   const messages = []
-  const ctx = new Proxy({ logger: { info: (m) => messages.push(m) } }, {
+  const listeners = []
+  const ctx = new Proxy({ logger: { info: (m) => messages.push(m) }, on: (event) => listeners.push(event) }, {
     get(target, key) {
       if (key in target) return target[key]
       throw new Error(`skeleton must not touch ctx.${String(key)}`)
@@ -56,9 +57,10 @@ test('apply runs against a stub context and registers nothing yet', async () => 
   })
   module.apply(ctx)
   assert.deepEqual(messages, ['dsh-awr loaded'])
+  assert.deepEqual(listeners, ['agent/created'], 'the only registration is the conversation listener')
 })
 
 test('apply tolerates a context without a logger', async () => {
   const { apply } = await import('../index.js')
-  assert.doesNotThrow(() => apply({}))
+  assert.doesNotThrow(() => apply({ on() {} }))
 })

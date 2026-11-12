@@ -70,7 +70,7 @@ test('unbound: uses the awr on PATH', async (t) => {
 })
 
 test('missing: no binding file and no awr on PATH stops with a readable message', async (t) => {
-  const awr = createAwr({ env: { PATH: scratch(t) } })
+  const awr = createAwr({ env: { PATH: scratch(t) }, fallbackDirs: [] })
   const root = project(t)
   await assert.rejects(awr.run(root, ['status']), (error) => {
     assert.equal(error.kind, 'missing')
@@ -79,28 +79,41 @@ test('missing: no binding file and no awr on PATH stops with a readable message'
   })
 })
 
+test('unbound: an awr in a fallback directory is found when PATH has none, as in a desktop app', async (t) => {
+  const dir = scratch(t)
+  fakeAwr(dir, 'awr', healthy)
+  const root = project(t)
+  const awr = createAwr({ env: { PATH: '/usr/bin:/bin' }, fallbackDirs: [join(dir, 'missing'), dir] })
+  assert.equal((await awr.resolve(root)).cli, join(dir, 'awr'))
+  // PATH still wins over the fallbacks.
+  const first = scratch(t)
+  const winner = fakeAwr(first, 'awr', healthy)
+  const both = createAwr({ env: { PATH: first }, fallbackDirs: [dir] })
+  assert.equal((await both.resolve(project(t))).cli, winner.bin)
+})
+
 test('missing: the pinned cli does not exist', async (t) => {
   const root = project(t, { cli: join(scratch(t), 'gone', 'awr') })
-  await assert.rejects(createAwr({ env: {} }).run(root, ['status']), { kind: 'missing' })
+  await assert.rejects(createAwr({ env: {}, fallbackDirs: [] }).run(root, ['status']), { kind: 'missing' })
 })
 
 test('mismatch: a changed binary is not run', async (t) => {
   const bound = fakeAwr(scratch(t), 'awr', healthy)
   const root = project(t, { cli: bound.bin, cli_sha256: 'sha256:' + '0'.repeat(64) })
-  await assert.rejects(createAwr({ env: {} }).run(root, ['status']), { kind: 'binary_changed' })
+  await assert.rejects(createAwr({ env: {}, fallbackDirs: [] }).run(root, ['status']), { kind: 'binary_changed' })
   assert.equal(bound.calls().length, 0)
 })
 
 test('mismatch: program version differs from the pinned binding', async (t) => {
   const bound = fakeAwr(scratch(t), 'awr', healthy)
   const root = project(t, { cli: bound.bin, program_version: '0.4.0', schema_version: 14 })
-  await assert.rejects(createAwr({ env: {} }).run(root, ['status']), { kind: 'version_mismatch' })
+  await assert.rejects(createAwr({ env: {}, fallbackDirs: [] }).run(root, ['status']), { kind: 'version_mismatch' })
 })
 
 test('mismatch: schema differs from the pinned binding', async (t) => {
   const bound = fakeAwr(scratch(t), 'awr', healthy)
   const root = project(t, { cli: bound.bin, program_version: '0.7.0', schema_version: 13 })
-  await assert.rejects(createAwr({ env: {} }).run(root, ['status']), (error) => {
+  await assert.rejects(createAwr({ env: {}, fallbackDirs: [] }).run(root, ['status']), (error) => {
     assert.equal(error.kind, 'schema_mismatch')
     assert.match(explain(error), /does not migrate, restore or downgrade/)
     return true
