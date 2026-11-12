@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "work_item": "DSH-002",
+  "source_sha": "badf38423e7521b8e495adef75eb9487777f2aba",
+  "command": "cordis_inspect_list and cordis_inspect_query run by a DSH 0.2.2-rc.1 conversation (host and client platforms), plus reading the package documentation bundled in app.asar; receipts read back from the DSH workspace",
+  "scope": [
+    "README.md",
+    "docs/dsh-surfaces.md",
+    "docs/evidence/DSH-002"
+  ],
+  "verified_at": 1794457843326,
+  "checks": [
+    {
+      "name": "Every README capability-table surface marked with a result and a source",
+      "passed": true,
+      "details": "docs/dsh-surfaces.md has a row for each surface in the README capability table with a status (confirmed, changed or absent) and its source: the live inspection receipts docs/evidence/DSH-002/dsh-inspect.json (15 of 16 items found, mcpManager absent) and dsh-inspect-2.json (18 items), or the named bundled package documentation. Changes found: no ctx.mcpManager, binding moves to agent/created, checkpoint prompts to agent/turn-stopping, no appendPluginRecord. Levels differ and the table says so: takeover button slots and the subagent services were confirmed to exist but not exercised; plugin entry and install routes are confirmed from the bundled guide and are run in DSH-010.",
+      "criteria": [
+        "Every DSH surface in the README capability table is marked confirmed, changed or absent, with a source file or doc reference for the pinned version."
+      ]
+    },
+    {
+      "name": "README open questions answered or left open with the reason",
+      "passed": true,
+      "details": "Blockable pre-tool-call hook: answered, tools/pre-execute (waterfall allow, deny, cancel, ask) and ctx.tools.guard. MCP config format: answered, a @deepseek-ai/dsh-mcp-client row in a bundle patch; observed working with a native stdio server. Subagent permission presets: left open with the reason, the receipt lists the subagents, workflowEngine, permissionPresets and approval services and tools.restrict but not the fields of SubagentActivationSpec, so whether a takeover child can be limited to reading, calling awr and writing under .awr/ is for DSH-021 to prove. README.md was updated to match.",
+      "criteria": [
+        "The README open questions on a blockable pre-tool-call hook, the MCP config format and subagent permission presets are answered or explicitly left open with the reason."
+      ]
+    }
+  ]
+}

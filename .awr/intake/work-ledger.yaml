@@ -43,7 +43,7 @@ work_items:
 - id: DSH-002
   title: Confirm the DSH plugin surfaces the design relies on
   kind: verification
-  status: planned
+  status: completed
   priority: P0
   required: true
   goal: intake-goal
@@ -52,7 +52,9 @@ work_items:
   acceptance:
   - Every DSH surface in the README capability table is marked confirmed, changed or absent, with a source file or doc reference for the pinned version.
   - The README open questions on a blockable pre-tool-call hook, the MCP config format and subagent permission presets are answered or explicitly left open with the reason.
-  next_action: Read the pinned DSH source for session, system-prompt, mcp, commands, compaction, tools and subagent subsystems and update README.md.
+  next_action: Complete DSH-002 with docs/dsh-surfaces.md and docs/evidence/DSH-002 as evidence.
+  "evidence": ["docs/evidence/DSH-002/completion-report.json"]
+  "verification": {"evidence_level":"locally_verified"}
 - id: DSH-003
   title: Add the DeepSeek Harness L1 host note to the AWR repository
   kind: documentation
