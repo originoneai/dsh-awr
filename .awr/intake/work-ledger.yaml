@@ -85,7 +85,7 @@ work_items:
 - id: DSH-011
   title: Select the awr binary and refuse to run on an incompatible runtime
   kind: implementation
-  status: planned
+  status: completed
   priority: P0
   required: true
   goal: intake-goal
@@ -94,7 +94,9 @@ work_items:
   - The plugin uses the cli path from .awr/runtime-binding.json when present and awr on PATH otherwise.
   - A missing binary, schema mismatch, Unsupported result or migration prompt stops the plugin with a visible message and performs no migrate, restore or downgrade.
   - Tests cover the bound, unbound, missing and mismatch cases.
-  next_action: Implement the resolver and an argv runner that every other capability calls.
+  next_action: "Finish the resolver, runner and tests; verify against fake binaries and the lab awr."
+  "evidence": ["docs/evidence/DSH-011/completion-report.json"]
+  "verification": {"evidence_level":"locally_verified"}
 - id: DSH-012
   title: Mount awr-mcp for the session's project
   kind: implementation

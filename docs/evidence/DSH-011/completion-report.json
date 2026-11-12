@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "work_item": "DSH-011",
+  "source_sha": "ac8a5a03b377498d00f7148d4b80c958782742cd",
+  "command": "npm test; node docs/evidence/DSH-011/real-awr-check.mjs; three mutation runs of lib/awr-runtime.js",
+  "scope": [
+    "lib/awr-runtime.js",
+    "test/awr-runtime.test.js",
+    "docs/awr-runtime.md",
+    "docs/evidence/DSH-011"
+  ],
+  "verified_at": 1794458576777,
+  "checks": [
+    {
+      "name": "Binary selection: binding file, otherwise PATH",
+      "passed": true,
+      "details": "With .awr/runtime-binding.json the cli it names is used, its hash is checked against cli_sha256, and the awr on PATH is not started (test 'bound' asserts the PATH awr's call log stays empty). Without the file the first awr on PATH is used. Against real binaries: the AWR repository's pinned build resolved through its binding file with hash, program 0.7.0 and schema 14 matching the pin; the lab build and released 0.7.0 resolved from PATH (docs/evidence/DSH-011/real-awr-check.out).",
+      "criteria": [
+        "The plugin uses the cli path from .awr/runtime-binding.json when present and awr on PATH otherwise."
+      ]
+    },
+    {
+      "name": "Stops on an incompatible runtime without migrate, restore or downgrade",
+      "passed": true,
+      "details": "A missing binary, a changed binary, a version or schema mismatch against the pinned binding, awr's own schema newer or needs-upgrade error, Unsupported in JSON and plain-text form, an interrupted-write code, and non-JSON output each raise an AwrError whose kind stops the project; later calls for that project do not start awr again (call log unchanged). Migrate, downgrade, restore, restore-preview, restore-recover, recover, create-recover and relocate-recover are refused before spawning (call log unchanged). explain() gives the user-facing sentence, which states that the plugin does not migrate, restore or downgrade. Limit: the sentence is produced and tested at module level; showing it in DSH (command output, panel) is wired by later items such as DSH-015. Limit: behavior against a database older than the binary was not exercised, because the lab build and released 0.7.0 share schema 14.",
+      "criteria": [
+        "A missing binary, schema mismatch, Unsupported result or migration prompt stops the plugin with a visible message and performs no migrate, restore or downgrade."
+      ]
+    },
+    {
+      "name": "Tests cover bound, unbound, missing and mismatch",
+      "passed": true,
+      "details": "test/awr-runtime.test.js has 16 tests using fake awr programs through real spawns; the full suite is 22 tests, all passing. Mutations that removed the forbidden-command check, the remembered stop, and the binding-file lookup each made tests fail; the restored module passes.",
+      "criteria": [
+        "Tests cover the bound, unbound, missing and mismatch cases."
+      ]
+    }
+  ]
+}
