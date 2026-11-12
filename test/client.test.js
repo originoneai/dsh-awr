@@ -258,6 +258,36 @@ test('a plugin installed from GitHub can check for a newer version and install i
   assert.match(textOf(ui.byTestId('awr-update')), /Updated\. Reloading/)
 })
 
+test('after an update the card is rebuilt: an offer that was taken is asked again and goes, and a host still running the old code says it needs a restart', async () => {
+  // The card opens on the answer of an earlier check; meanwhile the update was installed.
+  let plugin = fromGithub(available)
+  const client = loadClient({ view: managed, work: () => workView(), plugin: () => plugin })
+  const chip = await client.chip()
+  plugin = { ...fromGithub({ ...available, available: false }), installed: B, version: '0.1.1', running: '0.1.0' }
+  await chip.click('awr-header-action')
+  await settle()
+  assert.deepEqual(client.calls, ['/awr panel --ui en'], 'one question to the host when the card opens on an offer, and no row for it')
+  const line = textOf(chip.byTestId('awr-update'))
+  assert.match(line, /^Plugin 0\.1\.1Updated\. Restart DeepSeek Harness to use it$/, 'the version on disk, and that the running host has not loaded it')
+  assert.equal(chip.byId('awr-update-apply'), undefined, 'nothing is offered again')
+  assert.equal(chip.byId('awr-update-check'), undefined)
+  // A card that opens on no offer asks nothing.
+  const quiet = loadClient({ view: managed, work: () => workView(), plugin: () => fromGithub() })
+  await open(quiet)
+  assert.deepEqual(quiet.calls, [])
+  // Code that is as new as the files has nothing to restart.
+  const current = loadClient({ view: managed, work: () => workView(), plugin: () => ({ ...fromGithub(), running: '0.1.0' }) })
+  assert.match(textOf((await open(current)).byTestId('awr-update')), /Check for updates/)
+})
+
+test('once the update is applied the host is asked for the facts again', async () => {
+  const client = loadClient({ view: managed, work: () => workView(), plugin: () => fromGithub(available) })
+  const ui = await open(client)
+  client.calls.length = 0
+  await ui.click('awr-update-apply')
+  assert.deepEqual(client.calls, ['/awr panel --ui en'])
+})
+
 test('an update that needs a restart, fails or cannot reach GitHub says so, and the installed version is said to be unchanged', async () => {
   const outcome = async (value) => {
     const client = loadClient({ view: managed, work: () => workView(), plugin: () => fromGithub(available), install: async () => value })

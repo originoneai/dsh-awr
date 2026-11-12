@@ -173,6 +173,8 @@ function UpdateLine({ plugin, t, busy, onCheck, onApply, canApply, status }) {
   if (status?.phase === 'checking') right = h('span', { style: { color: C.text3 } }, t('update.checking'))
   else if (status?.phase === 'applying') right = h('span', { style: { display: 'inline-flex', alignItems: 'center', gap: 6, color: C.text2 } }, h(Icon, { name: 'refresh', size: 12, className: 'awr-spin' }), t('update.applying'))
   else if (status?.phase === 'done' || status?.phase === 'restart') right = h('span', { style: { color: C.text2 } }, t(`update.${status.phase}`))
+  // The files on disk are newer than the code the host loaded (an update was installed): it takes effect at the next start.
+  else if (plugin.running && plugin.running !== plugin.version) right = h('span', { 'data-testid': 'awr-update-restart', style: { color: C.text2 } }, t('update.restart'))
   else if (github && check?.available) {
     right = h('span', { style: { display: 'inline-flex', alignItems: 'center', gap: 8 } },
       h('span', { style: { display: 'inline-flex', alignItems: 'center', gap: 6, color: C.text } }, h(Light, { state: 'active', size: 6 }), t('update.available')),
@@ -218,6 +220,12 @@ function AwrChip(props) {
     }
   }, [open])
 
+  // An update that is on offer may have been taken since (from here, before this card was rebuilt, or by hand): when the
+  // card opens on one, the host is asked again, so the card does not offer what is installed already.
+  React.useEffect(() => {
+    if (open && data?.plugin?.check?.available) project.refresh()
+  }, [open])
+
   const toggle = () => {
     if (!open && trigger.current) {
       const rect = trigger.current.getBoundingClientRect()
@@ -253,8 +261,8 @@ function AwrChip(props) {
       const answer = await manager.installBundle(spec, { requestId: `dsh-awr-update-${Date.now()}` })
       if (!answer?.ok) throw new Error(answer?.error?.code ?? 'refused')
       const result = answer.value ?? {}
-      if (result.application === 'applied' || result.application === 'overridden') setUpdate({ phase: 'done' })
-      else if (result.application === 'restart-required') setUpdate({ phase: 'restart' })
+      if (result.application === 'applied' || result.application === 'overridden') { setUpdate({ phase: 'done' }); project.refresh() }
+      else if (result.application === 'restart-required') { setUpdate({ phase: 'restart' }); project.refresh() }
       else {
         const offline = result.failedAt === 'spec-host' || ['network', 'timeout'].includes(result.packageResult?.kind)
         setUpdate({ phase: 'failed', text: offline ? t('update.failed.network') : t('update.failed'), code: result.error?.code ?? result.packageResult?.kind ?? result.application })
