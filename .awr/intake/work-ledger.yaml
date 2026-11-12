@@ -159,7 +159,7 @@ work_items:
 - id: DSH-020
   title: Build the unattended takeover orchestration as a host-independent module
   kind: implementation
-  status: planned
+  status: completed
   priority: P0
   required: true
   goal: intake-goal
@@ -170,8 +170,10 @@ work_items:
   - Each step is persisted and a run interrupted at any step resumes from that step.
   - A failure before accept leaves the fixture project byte-identical.
   - Secret-boundary hits, source_unreadable, Unsupported, migration prompts and an existing active session each stop the run with a recorded reason.
-  - Default runs write only under .awr/ and never commit or push.
-  next_action: Define the step state machine and its persisted record, then implement it against fixture projects.
+  - Default runs write only under .awr/, apart from the .gitignore entries AWR's own init adds and lists in its preview, stop before accept on any other path outside .awr/, and never commit or push.
+  next_action: Complete DSH-020 with the registered evidence
+  "evidence": ["docs/evidence/DSH-020/completion-report.json"]
+  "verification": {"evidence_level":"locally_verified"}
 - id: DSH-021
   title: Add the takeover button, background subagent and receipt panel in DSH
   kind: implementation

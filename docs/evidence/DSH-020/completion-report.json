@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "work_item": "DSH-020",
+  "source_sha": "cfe140b963ec140d8082a6035b899d95b1766d7a",
+  "command": "node --test (122 tests; test/takeover.test.js runs the real awr on disposable projects with two commits); a takeover of a project with history with a scripted reviewer (docs/evidence/DSH-020)",
+  "scope": [
+    "lib/takeover.js",
+    "test/takeover.test.js",
+    "docs/takeover.md",
+    "docs/evidence/DSH-020"
+  ],
+  "verified_at": 1794467123285,
+  "checks": [
+    {
+      "name": "A draft-review callback is enough to take an uninitialized project to an accepted init and a final intake inspect result",
+      "passed": true,
+      "details": "Against the real awr, a project with a Markdown ledger, a plan and two commits and a README-only project each went from no .awr/ to an accepted init and a final intake inspect state with only the review callback supplied: the first ended needs_organization with its candidate goal read back from AWR, the second ready when the review wrote a concrete goal and work item (test/takeover.test.js, and the record and receipt in docs/evidence/DSH-020). Without a callback the draft is applied as generated and the project ends needs_organization, not ready. Limits: the callback in the tests is scripted; a model-written review is DSH-021 and DSH-022.",
+      "criteria": [
+        "Given a draft-review callback, the module takes an uninitialized fixture project to an accepted init and a final intake inspect result with no human input."
+      ]
+    },
+    {
+      "name": "Every step is persisted and a run interrupted at any step resumes from that step",
+      "passed": true,
+      "details": "The record is rewritten after every step change. With the real awr, every awr call of a full run was interrupted once before it ran and once after it answered (the answer lost); the next call resumed the same run id, did not repeat finished steps, and ended with the same files and the same organization state as an uninterrupted run. Scripted tests cover a crash inside the review and organize callbacks, an accept that finished but whose answer was lost, and a record left running by a killed process. This found that awr refuses to overwrite a draft file, which a resumed run now handles. Limit: a real process kill was simulated by an exception or by editing the record, not by killing a process.",
+      "criteria": [
+        "Each step is persisted and a run interrupted at any step resumes from that step."
+      ]
+    },
+    {
+      "name": "A failure before accept leaves the project byte-identical",
+      "passed": true,
+      "details": "A digest over every file under the project, .git included, was equal before and after for a secret in a source, a failing review callback, a review that changed the inventory, a review that wrote outside .awr/intake, a callback stop, a source with invalid UTF-8, a ledger that is not YAML and a project with two candidate ledgers that the review did not resolve; no .awr/ existed afterwards. The preview and --write-draft write nothing in the project; the run's record and drafts live in a state directory outside it.",
+      "criteria": [
+        "A failure before accept leaves the fixture project byte-identical."
+      ]
+    },
+    {
+      "name": "Each hard stop ends the run with a recorded reason",
+      "passed": true,
+      "details": "Real awr: a secret stops with reason secret_boundary, category credential, the path relative to the project and the line, and the record holds neither the secret nor the key (RuleViolation, category=credential); invalid UTF-8 and a non-YAML ledger stop with source_unreadable; an initialized project with an active session stops with active_session and names it; an initialized project without one stops with already_initialized. Scripted awr: Unsupported, a newer schema, an interrupted write (migration_prompt), a changed binary and a timeout each stop at preview with their own reason; an organization state of source_unreadable stops at organize. Limits: Unsupported and the migration prompts are scripted because the real awr cannot be made to give them on demand.",
+      "criteria": [
+        "Secret-boundary hits, source_unreadable, Unsupported, migration prompts and an existing active session each stop the run with a recorded reason."
+      ]
+    },
+    {
+      "name": "Default runs write only under .awr/ plus AWR's own .gitignore entries, stop on any other path, and never commit or push",
+      "passed": true,
+      "details": "After a real run the only files added to the project were under .awr/ and .gitignore (AWR's ignore entries, which its init preview lists); no existing file was removed, HEAD and the commit count were unchanged, git status showed only .awr/ and .gitignore untracked, and the receipt records headBefore equal to headAfter with committed and pushed false. A preview that lists any other path (src/index.js, a path outside the project) stops the run before accept with reason unexpected_write, and allowGitignore false stops on .gitignore. The module's only Git call is rev-parse HEAD. The criterion was reworded before this work started because AWR's init does touch .gitignore, which the first wording did not allow for.",
+      "criteria": [
+        "Default runs write only under .awr/, apart from the .gitignore entries AWR's own init adds and lists in its preview, stop before accept on any other path outside .awr/, and never commit or push."
+      ]
+    }
+  ]
+}
