@@ -4,12 +4,14 @@
 // docs/dsh-surfaces.md. Loaded so far: binding each conversation to an AWR session (DSH-013), the /awr
 // command (DSH-015), the AWR work context in the prompt (DSH-014), the AWR tools for the model (DSH-012) and
 // the one-click takeover (DSH-021, with the header button in client.js) and the skill that teaches the AWR
-// workflow (DSH-032), the end-of-turn checkpoint request (DSH-030) and the report of native compactions (DSH-031).
+// workflow (DSH-032), the end-of-turn checkpoint request (DSH-030), the report of native compactions (DSH-031), forks bound to
+// their parent's session (DSH-016) and the evidence candidates (DSH-050).
 import { appendFileSync } from 'node:fs'
 import { createAwr } from './lib/awr-runtime.js'
 import { registerCheckpointPrompts } from './lib/checkpoint-prompt.js'
 import { registerCompactionReports } from './lib/compaction.js'
 import { registerAwrCommand, watchConversations } from './lib/conversation.js'
+import { registerEvidenceSuggestions } from './lib/evidence-candidates.js'
 import { registerPromptContext } from './lib/prompt-context.js'
 import { createReviewerPolicy, createTakeoverController } from './lib/takeover-host.js'
 import { registerAwrSkill } from './lib/skill.js'
@@ -70,7 +72,10 @@ export function apply(ctx) {
   }
   if (typeof ctx.inject === 'function') ctx.inject(['tools'], guardMount)
   else if (ctx.tools?.guard) guardMount(ctx)
-  registerAwrCommand(ctx, { awr, bindings, context, takeover })
+  // DSH_AWR_EVIDENCE_SUGGESTIONS=0 turns off the list of finished test runs and commits offered as evidence
+  // candidates (DSH-050). The list only suggests; nothing is registered by the plugin.
+  const evidence = registerEvidenceSuggestions(ctx, { bindings, enabled: process.env.DSH_AWR_EVIDENCE_SUGGESTIONS !== '0', trace })
+  registerAwrCommand(ctx, { awr, bindings, context, takeover, evidence })
   registerAwrTools(ctx, { awr, bindings })
   registerAwrSkill(ctx)
   // DSH_AWR_CHECKPOINT_PROMPTS=0 turns the end-of-turn checkpoint request off; _MIN_TOOLS (default 3) and

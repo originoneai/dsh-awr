@@ -36,6 +36,7 @@ test('the body covers preview then accept, expected revisions, evidence registra
     'preview then accept': ['## Preview, then accept', '--accept', '--expected-preview', '--source-fingerprint', 'fingerprint'],
     'expected revisions': ['## Expected revisions', '--expected-revision', '--expected-project-revision', 'RevisionConflict', 'never force'],
     'evidence registration': ['evidence add', 'work prepare-completion', '--report', '--evidence-key', '--source-sha', 'completion report', 'criteria'],
+    'evidence candidates': ['AWR evidence candidates', 'The plugin registers nothing', 'yours to judge'],
     'conditions for work complete': ['work complete', 'dependencies', 'every acceptance criterion', 'never by editing its status', 'in progress'],
     'sessions and checkpoints': ['session checkpoint', '--context-hash', '--digest', '--next-action', '--open-loop', 'session end', 'work claim'],
     'reading and errors': ['`status`', 'SourceStale', 'BudgetExceeded', 'ContextIncomplete', 'INCOMPLETE'],

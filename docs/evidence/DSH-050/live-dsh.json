@@ -1,0 +1,156 @@
+{
+  "dsh_version": "0.2.2-rc.1 (headless and web profiles, dev bundle, local stand-in model)",
+  "headless_run": {
+    "task": "the stand-in model calls bash once: python3 -m unittest test_t && git add -A && git commit -m ...",
+    "plugin_trace": [
+      {
+        "event": "evidence-candidate",
+        "conversationId": "session-516f9490-31c5-44f5-b9de-e0d60f51aa66",
+        "kind": "test_run",
+        "runner": "python -m unittest",
+        "summary": "Ran 2 tests in 0.000s, OK"
+      },
+      {
+        "event": "evidence-candidate",
+        "conversationId": "session-516f9490-31c5-44f5-b9de-e0d60f51aa66",
+        "kind": "commit",
+        "sha": "c94f649"
+      }
+    ]
+  },
+  "slash_command_outputs": {
+    "/awr evidence": "2 evidence candidate(s), all with exit 0. Nothing was registered: the model or you register evidence (work prepare-completion, evidence add).\n1. 09:03:06 test run (python -m unittest) Ran 2 tests in 0.000s, OK: date >> log.txt && python3 -m unittest test_t && git add -A && git commit -m 'touch log'\n2. 09:03:06 commit 0e61649 on main: date >> log.txt && python3 -m unittest test_t && git add -A && git commit -m 'touch log'\n/awr evidence dismiss clears this list.",
+    "/awr evidence dismiss": "Dismissed 2 evidence candidate(s). Nothing was registered.",
+    "/awr evidence (after dismiss)": "No evidence candidates: nothing that looks like a finished test run or commit has been seen in this conversation since evidence was last registered."
+  },
+  "observed_on_the_way": {
+    "result shape": "tools/result for bash: result = { isError, content, meta, value }, value = { kind: \"foreground\", cwd, exitCode, signal, timedOut, aborted, timeoutMs, stdout, stderr, sandbox }; a non-zero exit also prints [exit code: N] after the output. Seen with exit 127.",
+    "rejected call": "a bash call without the required description was answered with isError true (keys isError, error, content): not a candidate.",
+    "bash PATH": "node on the bash tool PATH is DSH's own wrapper and exits 127, so the check ran python3 -m unittest."
+  },
+  "model_side": {
+    "note": "The stand-in model's request log of the headless run (requests 1-6) and then of the web conversation (requests 7-12). In each, the two requests before the bash result (tool_results_before 0) carry no evidence block and every request after it carries the block.",
+    "model_requests": [
+      {
+        "tool_results_before": 0,
+        "evidence_block_in_request": false
+      },
+      {
+        "tool_results_before": 0,
+        "evidence_block_in_request": false
+      },
+      {
+        "tool_results_before": 1,
+        "evidence_block_in_request": true
+      },
+      {
+        "tool_results_before": 1,
+        "evidence_block_in_request": true
+      },
+      {
+        "tool_results_before": 2,
+        "evidence_block_in_request": true
+      },
+      {
+        "tool_results_before": 3,
+        "evidence_block_in_request": true
+      },
+      {
+        "tool_results_before": 0,
+        "evidence_block_in_request": false
+      },
+      {
+        "tool_results_before": 0,
+        "evidence_block_in_request": false
+      },
+      {
+        "tool_results_before": 1,
+        "evidence_block_in_request": true
+      },
+      {
+        "tool_results_before": 1,
+        "evidence_block_in_request": true
+      },
+      {
+        "tool_results_before": 2,
+        "evidence_block_in_request": true
+      },
+      {
+        "tool_results_before": 3,
+        "evidence_block_in_request": true
+      }
+    ],
+    "block_the_model_received (headless run)": "# AWR evidence candidates (not registered)\nThese finished cleanly in this conversation. The plugin registered nothing: a candidate is a lead, not evidence.\n- test run (python -m unittest), exit 0: Ran 2 tests in 0.000s, OK — `python3 -m unittest test_t && git add -A && git commit -m 'fixture: add tests'`\n- commit, exit 0: c94f649 on main — `python3 -m unittest test_t && git add -A && git commit -m 'fixture: add tests'`\nIf one of them verifies an acceptance criterion of the work you are on, write the completion report from what it showed (what ran, what you saw, what it did not cover; the full commit from `git rev-parse HEAD` as source_sha), then register it as the awr-workflow skill describes (`work prepare-completion`, `evidence add`, `work complete`). A run you did not read, or one that did not cover a criterion, is not evidence. This note goes away once evidence is registered; do not mention it to the user unless it matters.",
+    "tool_calls_in_both_conversations": [
+      [
+        "bash",
+        "python3 -m unittest test_t && git add -A && git commit -m 'fixture: add tests'"
+      ],
+      [
+        "awr",
+        [
+          "context",
+          "compile",
+          "--session",
+          "01M77FW9S7E02BSQXJE1Z8KCQ8",
+          "--budget",
+          "5000"
+        ]
+      ],
+      [
+        "awr",
+        [
+          "session",
+          "checkpoint",
+          "--session",
+          "01M77FW9S7E02BSQXJE1Z8KCQ8",
+          "--context-hash",
+          "66c10c38f856f1aa57094c2d75d5d9054696351f580b3f27395e46a0738dba27",
+          "--digest",
+          "Ran a command in the project and read its output.",
+          "--next-action",
+          "Review what the command printed and decide the next change.",
+          "--open-loop",
+          "Decide whether the change should be kept",
+          "--expected-project-revision",
+          "45"
+        ]
+      ],
+      [
+        "bash",
+        "date >> log.txt && python3 -m unittest test_t && git add -A && git commit -m 'touch log'"
+      ],
+      [
+        "awr",
+        [
+          "context",
+          "compile",
+          "--session",
+          "01M77FY3W4T2QHQH37N3PJX6W5",
+          "--budget",
+          "5000"
+        ]
+      ],
+      [
+        "awr",
+        [
+          "session",
+          "checkpoint",
+          "--session",
+          "01M77FY3W4T2QHQH37N3PJX6W5",
+          "--context-hash",
+          "ad95255929841eb8c502833533728103a0d2036fc12cfeb00c4fc771b5cd7a6d",
+          "--digest",
+          "Ran a command in the project and read its output.",
+          "--next-action",
+          "Review what the command printed and decide the next change.",
+          "--open-loop",
+          "Decide whether the change should be kept",
+          "--expected-project-revision",
+          "50"
+        ]
+      ]
+    ],
+    "evidence_add_calls": 0
+  }
+}

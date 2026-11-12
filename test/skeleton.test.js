@@ -57,7 +57,36 @@ test('apply runs against a stub context and registers the conversation listener 
   })
   module.apply(ctx)
   assert.deepEqual(messages, ['dsh-awr loaded'])
-  assert.deepEqual(listeners, ['agent/created', 'agent/pre-step', 'agent/disposed', 'agent/created', 'session/event', 'tools/result', 'agent/disposed', 'agent/turn-stopping'], 'the listeners: binding, the two of the prompt context, the takeover reviewer\'s restriction, the session events for compactions, and the three of the checkpoint request')
+  assert.deepEqual(listeners, ['agent/created', 'agent/pre-step', 'agent/disposed', 'agent/created', 'tools/result', 'agent/disposed', 'session/event', 'tools/result', 'agent/disposed', 'agent/turn-stopping'], 'the listeners: binding, the two of the prompt context, the takeover reviewer\'s restriction, the two of the evidence candidates, the session events for compactions, and the three of the checkpoint request')
+})
+
+test('apply wires /awr evidence to what tools/result showed, and DSH_AWR_EVIDENCE_SUGGESTIONS=0 turns it off', async () => {
+  const { apply } = await import('../index.js')
+  const load = () => {
+    const handlers = {}
+    const mounts = []
+    const ctx = { on: (event, handler) => { (handlers[event] ??= []).push(handler) }, inject: (names, fn) => mounts.push({ names, fn }), logger: { info() {} } }
+    apply(ctx)
+    const defs = []
+    mounts.find((mount) => mount.names.includes('commands')).fn({ commands: { register: (definition) => defs.push(definition) }, effect: (fn) => fn() })
+    return { handlers, command: defs.find((definition) => definition.name === 'awr') }
+  }
+  const agent = { session: { id: 'skeleton-conv' } }
+  const { handlers, command } = load()
+  assert.equal(handlers['tools/result'].length, 2, 'the evidence candidates and the checkpoint prompter')
+  assert.match((await command.handler({ agent, rawInput: 'evidence' })).text, /^No evidence candidates/)
+  for (const handler of handlers['tools/result']) handler({ name: 'bash', agent, arguments: { command: 'node --test' } }, { content: [{ type: 'text', text: 'ℹ pass 3\nℹ fail 0' }] })
+  const shown = await command.handler({ agent, rawInput: 'evidence' })
+  assert.equal(shown.kind, 'success')
+  assert.match(shown.text, /test run \(node --test\) pass 3, fail 0: node --test/)
+  process.env.DSH_AWR_EVIDENCE_SUGGESTIONS = '0'
+  try {
+    const off = load()
+    assert.match((await off.command.handler({ agent, rawInput: 'evidence' })).text, /turned off/)
+    assert.equal(off.handlers['tools/result'].length, 1, 'only the checkpoint prompter listens when the suggestions are off')
+  } finally {
+    delete process.env.DSH_AWR_EVIDENCE_SUGGESTIONS
+  }
 })
 
 test('apply tolerates a context without a logger', async () => {

@@ -10,6 +10,7 @@ import { AwrError, createAwr } from '../lib/awr-runtime.js'
 import { bindConversation } from '../lib/binding.js'
 import { createAwrCommand, formatStatus } from '../lib/commands.js'
 import { registerAwrCommand, watchConversations } from '../lib/conversation.js'
+import { createEvidenceCandidates } from '../lib/evidence-candidates.js'
 
 const bound = { projectRoot: '/p', sessionId: 'S1', work: { key: 'W-1', why: 'ready' } }
 const agent = { session: { id: 'conv-1' } }
@@ -51,6 +52,30 @@ test('outside an AWR project, or with an unknown subcommand, nothing is run', as
   assert.match(unknown.text, /Unknown subcommand "frobnicate"/)
   assert.equal((await run(awr, bound, 'help')).kind, 'success')
   assert.equal(awr.calls.length, 0)
+})
+
+test('/awr evidence lists the suggested evidence, dismisses it on request, and never runs awr', async () => {
+  const evidence = createEvidenceCandidates({ bindings: bindingsOf(bound) })
+  evidence.observe({ name: 'bash', agent, arguments: { command: 'npm test' } }, { content: [{ type: 'text', text: 'ok' }] })
+  const awr = scripted({})
+  const command = createAwrCommand({ awr, bindings: bindingsOf(bound), evidence })
+  const shown = await command({ agent, rawInput: 'evidence' })
+  assert.equal(shown.kind, 'success')
+  assert.match(shown.text, /1 evidence candidate\(s\), all with exit 0\. Nothing was registered/)
+  assert.match(shown.text, /test run \(npm test\): npm test/)
+  const dismissed = await command({ agent, rawInput: 'evidence dismiss' })
+  assert.match(dismissed.text, /Dismissed 1 evidence candidate\(s\)\. Nothing was registered\./)
+  assert.match((await command({ agent, rawInput: 'evidence' })).text, /^No evidence candidates/)
+  assert.match((await command({ agent, rawInput: 'evidence dismiss' })).text, /no evidence candidates to dismiss/)
+  const bad = await command({ agent, rawInput: 'evidence register' })
+  assert.equal(bad.kind, 'error')
+  assert.match(bad.text, /Unknown evidence option "register"/)
+  assert.equal(awr.calls.length, 0, 'the suggestions are the plugin\'s own; AWR is not asked and nothing is written')
+  // switched off in the profile
+  const off = await createAwrCommand({ awr, bindings: bindingsOf(bound) })({ agent, rawInput: 'evidence' })
+  assert.equal(off.kind, 'error')
+  assert.match(off.text, /turned off/)
+  assert.match((await command({ agent, rawInput: 'help' })).text, /\/awr evidence \[dismiss\]/)
 })
 
 test('claim sends the current revision, the session and the bound work by default', async () => {
