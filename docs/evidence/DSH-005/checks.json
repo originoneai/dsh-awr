@@ -1,0 +1,8 @@
+{
+  "checked_on": "2026-11-12",
+  "lab_build": "docs/evidence/DSH-005/lab-build.json: source_commit equals origin_main_commit (037f66c9), commits_not_on_origin_main 0, no uncommitted tracked changes; awr and awr-mcp report 0.7.0 (037f66c9)",
+  "macos_kill": "The copy at .local/awr-lab/bin/awr exited 137 with no output on every run (--version, status) although sha256 e3b807701365 equalled the file in the build target, which ran; awr-mcp, copied the same way, ran. codesign --force --sign - on the copy fixed it. scripts/build-awr-lab.sh now signs both copies ad hoc on macOS, and a rerun produced a manifest with both version strings filled (the first manifest had an empty awr version because the binary was being killed).",
+  "suite": "node --test: 222 tests, 0 failures with the lab at 037f66c9, including every test that runs the real awr (bind, fork, compaction, takeover, state view, skill commands); before the signing fix those 24 tests failed because awr was killed",
+  "project_opened_by_the_new_build": "this repository's own AWR project (created by older builds): awr status ok, no migration prompt",
+  "docs": "docs/lab-environment.md updated: baseline main at 037f66c9, the fix is in main (PR 614, 71c1acfe), the released 0.7.0 still lacks it, the signing step, the check above"
+}

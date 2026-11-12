@@ -25,6 +25,11 @@ echo "building awr and awr-mcp from $SRC"
 mkdir -p "$LAB/bin"
 cp "$TARGET/release/awr" "$TARGET/release/awr-mcp" "$LAB/bin/"
 chmod +x "$LAB/bin/awr" "$LAB/bin/awr-mcp"
+# On macOS a copied binary can be killed by the signature check (exit 137, no output) although its bytes are
+# identical to the build's. Signing the copies ad hoc avoids that; it changes nothing else.
+if [ "$(uname -s)" = Darwin ] && command -v codesign >/dev/null 2>&1; then
+  codesign --force --sign - "$LAB/bin/awr" "$LAB/bin/awr-mcp"
+fi
 
 python3 - "$SRC" "$LAB" <<'PY'
 import hashlib, json, subprocess, sys, time

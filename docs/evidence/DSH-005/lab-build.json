@@ -1,0 +1,22 @@
+{
+  "purpose": "Local experimental AWR environment for DSH plugin development. Not a release.",
+  "built_at_utc": "2026-11-12T09:30:38Z",
+  "source_path": "/private/tmp/claude-501/-Users-mac-Library-Application-Support-Claude-scratch-workspaces-869d37b4-7c03-4b30-a5f3-4d227459491a-1c11c5ae-829f-412a-ab8a-33417c1e331a-scratch-2026-11-12-e6ef56/1197320f-8860-4fa5-9d83-5178490fdad2/scratchpad/awr-pr",
+  "source_branch": "main",
+  "source_commit": "037f66c97b01045f91e485d8f12a644eccc73a53",
+  "origin_main_commit": "037f66c97b01045f91e485d8f12a644eccc73a53",
+  "commits_not_on_origin_main": "0",
+  "uncommitted_tracked_changes": [],
+  "build_command": "cargo build --release --locked -p awr-cli -p awr-mcp",
+  "rustc": "rustc 1.93.1 (01f6ddf75 2026-02-11) (Homebrew)",
+  "binaries": {
+    "awr": {
+      "sha256": "1b8aa45973aab2d9704b9f7fa8922b2d71d925bb54097b29f8fe1e4e980b3d64",
+      "version": "awr 0.7.0 (037f66c9)"
+    },
+    "awr-mcp": {
+      "sha256": "f8bda743609b0a93c219f2ba6d70a14f313f172698d34825150fc7e5c15d3953",
+      "version": "awr-mcp 0.7.0 (037f66c9)"
+    }
+  }
+}
