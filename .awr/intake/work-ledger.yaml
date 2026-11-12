@@ -221,7 +221,7 @@ work_items:
 - id: DSH-031
   title: Report native compactions to AWR
   kind: implementation
-  status: planned
+  status: completed
   priority: P1
   required: false
   goal: intake-goal
@@ -229,7 +229,9 @@ work_items:
   acceptance:
   - Each completed DSH compaction is recorded through AWR's context-continuity protocol with the measurement scope and basis DSH actually provides.
   - Estimated values are reported as estimated and are never presented as host-reported occupancy.
-  next_action: Map DSH compaction session events to the observation request and confirm which token figures exist.
+  next_action: Complete DSH-031 with the registered evidence
+  "evidence": ["docs/evidence/DSH-031/completion-report.json"]
+  "verification": {"evidence_level":"locally_verified"}
 - id: DSH-032
   title: Bundle a skill that teaches the AWR workflow
   kind: implementation

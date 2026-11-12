@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "work_item": "DSH-031",
+  "source_sha": "5670cdacab9c2c465e951b21f0d4f1d275d7ba5f",
+  "command": "node --test (175 tests; test/compaction.test.js runs the real awr); DeepSeek Harness 0.2.2-rc.1: /compact in the web profile and a forced-threshold automatic compaction in the headless profile, each read back from AWR with session compaction inspect (docs/evidence/DSH-031)",
+  "scope": [
+    "lib/compaction.js",
+    "index.js",
+    "test/compaction.test.js",
+    "docs/compaction.md",
+    "docs/evidence/DSH-031"
+  ],
+  "verified_at": 1794472129412,
+  "checks": [
+    {
+      "name": "Each completed DSH compaction is recorded through AWR's context-continuity protocol with the measurement scope and basis DSH actually provides",
+      "passed": true,
+      "details": "The plugin follows DSH's compaction/start, compaction/summary and compaction/end session events (read from real compactions) and runs awr session compaction observe for each completed compaction, in order, with the session and revision, a sequence that continues from what AWR holds, the trigger (manual while a /compact command runs, automatic otherwise: the two values AWR accepts), measurement_scope history_only and measurement_basis estimated, before_tokens from DSH's shadowedTokenCount, the duration from the event times and the provider's usage for the summarizing call. In DeepSeek Harness /compact in a two-turn conversation (DSH printed about 5569 tokens) was stored by AWR as sequence 1, manual, history_only, estimated, before_tokens 5569; a forced-threshold run compacted twice and AWR held sequences 1 and 2, both automatic (docs/evidence/DSH-031/live-dsh.json). Against the real awr (test/compaction.test.js) the stored fields, the sequence across a restarted reporter and a replay were checked. Ten mutation checks fail tests. Limits: the model was a stand-in (its usage figures are 10 and 5 tokens); an overflow-recovery compaction is reported as automatic because DSH does not say otherwise; the web and headless profiles, not the desktop shell.",
+      "criteria": [
+        "Each completed DSH compaction is recorded through AWR's context-continuity protocol with the measurement scope and basis DSH actually provides."
+      ]
+    },
+    {
+      "name": "Estimated values are reported as estimated and are never presented as host-reported occupancy",
+      "passed": true,
+      "details": "DSH's only token figure is its own count of the condensed history span, so it is reported as measurement_basis estimated and measurement_scope history_only, with source text saying it is DSH's own estimate of the condensed span and not the request or all of the history. after_tokens and context_window_tokens are not reported because DSH gives neither; nothing is inferred from summary length, billing or AWR's context estimate. AWR stored them as given (after_tokens and context_window_tokens null) and reported post_compaction_percent null, since it computes occupancy only for full_request and host_reported. Mutations that claim full_request, claim host_reported or invent after_tokens fail tests.",
+      "criteria": [
+        "Estimated values are reported as estimated and are never presented as host-reported occupancy."
+      ]
+    }
+  ]
+}
