@@ -46,6 +46,9 @@ example the budget a `BudgetExceeded` needs and the command awr suggests. Before
 was read, so every real awr error was reported as `invalid_output`; the DSH-011 tests used fake awr
 programs that printed errors on stdout and did not show it.
 
+`run(root, args, { text: true })` returns output that is not JSON (help text) as `{ output }` instead of
+treating it as a broken awr; the model-facing `awr` tool uses it for `--help`.
+
 A stopped project is remembered for the life of the plugin: later calls return the same error
 without starting `awr` again. `explain(error)` gives the sentence to show the user. It says that
 the plugin does not migrate, restore or downgrade.

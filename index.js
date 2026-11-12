@@ -2,11 +2,12 @@
 //
 // Capabilities are added one work item at a time, using the surfaces recorded in
 // docs/dsh-surfaces.md. Loaded so far: binding each conversation to an AWR session (DSH-013), the /awr
-// command (DSH-015) and the AWR work context in the prompt (DSH-014).
+// command (DSH-015), the AWR work context in the prompt (DSH-014) and the AWR tools for the model (DSH-012).
 import { appendFileSync } from 'node:fs'
 import { createAwr } from './lib/awr-runtime.js'
 import { registerAwrCommand, watchConversations } from './lib/conversation.js'
 import { registerPromptContext } from './lib/prompt-context.js'
+import { registerAwrTools } from './lib/tools.js'
 
 export const name = 'dsh-awr'
 
@@ -38,4 +39,5 @@ export function apply(ctx) {
   const budget = Number.parseInt(process.env.DSH_AWR_CONTEXT_BUDGET ?? '', 10)
   const context = registerPromptContext(ctx, { awr, bindings, trace, ...(budget > 0 ? { budget } : {}) })
   registerAwrCommand(ctx, { awr, bindings, context })
+  registerAwrTools(ctx, { awr, bindings })
 }

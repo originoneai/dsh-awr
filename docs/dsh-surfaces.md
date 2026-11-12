@@ -42,6 +42,11 @@ Third-party web pages read earlier are not used for any row below.
 
 ## Corrections this makes to the design
 
+- DSH-012 no longer mounts `awr-mcp`: a static `dsh-mcp-client` row serves one project for every
+  conversation, and `tools/pre-execute` cannot rewrite arguments, so the plugin registers its own tools
+  (`ctx.tools.register(definition, { when })`, project taken from the binding). `defineTool` is not
+  importable from a plugin outside DSH; a definition is a plain object with a JSON Schema `parameters`
+  and `output.render` (see [tools.md](tools.md)).
 - The README capability table is updated: no `ctx.mcpManager`, no `appendPluginRecord`, binding and
   checkpoint prompts move to `agent/created` and `agent/turn-stopping`.
 - DSH-013 (binding) and DSH-030 (checkpoint prompts) change their next actions accordingly.

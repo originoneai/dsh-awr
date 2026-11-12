@@ -76,7 +76,8 @@ test('the context holds the next action, the open loops and the compiled text, a
   assert.match(text, /session S1: project proj, work W-1, project revision 9/)
   assert.match(text, /Next Action:\nDraft the release note/)
   assert.match(text, /decide the license\nask the owner/)
-  assert.match(text, /Never edit \.awr\/state\.db\*/)
+  assert.match(text, /never edit \.awr\/state\.db\*/)
+  assert.match(text, /awr_project_status and awr tools/, 'says which tools reach AWR')
 })
 
 test('an incomplete or trimmed context says so', () => {

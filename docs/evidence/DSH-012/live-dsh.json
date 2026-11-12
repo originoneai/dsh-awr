@@ -1,0 +1,122 @@
+{
+ "note": "DeepSeek Harness 0.2.2-rc.1, headless dev profile dsh-awr-dev, local model stand-in (scripts/fake-model.mjs on 127.0.0.1, dummy key) that calls the named tool and answers with what the tool returned. Each run is a separate conversation started in the directory named. Nothing left the machine.",
+ "conversations": [
+  {
+   "cwd": "dsh014-fixture/packages/app (AWR project A)",
+   "tool": "awr_project_status",
+   "answer_project": "dsh014-fixture"
+  },
+  {
+   "cwd": "dsh012-fixture-b/packages/app (AWR project B)",
+   "tool": "awr_project_status",
+   "answer_project": "dsh012-fixture-b"
+  }
+ ],
+ "tool_results_seen_by_the_model": [
+  {
+   "call": {
+    "tool": "awr_project_status",
+    "input": {}
+   },
+   "awr_tools_offered": [
+    "awr",
+    "awr_project_status"
+   ],
+   "result_starts": "{   \"project\": {     \"name\": \"dsh014-fixture\",     \"id\": \"01M77695KTW7SY04V352X99GH1\",     \"root\": \"/Users/mac/Documents/deepseek-harness/dsh014-fixture\",     \"revision\": 20   },   \"session\": {     \"id\": \"01M77744HZM2KKY5XR7JZXNC5Y\",     \"work\": \"INTAKE-001\"  "
+  },
+  {
+   "call": {
+    "tool": "awr_project_status",
+    "input": {}
+   },
+   "awr_tools_offered": [
+    "awr",
+    "awr_project_status"
+   ],
+   "result_starts": "{   \"project\": {     \"name\": \"dsh012-fixture-b\",     \"id\": \"01M77743W751M2S6ZD93C4Y5NF\",     \"root\": \"/Users/mac/Documents/deepseek-harness/dsh012-fixture-b\",     \"revision\": 6   },   \"session\": {     \"id\": \"01M77745K5Q1MVD3HAKRQYM1BN\",     \"work\": \"INTAKE-001"
+  },
+  {
+   "call": {
+    "tool": "awr",
+    "input": {
+     "args": [
+      "work",
+      "show",
+      "INTAKE-001"
+     ]
+    }
+   },
+   "awr_tools_offered": [
+    "awr",
+    "awr_project_status"
+   ],
+   "result_starts": "{   \"acceptance\": [     \"Confirm goals, existing implementation, unfinished work, and blockers with source references.\",     \"Mark uncertain progress as unverified and define acceptance criteria for the next executable task.\"   ],   \"decisions\": [],   \"depende"
+  },
+  {
+   "call": {
+    "tool": "awr",
+    "input": {
+     "args": [
+      "status",
+      "--project",
+      "/Users/mac/Documents/deepseek-harness/dsh014-fixture"
+     ]
+    }
+   },
+   "awr_tools_offered": [
+    "awr",
+    "awr_project_status"
+   ],
+   "result_starts": "Error: --project is set by the tool: the project is this conversation's project and the output is always JSON"
+  },
+  {
+   "call": {
+    "tool": "awr",
+    "input": {
+     "args": [
+      "overview",
+      "projects"
+     ]
+    }
+   },
+   "awr_tools_offered": [
+    "awr",
+    "awr_project_status"
+   ],
+   "result_starts": "Error: \"awr overview\" is not run through this tool: it reaches other projects or other machines. Ask the user to run it in a terminal."
+  },
+  {
+   "call": {
+    "tool": "awr",
+    "input": {
+     "args": [
+      "runtime",
+      "restore"
+     ]
+    }
+   },
+   "awr_tools_offered": [
+    "awr",
+    "awr_project_status"
+   ],
+   "result_starts": "Error: Refused to run an AWR command that changes or replaces runtime state for /Users/mac/Documents/deepseek-harness/dsh012-fixture-b: \"restore\" is not run by the plugin."
+  },
+  {
+   "call": {
+    "tool": "awr",
+    "input": {
+     "args": [
+      "work",
+      "--help"
+     ]
+    }
+   },
+   "awr_tools_offered": [
+    "awr",
+    "awr_project_status"
+   ],
+   "result_starts": "{   \"output\": \"Read and manage one work item\\n\\nUsage: awr work [OPTIONS] <COMMAND>\\n\\nDaily work\\n  show                Read one work item's state, acceptance and evidence\\n  prepare             Prepare readiness and required context\\n  claim               Cl"
+  }
+ ],
+ "outside_an_awr_project": "the conversation in dsh012-plain was offered no awr tool (the stand-in could not call one) and answered \"I see no AWR context.\""
+}
