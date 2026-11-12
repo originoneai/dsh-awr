@@ -1,7 +1,11 @@
-# Owner decisions still open
+# Owner decisions
 
-Two items of the ledger wait for the owner, now that the takeover has been proven on real projects (DSH-022).
-Each has the facts that bear on it and a recommendation; the decision is the owner's and nothing here is applied.
+Two items of the ledger needed the owner once the takeover had been proven on real projects (DSH-022). Each has the
+facts that bore on it and the recommendation made at the time. **Decided by the owner on 2026-11-12 (in the chat):**
+
+- **DSH-040: move the takeover orchestration into the AWR CLI** (the opposite of the recommendation below, which was
+  to wait). The work item is an issue in the AWR repository (see the ledger).
+- **DSH-041: MIT license, public repository, publish a release.** Done as `v0.1.0`.
 
 ## DSH-040: move the takeover orchestration into the AWR CLI?
 

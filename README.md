@@ -9,9 +9,20 @@ real model (the one-click takeover on public projects, `docs/evidence/DSH-022`) 
 with a local stand-in model (everything else). It binds each conversation to an AWR session, puts the AWR work
 context in the prompt, gives the model the `awr` tools and a workflow skill, offers `/awr` commands and a state panel,
 takes a project over in one click with a restricted reviewer subagent, asks for checkpoints, reports compactions,
-suggests evidence and handles forks. The repository is private and `package.json` is `UNLICENSED` and `private`; the
-license, visibility and a release are the owner's decisions ([docs/owner-decisions.md](docs/owner-decisions.md)).
+suggests evidence and handles forks. MIT licensed and public; `v0.1.0` is the first release ([docs/owner-decisions.md](docs/owner-decisions.md)).
 The ledger is `.awr/intake/work-ledger.yaml`.
+
+## Install
+
+In DeepSeek Harness open Plugins, choose Add plugin, and enter `https://github.com/originoneai/dsh-awr`, or from a
+terminal:
+
+```sh
+dsh plugin --profile <profile> add github:originoneai/dsh-awr#v0.1.0
+```
+
+The plugin runs the `awr` CLI of the machine it is on (see [docs/awr-runtime.md](docs/awr-runtime.md)); install AWR
+first. The MCP route needs an `awr-mcp` that contains originoneai/awr#614 (docs/dsh-001-l0-check.md).
 
 ## Develop
 
@@ -100,3 +111,7 @@ A project whose material does not establish its goals ends in `needs_organizatio
 Answered by [docs/dsh-surfaces.md](docs/dsh-surfaces.md): DSH does expose a blockable pre-tool-call
 hook (`tools/pre-execute`, `ctx.tools.guard`), and MCP servers are configured as
 `@deepseek-ai/dsh-mcp-client` rows in a bundle patch.
+
+## License
+
+[MIT](LICENSE)
