@@ -432,3 +432,13 @@ work_items:
   "summary": "Found by pressing the buttons in the real desktop app after a takeover: /awr claim without an argument stopped with 'Name the work to claim' because the binding a takeover makes names no work although the AWR session is bound to one, and /awr checkpoint was refused with ContextIncomplete although AWR says an incomplete checkpoint is allowed. A 50-character work key also broke the claim button, and the receipt showed the raw state needs_organization."
   "evidence": ["docs/evidence/DSH-058/completion-report.json"]
   "verification": {"evidence_level":"locally_verified"}
+- "id": "WORK-a43160fad9c0441bee19896d8349f88e"
+  "title": "DSH-059: Update the plugin from GitHub in the AWR panel"
+  "status": "draft"
+  "acceptance": ["The panel shows the version and the GitHub commit of the installed plugin, a Check button asks GitHub whether the branch the plugin follows has a newer commit, and an Update button installs that commit with DeepSeek Harness's plugin manager; a failed update leaves the installed version as it was, and a plugin that runs from a local checkout offers no update.","This is shown in the real DeepSeek Harness desktop app: a plugin installed from GitHub is updated from the panel to a newer commit of the same repository, and the new version runs."]
+  "depends_on": ["WORK-5fbaebd1b940cce21825828254ef68e6"]
+  "goal": ["intake-goal"]
+  "kind": "feature"
+  "next_action": "Build the update check on the host and the Update button in the panel, then verify it in the real app against a throwaway branch"
+  "priority": "P0"
+  "summary": "Asked by the owner: DeepSeek Harness's plugin page has no update for a plugin installed from GitHub (the package version stays 0.1.0 and its update works only for registry packages), so the AWR panel offers one. The update installs the same repository pinned to the newest commit of the followed branch with the plugin manager's installBundle, which replaces the dependency in one operation and restores the profile if it fails."

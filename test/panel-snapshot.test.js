@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import test from 'node:test'
 import { createAwrCommand } from '../lib/commands.js'
-import { createPanelPublisher, panelDir, SNAPSHOT_VERSION, snapshotFileName, snapshotPath } from '../lib/panel-snapshot.js'
+import { createPanelPublisher, panelDir, refreshAfterAgent, SNAPSHOT_VERSION, snapshotFileName, snapshotPath } from '../lib/panel-snapshot.js'
 
 async function withDirectory(run) {
   const dir = await mkdtemp(join(tmpdir(), 'dsh-awr-snapshot-'))
@@ -51,7 +51,7 @@ test('the snapshot is one JSON file with the view, the work and when it was writ
     const publisher = createPanelPublisher({ takeover: fakeTakeover([stopped]), awr: idle, bindings: nobody, dir, now: () => 1234 })
     const answer = await publisher.publish(agent())
     assert.equal(answer.view.state, 'stopped')
-    assert.deepEqual(await read(join(dir, 'conv-1.json')), { version: SNAPSHOT_VERSION, updatedAt: 1234, view: stopped, work: null })
+    assert.deepEqual(await read(join(dir, 'conv-1.json')), { version: SNAPSHOT_VERSION, updatedAt: 1234, view: stopped, work: null, plugin: null })
     assert.deepEqual(await readdir(dir), ['conv-1.json'], 'no temporary file is left')
     if (process.platform !== 'win32') assert.equal((await stat(join(dir, 'conv-1.json'))).mode & 0o777, 0o600, 'readable by the user only')
   })
@@ -202,4 +202,65 @@ test('failing to write the data never changes what a command answers', async () 
   const answer = await command({ agent: agent(), rawInput: 'claim' })
   assert.equal(answer.kind, 'success')
   assert.match(answer.text, /Claimed W-1/)
+})
+
+test('a conversation whose light nobody looked at gets no file just because the agent did something', async () => {
+  await withDirectory(async (dir) => {
+    const publisher = createPanelPublisher({ takeover: fakeTakeover([stopped]), awr: idle, bindings: nobody, dir })
+    assert.equal(await publisher.publish(agent(), { onlyIfWatched: true }), undefined)
+    assert.deepEqual(await readdir(dir).catch(() => []), [], 'nothing was written')
+    await publisher.publish(agent())
+    const again = await publisher.publish(agent(), { onlyIfWatched: true })
+    assert.equal(again.view.state, 'stopped', 'a file that exists is written again')
+  })
+})
+
+test('after the agent ran awr commands that can change the work, the watched data is written again, once for a burst', async () => {
+  const timers = fakeTimers()
+  const written = []
+  const panel = { publish: async (who, options) => { written.push(['panel', who.session.id, options]) } }
+  const progress = { publish: async (who, options) => { written.push(['progress', who.session.id, options]) } }
+  const onRun = refreshAfterAgent({ panel, progress, delayMs: 1500, ...timers })
+  onRun(agent('c1'), ['status'])
+  onRun(agent('c1'), ['ready'])
+  onRun(agent('c1'), ['context', 'compile'])
+  onRun(agent('c1'), ['capabilities'])
+  assert.deepEqual(timers.waiting(), [], 'commands that only read start nothing')
+  onRun(agent('c1'), ['work', 'claim', 'W-1'])
+  assert.deepEqual(timers.waiting().map((timer) => timer.ms), [1500], 'one that can change the work does')
+  onRun(agent('c1'), ['session', 'checkpoint'])
+  onRun(agent('c2'), ['evidence', 'add'])
+  assert.equal(timers.waiting().length, 2, 'one wait for a conversation, however many commands')
+  await timers.fire()
+  await timers.fire()
+  assert.deepEqual(written, [
+    ['panel', 'c1', { onlyIfWatched: true }], ['progress', 'c1', { onlyIfWatched: true }],
+    ['panel', 'c2', { onlyIfWatched: true }], ['progress', 'c2', { onlyIfWatched: true }],
+  ])
+  onRun({}, ['work', 'claim'])
+  onRun(undefined, ['work', 'claim'])
+  assert.equal(timers.waiting().length, 0, 'without a conversation there is nothing to refresh')
+})
+
+test('a refresh that fails after the agent\'s command is nobody\'s error', async () => {
+  const timers = fakeTimers()
+  const onRun = refreshAfterAgent({ panel: { publish: async () => { throw new Error('disk full') } }, ...timers })
+  onRun(agent('c1'), ['work', 'claim'])
+  await timers.fire()
+})
+
+test('when a takeover the publisher followed is no longer running, whoever shows the work is told once', async () => {
+  await withDirectory(async (dir) => {
+    const timers = fakeTimers()
+    const settled = []
+    const publisher = createPanelPublisher({ takeover: fakeTakeover([running, running, stopped, stopped]), awr: idle, bindings: nobody, dir, onSettled: (who, view) => settled.push([who.session.id, view.state]), ...timers })
+    await publisher.publish(agent())
+    assert.deepEqual(settled, [], 'a publish that somebody asked for is not the end of a takeover')
+    await timers.fire()
+    assert.deepEqual(settled, [], 'still running')
+    await timers.fire()
+    assert.deepEqual(settled, [['conv-1', 'stopped']])
+    await publisher.publish(agent())
+    assert.deepEqual(settled, [['conv-1', 'stopped']], 'once')
+  })
 })

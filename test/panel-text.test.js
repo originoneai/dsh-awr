@@ -31,6 +31,12 @@ test('every state is one sentence in English and in Chinese', () => {
   }
 })
 
+test('the managed sentence counts the whole queue when awr counted it', () => {
+  const work = { totals: { active: 24, ready: 23, blocked: 39, waiting: 32 }, in_progress: [{}, {}], ready: [{}], blocked: [] }
+  assert.match(panelSentence(view('initialized'), work, 'en'), /AWR project · 24 in progress, 23 ready, 39 blocked/)
+  assert.match(panelSentence(view('initialized'), work, 'zh'), /AWR 项目 · 24 项进行中，23 项就绪，39 项阻塞/)
+})
+
 test('a sentence is a sentence: no JSON, no markup, one line', () => {
   const state = view('stopped', { stop: { step: 'review', reason: 'review_failed', message: 'The review failed: "quoted" {braces}' }, receipt: { mapped: { sources: [{ path: 'README.md' }] } } })
   const work = { in_progress: [], ready: [], blocked: [] }

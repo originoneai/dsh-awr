@@ -62,6 +62,35 @@ test('the view carries the bound work, the claim with its expiry, the blockers, 
   assert.ok(!awr.calls.some((c) => c.startsWith('context')), 'a binding that knows its work key does not compile')
 })
 
+test('the queues are a sample: the totals are those AWR counts, and an older awr that counts none gets the length of the list', async () => {
+  const counted = scripted()
+  const original = counted.run.bind(counted)
+  counted.run = async (root, args) => (args[0] === 'status' ? { ...STATUS, current_total: 24, ready_count: 23, blocked_count: 39, waiting_count: 32 } : original(root, args))
+  const view = await buildStateView(counted, { projectRoot: '/p' })
+  assert.deepEqual(view.totals, { active: 24, ready: 23, blocked: 39, waiting: 32 })
+  assert.equal(view.ready.length, 1, 'the list is still the sample AWR gave')
+  assert.match(formatStateView(view), /24 in progress, 23 ready, 39 blocked, 32 waiting/, 'the typed state says how much there is, not how much was listed')
+  const older = await buildStateView(scripted(), { projectRoot: '/p' })
+  assert.deepEqual(older.totals, { active: 1, ready: 1, blocked: 1, waiting: 1 })
+})
+
+test('whether AWR will start work yet, and why it holds work back, are passed on as awr gave them', async () => {
+  const held = scripted()
+  const original = held.run.bind(held)
+  held.run = async (root, args) => (args[0] === 'status'
+    ? { ...STATUS, organization: { business_execution_ready: false, project_gap_total: 8, current_gap_total: 5, state: 'needs_organization' }, blocked: [{ key: 'W-8', title: 'Search', status: 'planned', blocker: null, structural_codes: ['work_structure_incomplete', 'work_goal_missing'] }] }
+    : original(root, args))
+  const view = await buildStateView(held, { projectRoot: '/p' })
+  assert.deepEqual(view.organization, { ready: false, gaps: 8 })
+  assert.deepEqual(view.blocked[0].structural, ['work_structure_incomplete', 'work_goal_missing'])
+  assert.equal('blocker' in view.blocked[0], false, 'nothing is recorded as the obstacle')
+  const ready = scripted()
+  const next = ready.run.bind(ready)
+  ready.run = async (root, args) => (args[0] === 'status' ? { ...STATUS, organization: { business_execution_ready: true, current_gap_total: 12 } } : next(root, args))
+  assert.deepEqual((await buildStateView(ready, { projectRoot: '/p' })).organization, { ready: true, gaps: 12 }, 'without a project total, the gaps that matter now')
+  assert.equal('organization' in (await buildStateView(scripted(), { projectRoot: '/p' })), false, 'an awr that says nothing about it is not made to')
+})
+
 test('a claim without an expiry says so; a session that holds nothing has no claims; an unbound conversation has only the project', async () => {
   const noExpiry = scripted()
   const original = noExpiry.run.bind(noExpiry)

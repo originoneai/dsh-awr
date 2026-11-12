@@ -12,7 +12,9 @@ import { registerCheckpointPrompts } from './lib/checkpoint-prompt.js'
 import { registerCompactionReports } from './lib/compaction.js'
 import { registerAwrCommand, watchConversations } from './lib/conversation.js'
 import { registerEvidenceSuggestions } from './lib/evidence-candidates.js'
-import { createPanelPublisher } from './lib/panel-snapshot.js'
+import { createPanelPublisher, refreshAfterAgent } from './lib/panel-snapshot.js'
+import { createPluginUpdater } from './lib/plugin-update.js'
+import { createProgress } from './lib/progress.js'
 import { registerPromptContext } from './lib/prompt-context.js'
 import { createReviewerPolicy, createTakeoverController } from './lib/takeover-host.js'
 import { registerAwrSkill } from './lib/skill.js'
@@ -77,9 +79,13 @@ export function apply(ctx) {
   // candidates (DSH-050). The list only suggests; nothing is registered by the plugin.
   const evidence = registerEvidenceSuggestions(ctx, { bindings, enabled: process.env.DSH_AWR_EVIDENCE_SUGGESTIONS !== '0', trace })
   // The panel reads its data from a file the host writes (lib/panel-snapshot.js), so asking for it adds nothing to the conversation.
-  const panel = createPanelPublisher({ takeover, awr, bindings, warn: (message) => ctx.logger?.warn?.(message) })
-  registerAwrCommand(ctx, { awr, bindings, context, takeover, evidence, panel })
-  registerAwrTools(ctx, { awr, bindings })
+  const updater = createPluginUpdater()
+  const progress = createProgress({ awr, takeover })
+  // A takeover that finishes changes what the progress page shows, so its data is written again (if the page was opened).
+  const panel = createPanelPublisher({ takeover, awr, bindings, updater, warn: (message) => ctx.logger?.warn?.(message), onSettled: (agent) => { progress.publish(agent, { onlyIfWatched: true }).catch(() => {}) } })
+  registerAwrCommand(ctx, { awr, bindings, context, takeover, evidence, panel, updater, progress })
+  // When the agent itself changes the work through the awr tool, the light and the progress page follow.
+  registerAwrTools(ctx, { awr, bindings, onRun: refreshAfterAgent({ panel, progress }) })
   registerAwrSkill(ctx)
   // DSH_AWR_CHECKPOINT_PROMPTS=0 turns the end-of-turn checkpoint request off; _MIN_TOOLS (default 3) and
   // _COOLDOWN_MS (default 300000) tune when a turn is worth one.

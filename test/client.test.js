@@ -1,539 +1,322 @@
-// The panel's session actions (DSH-052): claim, checkpoint and end, as buttons that run the `/awr` command of
-// the same name. `client.js` is browser code for DSH's module loader, so it is run here as it ships, in a
-// `vm` context, against a small stand-in for React that keeps hook state and renders again after every state
-// change. The host is a stub: it records each command line and answers from a table.
+// The AWR light in the conversation header and the card it opens (DSH-061): what a person sees is plain language, the
+// engineering facts stay folded, and looking never puts anything in the conversation.
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
-import { dirname, join, win32 } from 'node:path'
+import { dirname, join } from 'node:path'
 import test from 'node:test'
 import { fileURLToPath } from 'node:url'
-import vm from 'node:vm'
-import { snapshotPath } from '../lib/panel-snapshot.js'
-import { panelSentence } from '../lib/panel-text.js'
+import { buildClient } from '../scripts/build-client.mjs'
+import { loadClient, settle, textOf } from '../test-support/client-harness.js'
 
-const source = readFileSync(join(dirname(fileURLToPath(import.meta.url)), '..', 'client.js'), 'utf8')
-
-function createReact() {
-  let instance
-  const React = {
-    Fragment: Symbol('Fragment'),
-    createElement: (type, props, ...children) => ({ type, props: props ?? {}, children: children.flat(Infinity) }),
-    useState(initial) {
-      const index = instance.index++
-      const owner = instance
-      if (!(index in owner.slots)) owner.slots[index] = typeof initial === 'function' ? initial() : initial
-      return [owner.slots[index], (value) => {
-        owner.slots[index] = typeof value === 'function' ? value(owner.slots[index]) : value
-        owner.render()
-      }]
-    },
-    useRef(initial) {
-      const index = instance.index++
-      if (!(index in instance.slots)) instance.slots[index] = { current: initial ?? null }
-      return instance.slots[index]
-    },
-    useMemo(factory) {
-      const index = instance.index++
-      if (!(index in instance.slots)) instance.slots[index] = factory()
-      return instance.slots[index]
-    },
-    useCallback(callback, deps) {
-      const index = instance.index++
-      const same = (a, b) => a && b && a.length === b.length && a.every((item, i) => Object.is(item, b[i]))
-      if (!(index in instance.slots) || !same(instance.slots[index].deps, deps)) instance.slots[index] = { callback, deps }
-      return instance.slots[index].callback
-    },
-    // Effects run after the render they belong to, again only when their dependencies changed, after the cleanup of the
-    // last run: what the panel's timer and its outside-click listeners rely on.
-    useEffect(effect, deps) {
-      instance.pending.push({ index: instance.effectIndex++, effect, deps })
-    },
-  }
-  const ReactDOM = { createPortal: (node) => ({ type: 'portal', props: {}, children: [node] }) }
-  /** Mount a function component; every state change renders it again, synchronously. */
-  function mount(Component, props) {
-    const mounted = { slots: [], index: 0, effectIndex: 0, pending: [], effects: [], tree: null }
-    const expand = (node) => {
-      if (Array.isArray(node)) return node.map(expand)
-      if (node === null || node === undefined || typeof node === 'boolean' || typeof node !== 'object') return node
-      if (typeof node.type === 'function') return expand(node.type({ ...node.props, children: node.children }))
-      if (node.props.ref && typeof node.props.ref === 'object') {
-        node.props.ref.current = { getBoundingClientRect: () => ({ bottom: 10, left: 10 }), contains: () => false }
-      }
-      return { ...node, children: node.children.map(expand) }
-    }
-    mounted.render = () => {
-      instance = mounted
-      mounted.index = 0
-      mounted.effectIndex = 0
-      mounted.pending = []
-      try {
-        mounted.tree = expand(React.createElement(Component, props))
-      } finally {
-        instance = undefined
-      }
-      for (const { index, effect, deps } of mounted.pending) {
-        const last = mounted.effects[index]
-        if (last && deps && last.deps && deps.length === last.deps.length && deps.every((item, i) => Object.is(item, last.deps[i]))) continue
-        last?.cleanup?.()
-        mounted.effects[index] = { deps, cleanup: effect() }
-      }
-    }
-    mounted.render()
-    return mounted
-  }
-  return { React, ReactDOM, mount }
-}
-
-const walk = (node, visit) => {
-  if (Array.isArray(node)) return node.forEach((item) => walk(item, visit))
-  if (!node || typeof node !== 'object') return
-  visit(node)
-  walk(node.children, visit)
-}
-const textOf = (node) => {
-  if (typeof node === 'string' || typeof node === 'number') return String(node)
-  if (Array.isArray(node)) return node.map(textOf).join('')
-  return node && typeof node === 'object' ? textOf(node.children) : ''
-}
-const settle = () => new Promise((resolve) => setImmediate(resolve))
-
-const STATE = { state: 'initialized', projectRoot: '/work/demo', steps: [] }
+const STEPS = ['preflight', 'preview', 'review', 'accept', 'organize', 'receipt']
+const steps = (statuses) => STEPS.map((name, index) => ({ name, status: statuses[index] ?? 'pending' }))
+const awr = { cli: '/opt/tools/awr', source: 'path', version: '0.8.0', takeover: 'awr' }
+const offer = () => ({ projectRoot: '/work/demo', state: 'not_initialized', steps: [], stop: null, receipt: null, awr })
+const running = () => ({ projectRoot: '/work/demo', state: 'running', steps: steps(['done', 'done', 'running']), stop: null, receipt: null, awr })
+const stopped = () => ({ projectRoot: '/work/demo', state: 'stopped', steps: steps(['done', 'done', 'stopped']), stop: { step: 'review', reason: 'secret_boundary', message: 'RuleViolation: content boundary', detail: { path: 'docs/README.md', line: 302, category: 'credential' } }, receipt: null, awr })
+const managed = () => ({ projectRoot: '/work/demo', state: 'initialized', steps: [], stop: null, receipt: null, awr })
 const workView = (patch = {}) => ({
   project: { revision: 7 },
-  session: { id: 'S-1', status: 'active' },
-  bound_work: { key: 'W-1', title: 'Parser', status: 'in_progress', next_action: 'write tests', blocker: null },
+  session: { id: 'S-0001', status: 'active' },
+  bound_work: { key: 'W-1', title: 'Parser', status: 'in_progress', next_action: 'write the tests', blocker: null },
   claims: [],
-  in_progress: [],
-  ready: [],
+  in_progress: [{ key: 'W-1' }],
+  ready: [{ key: 'W-2' }, { key: 'W-3' }],
   blocked: [],
   ...patch,
 })
-
-const HOME = '/Users/test'
-
-/**
- * Open the panel of a conversation. The host is a stand-in that does what the real one does: it keeps the panel's data
- * in a file (read through `workspaceFiles`, which writes nothing to the conversation) and writes it again when a
- * command that changes the state ran, or when `/awr panel` asks. `answer(line, calls)` returns the text (or `{ error }`)
- * of any other command line; it may return a promise.
- *
- * `snapshot`: 'fresh' (written just before), 'stale' (a minute old) or 'none' (not written yet).
- * `publishes`: whether the stand-in writes the file after a command that changes the state, as the real host does.
- */
-async function openPanel({ state = () => STATE, work = () => workView(), answer = () => 'done', open = true, language = 'en-US', snapshot = 'fresh', publishes = true, loopback = true, home = HOME, fileService = true } = {}) {
-  const { React, ReactDOM, mount } = createReact()
-  const calls = []
-  const reads = []
-  const rows = []
-  const timers = []
-  const listeners = new Map()
-  const files = new Map()
-  const clock = { now: 1_700_000_000_000 }
-  class FakeDate extends Date {
-    static now() { return clock.now }
-  }
-  let Action
-  let factory
-  const context = vm.createContext({
-    window: { innerWidth: 1200, __ModuleLoader__: { load: (module) => { factory = module.factory } } },
-    document: {
-      body: {},
-      addEventListener: (type, listener) => listeners.set(type, [...(listeners.get(type) ?? []), listener]),
-      removeEventListener: (type, listener) => listeners.set(type, (listeners.get(type) ?? []).filter((item) => item !== listener)),
-    },
-    navigator: { language },
-    setTimeout: (fn, ms) => { timers.push({ fn, ms, live: true }); return timers.length - 1 },
-    clearTimeout: (id) => { if (timers[id]) timers[id].live = false },
-    Date: FakeDate,
-    console,
-  })
-  vm.runInContext(source, context)
-  const plugin = factory((name) => ({ react: React, 'react-dom': ReactDOM })[name])
-  const path = snapshotPath('conv-1', home)
-  /** What the host does: write the panel's data into its file. */
-  const publish = () => {
-    clock.now += 10
-    const view = state()
-    const managed = view.state === 'initialized' || view.state === 'completed'
-    files.set(path, JSON.stringify({ version: 1, updatedAt: clock.now, view, work: managed ? work() : null }))
-  }
-  const CHANGES = /^\/awr (claim|checkpoint|end|takeover)( |$)/
-  const ctx = {
-    remote: {
-      hostFacts: { home, isLoopback: loopback },
-      commands: {
-        async execute(sessionId, line) {
-          calls.push(line)
-          if (line.startsWith('/awr panel')) {
-            publish()
-            const view = state()
-            const text = panelSentence(view, view.state === 'initialized' || view.state === 'completed' ? work() : undefined, line.endsWith(' zh') ? 'zh' : 'en')
-            rows.push(text)
-            return { ok: true, value: { result: { kind: 'success', text } } }
-          }
-          const reply = await answer(line, calls)
-          if (publishes && CHANGES.test(line) && !/ status/.test(line)) publish()
-          if (reply?.error) return { ok: true, value: { result: { kind: 'error', text: reply.error } } }
-          rows.push(reply)
-          return { ok: true, value: { result: { kind: 'success', text: reply } } }
-        },
-      },
-      ...(fileService ? {
-        workspaceFiles: {
-          async read(sessionId, readPath, range) {
-            reads.push({ sessionId, path: readPath, range })
-            if (!files.has(readPath)) return { ok: false, error: { code: 'gateway/not-found' } }
-            const text = files.get(readPath)
-            return { ok: true, value: { absolutePath: readPath, text, lines: 1, eof: true } }
-          },
-        },
-      } : {}),
-    },
-    locale: { register() {} },
-    effect: (callback) => callback(),
-    slots: { inject: (_name, callback) => callback(), register: (_options, component) => { Action = component } },
-  }
-  plugin.apply(ctx)
-  if (snapshot !== 'none') {
-    publish()
-    if (snapshot === 'stale') clock.now += 60_000
-  }
-  const root = mount(Action, { sessionId: 'conv-1' })
+const light = (ui) => ui.find((node) => node.props['data-light'] !== undefined)?.props['data-light']
+const open = async (client) => {
+  const ui = await client.chip()
+  await ui.click('awr-header-action')
   await settle()
-  const find = (predicate) => {
-    let found
-    walk(root.tree, (node) => { if (!found && predicate(node)) found = node })
-    return found
-  }
-  const panel = {
-    calls,
-    reads,
-    /** The text of every command answer: what the conversation shows for the panel. */
-    rows,
-    clock,
-    files,
-    path,
-    /** The host writes the data again, as it does while a takeover runs. */
-    publish,
-    /** The timers that are waiting, by delay. */
-    timers: () => timers.filter((timer) => timer.live).map((timer) => timer.ms),
-    /** Fire the timer that is waiting, as the clock would. */
-    async fire() {
-      const timer = timers.find((item) => item.live)
-      assert.ok(timer, 'no timer is waiting')
-      timer.live = false
-      timer.fn()
-      await settle()
-      await settle()
-    },
-    /** What the panel asked the host to write with `/awr panel`. */
-    queries: () => calls.filter((line) => line.startsWith('/awr panel')),
-    async press(key) {
-      for (const listener of listeners.get('keydown') ?? []) listener({ type: 'keydown', key })
-      await settle()
-    },
-    byId: (id) => find((node) => node.props.id === id),
-    byTestId: (id) => find((node) => node.props['data-testid'] === id),
-    /** The status the panel shows for a takeover step. */
-    step: (name) => find((node) => node.props['data-step'] === name)?.props['data-status'],
-    async click(id) {
-      const target = panel.byId(id)
-      assert.ok(target, `no element #${id}`)
-      assert.ok(!target.props.disabled, `#${id} is disabled`)
-      clock.now += 100 // time passes between what the host last wrote and a click
-      target.props.onClick({})
-      await settle()
-      await settle()
-    },
-    type(id, value) {
-      const target = panel.byId(id)
-      assert.ok(target, `no element #${id}`)
-      target.props.onChange({ target: { value } })
-    },
-    text: () => textOf(root.tree),
-  }
-  if (open) {
-    await panel.click('awr-header-action')
-    await settle()
-  }
-  return panel
+  return ui
 }
+const fold = (ui, label = 'Technical details') => ui.find((node) => node.type === 'button' && textOf(node) === label)
+/** The colour a count is drawn in, to tell the red one from the others. */
+const numberColor = (ui, name) => ui.all((node) => node.props['data-count'] === name)[0].children[0].props.style.color
 
-test('a session that holds no claim offers to claim its bound work, and the click runs /awr claim', async () => {
-  let claimed = false
-  const panel = await openPanel({
-    work: () => workView(claimed ? { claims: [{ work: 'W-1', expires_at: null }] } : {}),
-    answer: (line) => { if (line === '/awr claim') claimed = true; return 'Claimed W-1 for AWR session S-1 (project revision 8).' },
+test('client.js is what the parts in client/ build', () => {
+  const committed = readFileSync(join(dirname(fileURLToPath(import.meta.url)), '..', 'client.js'), 'utf8')
+  assert.equal(committed, buildClient(), 'run `npm run build` after editing client/*.js')
+})
+
+test('the light says how the project stands, without asking the host anything', async () => {
+  const cases = [
+    [{ view: offer }, 'ready', 'an empty ring: AWR does not manage the project'],
+    [{ view: running }, 'active', 'lit while a takeover runs'],
+    [{ view: stopped }, 'blocked', 'red where a takeover stopped'],
+    [{ view: managed, work: () => workView() }, 'good', 'green when all is well'],
+    [{ view: managed, work: () => workView({ blocked: [{ key: 'W-9', title: 'Deploy', blocker: 'needs a domain' }] }) }, 'waiting', 'amber when something needs the person'],
+    [{ view: managed, work: () => workView({ organization: { ready: false, gaps: 3 }, blocked: [{ key: 'W-9', title: 'Deploy' }] }) }, 'waiting', 'amber while AWR cannot start work in an incomplete project'],
+    [{ view: managed, work: () => workView({ organization: { ready: true, gaps: 40 }, blocked: [{ key: 'W-9', title: 'Deploy', structural: ['work_structure_incomplete'] }] }) }, 'good', 'work that is only not ready is not the person\'s to do'],
+    [{ view: () => ({ ...managed(), state: 'completed', receipt: { awaitingConfirmation: [{ title: 'A goal' }] } }), work: () => workView() }, 'waiting', 'amber while goals wait for confirmation'],
+    [{ files: 'none' }, 'planned', 'nothing known yet'],
+  ]
+  for (const [options, expected, why] of cases) {
+    const client = loadClient(options)
+    const ui = await client.chip()
+    assert.equal(light(ui), expected, why)
+    assert.deepEqual(client.calls, [], `${why}: no command`)
+    assert.deepEqual(client.timers(), [], `${why}: no timer`)
+  }
+})
+
+test('a card opened on data written a moment ago asks the host nothing', async () => {
+  const client = loadClient({ view: managed, work: () => workView() })
+  const ui = await open(client)
+  assert.deepEqual(client.calls, [], 'no command, so nothing in the conversation')
+  assert.ok(ui.byTestId('awr-managed'))
+  assert.equal(client.reads.at(-1).path, '/Users/test/.local/state/dsh-awr/panel/conv-1.json')
+  assert.equal(JSON.stringify(client.reads.at(-1).range), '{}')
+})
+
+test('data that is missing or older than 30 s makes the host write it, with one command in the interface language', async () => {
+  for (const files of ['none', 'stale']) {
+    const client = loadClient({ view: managed, work: () => workView(), files })
+    const ui = await open(client)
+    assert.deepEqual(client.calls, ['/awr panel --ui en'], files)
+    assert.ok(ui.byTestId('awr-managed'), 'and then the card shows the project')
+  }
+  const chinese = loadClient({ view: managed, work: () => workView(), files: 'none', language: 'zh' })
+  await open(chinese)
+  assert.deepEqual(chinese.calls, ['/awr panel --ui zh'])
+})
+
+test('a managed project is shown in plain words: the counts, what this conversation is on, what needs the person', async () => {
+  const client = loadClient({
+    view: managed,
+    work: () => workView({ blocked: [{ key: 'W-7', title: 'Deploy', blocker: 'waiting for the security team' }, { key: 'W-8', title: 'Search' }, { key: 'W-9', title: 'Third' }] }),
   })
-  assert.match(textOf(panel.byId('awr-claim')), /^Claim W-1$/)
-  await panel.click('awr-claim')
-  assert.deepEqual(panel.calls.filter((line) => line.startsWith('/awr claim')), ['/awr claim'])
-  assert.equal(panel.byId('awr-claim'), undefined, 'once it holds the claim, the button is gone')
-  assert.match(textOf(panel.byTestId('awr-action-result')), /Claimed W-1/)
-  assert.deepEqual(panel.calls, ['/awr claim'], 'the host wrote the new state with the command, so the panel read it and asked nothing more')
+  const ui = await open(client)
+  const text = ui.text()
+  assert.match(text, /demo/, 'the project by the name of its folder')
+  assert.match(text, /Managed by AWR/)
+  const counts = Object.fromEntries(ui.all((node) => node.props['data-count']).map((node) => [node.props['data-count'], textOf(node.children[0])]))
+  assert.deepEqual(counts, { active: '1', ready: '2', held: '3' })
+  assert.match(textOf(ui.byTestId('awr-bound-work')), /This conversation is on.*Parser.*Next: write the tests/)
+  const needs = textOf(ui.byTestId('awr-needs'))
+  assert.match(needs, /“Deploy” is blocked.*waiting for the security team/)
+  assert.match(needs, /“Search” cannot start yet/, 'work AWR holds back without a reason is not called stuck')
+  assert.match(needs, /1 more/, 'two are listed, the rest counted')
+  assert.match(text, /The whole picture is on the Progress tab/)
 })
 
-test('no claim button when the session already holds a claim or the work is finished', async () => {
-  const held = await openPanel({ work: () => workView({ claims: [{ work: 'W-1', expires_at: null }] }) })
-  assert.equal(held.byId('awr-claim'), undefined)
-  assert.ok(held.byId('awr-checkpoint-open') && held.byId('awr-end-open'))
-  const done = await openPanel({ work: () => workView({ bound_work: { key: 'W-1', title: 'Parser', status: 'completed', next_action: null, blocker: null } }) })
-  assert.equal(done.byId('awr-claim'), undefined)
-  const unbound = await openPanel({ work: () => workView({ bound_work: null }) })
-  assert.equal(unbound.byId('awr-claim'), undefined)
-})
-
-test('the actions appear only while the AWR session is active', async () => {
-  for (const session of [{ id: 'S-1', status: 'ended' }, { id: 'S-1', status: 'interrupted' }, null]) {
-    const panel = await openPanel({ work: () => workView({ session }) })
-    assert.equal(panel.byTestId('awr-actions'), undefined, JSON.stringify(session))
-  }
-  const takeover = await openPanel({ state: () => ({ state: 'not_initialized', steps: [] }) })
-  assert.equal(takeover.byTestId('awr-actions'), undefined)
-  assert.ok(takeover.byId('awr-takeover-start'), 'the takeover button is still there')
-})
-
-test('a checkpoint is sent as one line, with the whitespace collapsed', async () => {
-  const panel = await openPanel()
-  await panel.click('awr-checkpoint-open')
-  assert.ok(panel.byTestId('awr-checkpoint-form'))
-  panel.type('awr-checkpoint-digest', '  Wrote the parser\n  and its tests ')
-  panel.type('awr-checkpoint-next', 'Handle\tnested lists')
-  await panel.click('awr-checkpoint-save')
-  assert.deepEqual(panel.calls.filter((line) => line.startsWith('/awr checkpoint')), ['/awr checkpoint Wrote the parser and its tests :: Handle nested lists'])
-  assert.equal(panel.byTestId('awr-checkpoint-form'), undefined, 'the form closes after it was saved')
-  assert.equal(panel.byId('awr-checkpoint-digest'), undefined)
-})
-
-test('a checkpoint needs both fields and cannot hold the :: separator; nothing is sent otherwise', async () => {
-  const panel = await openPanel()
-  await panel.click('awr-checkpoint-open')
-  for (const [digest, next] of [['', ''], ['done', ''], ['', 'next'], ['a :: b', 'next'], ['done', 'x::y'], ['  ', '  ']]) {
-    panel.type('awr-checkpoint-digest', digest)
-    panel.type('awr-checkpoint-next', next)
-    await panel.click('awr-checkpoint-save')
-    assert.match(textOf(panel.byTestId('awr-action-result')), /Fill in both fields/, JSON.stringify([digest, next]))
-  }
-  assert.equal(panel.calls.filter((line) => line.startsWith('/awr checkpoint')).length, 0)
-  await panel.click('awr-checkpoint-cancel')
-  assert.equal(panel.byTestId('awr-checkpoint-form'), undefined)
-})
-
-test('ending a session asks first, sends the chosen outcome, and the actions go away with the session', async () => {
-  let ended = false
-  const panel = await openPanel({
-    work: () => workView(ended ? { session: { id: 'S-1', status: 'interrupted' } } : {}),
-    answer: (line) => { if (line.startsWith('/awr end')) ended = true; return 'Ended AWR session S-1 as interrupted. Work is not completed by ending a session.' },
+test('the counts are those AWR reports for the whole queue, not the length of the sample it listed', async () => {
+  const sample = (n) => Array.from({ length: 5 }, (_, i) => ({ key: `W-${n + i}`, title: `Work ${n + i}` }))
+  const client = loadClient({
+    view: managed,
+    work: () => workView({ totals: { active: 24, ready: 23, blocked: 39, waiting: 32 }, in_progress: sample(100), ready: sample(200), blocked: sample(300), counts: { blocked: 21 } }),
   })
-  await panel.click('awr-end-open')
-  assert.match(textOf(panel.byTestId('awr-end-form')), /does not complete its work/)
-  assert.equal(panel.calls.filter((line) => line.startsWith('/awr end')).length, 0, 'opening the form ends nothing')
-  panel.byId('awr-end-outcome').props.onChange({ target: { value: 'interrupted' } })
-  await panel.click('awr-end-confirm')
-  assert.deepEqual(panel.calls.filter((line) => line.startsWith('/awr end')), ['/awr end interrupted'])
-  assert.equal(panel.byTestId('awr-actions'), undefined)
-  assert.match(textOf(panel.byTestId('awr-action-result')), /Ended AWR session S-1/)
+  const ui = await open(client)
+  const counts = Object.fromEntries(ui.all((node) => node.props['data-count']).map((node) => [node.props['data-count'], textOf(node.children[0])]))
+  assert.deepEqual(counts, { active: '24', ready: '23', held: '39' })
+  assert.match(textOf(ui.byTestId('awr-needs')), /37 more/, 'two of the 39 are named, the rest counted')
+  assert.notEqual(numberColor(ui, 'held'), numberColor(ui, 'active'), 'something is recorded as blocking, so the number is red')
 })
 
-test('the outcome is one of three words, whatever the select holds', async () => {
-  const panel = await openPanel()
-  await panel.click('awr-end-open')
-  const options = panel.byId('awr-end-outcome').children.map((option) => option.props.value)
-  assert.deepEqual(options, ['ended', 'interrupted', 'incomplete'])
-  panel.byId('awr-end-outcome').props.onChange({ target: { value: 'ended; rm -rf /' } })
-  await panel.click('awr-end-confirm')
-  assert.deepEqual(panel.calls.filter((line) => line.startsWith('/awr end')), ['/awr end ended'])
+test('a project AWR cannot start work in yet says so once, instead of listing every piece of work as stuck', async () => {
+  const client = loadClient({
+    view: () => ({ ...managed(), state: 'completed', receipt: { organization: { goalTotal: 1, gapTotal: 8 }, awaitingConfirmation: [{ title: 'Project goal' }] } }),
+    work: () => workView({
+      organization: { ready: false, gaps: 8 },
+      bound_work: null,
+      in_progress: [],
+      ready: [],
+      blocked: [{ key: 'W-8', title: 'Search endpoint', structural: ['work_structure_incomplete', 'work_goal_missing'] }, { key: 'W-9', title: 'Ranking by recency', structural: ['work_structure_incomplete'] }],
+    }),
+  })
+  const ui = await open(client)
+  const needs = textOf(ui.byTestId('awr-needs'))
+  assert.match(needs, /Work cannot start until the missing details are filled in \(8\)/)
+  assert.match(needs, /1 goal\(s\) wait for your confirmation/)
+  assert.ok(!needs.includes('Search endpoint') && !needs.includes('Ranking by recency'), 'not one line for each piece of work')
+  assert.ok(!needs.includes('more'), 'and nothing left over to count')
+  const counts = Object.fromEntries(ui.all((node) => node.props['data-count']).map((node) => [node.props['data-count'], textOf(node.children[0])]))
+  assert.deepEqual(counts, { active: '0', ready: '0', held: '2' })
+  assert.equal(numberColor(ui, 'held'), numberColor(ui, 'active'), 'nothing is recorded as blocking, so the number is not red')
 })
 
-test('a refusal from the host is shown as it came, nothing is retried and the panel is not refreshed', async () => {
-  const panel = await openPanel({ answer: () => ({ error: 'The project changed while the command was being prepared. Nothing was written.' }) })
-  const before = panel.calls.length
-  await panel.click('awr-claim')
-  assert.equal(panel.calls.length, before + 1, 'one command, no retry, no refresh')
-  const result = panel.byTestId('awr-action-result')
-  assert.match(textOf(result), /The project changed/)
-  assert.match(JSON.stringify(result.props.style), /state-error/, 'shown as an error')
-  assert.ok(panel.byId('awr-claim'), 'the button stays, so the user can try again after looking')
+test('the engineering facts are folded until someone opens them', async () => {
+  const client = loadClient({ view: managed, work: () => workView() })
+  const ui = await open(client)
+  for (const hidden of ['S-0001', 'W-1', '/work/demo', '/opt/tools/awr', '0.8.0', 'revision']) assert.ok(!ui.text().includes(hidden), `${hidden} is not shown by default`)
+  assert.equal(ui.byTestId('awr-tech'), undefined)
+  await ui.click(fold(ui))
+  const tech = textOf(ui.byTestId('awr-tech'))
+  for (const shown of ['/work/demo', '7', 'S-0001 (active)', 'W-1', '0.8.0 · /opt/tools/awr', 'The takeover runs through awr takeover', '/awr help']) assert.ok(tech.includes(shown), `${shown} is in the technical details`)
 })
 
-test('while a command runs the buttons are disabled, so a double click sends one command', async () => {
-  let release
-  const panel = await openPanel({ answer: () => new Promise((resolve) => { release = () => resolve('Claimed W-1.') }) })
-  const target = panel.byId('awr-claim')
-  target.props.onClick({})
-  await settle()
-  for (const id of ['awr-claim', 'awr-checkpoint-open', 'awr-end-open']) assert.equal(panel.byId(id).props.disabled, true, id)
-  assert.match(panel.text(), /Working…/)
-  release()
-  await settle()
-  assert.equal(panel.calls.filter((line) => line === '/awr claim').length, 1)
-  assert.equal(panel.byId('awr-checkpoint-open').props.disabled, false)
+test('the card offers no buttons for what the agent does on its own', async () => {
+  const client = loadClient({ view: managed, work: () => workView() })
+  const ui = await open(client)
+  await ui.click(fold(ui))
+  for (const id of ['awr-claim', 'awr-checkpoint-open', 'awr-checkpoint-digest', 'awr-checkpoint-next', 'awr-checkpoint-save', 'awr-end-open', 'awr-end-confirm']) assert.equal(ui.byId(id), undefined, id)
+  assert.equal(ui.all((node) => node.type === 'input' || node.type === 'textarea' || node.type === 'select').length, 0, 'nothing to type into')
 })
 
-const running = () => ({ state: 'running', projectRoot: '/work/demo', steps: [{ name: 'preflight', status: 'done' }, { name: 'preview', status: 'done' }, { name: 'review', status: 'running' }] })
-
-test('a panel opened on a file written a moment ago asks the host nothing, and nothing reaches the conversation', async () => {
-  const panel = await openPanel()
-  assert.deepEqual(panel.calls, [], 'no command, so no row')
-  assert.deepEqual(panel.rows, [])
-  assert.ok(panel.reads.length >= 1, 'the file was read')
-  assert.ok(panel.byTestId('awr-work'), 'and the panel shows what it holds')
-  assert.equal(JSON.stringify(panel.reads.at(-1).range), '{}', 'one read of the whole file')
-  assert.equal(panel.reads.at(-1).path, '/Users/test/.local/state/dsh-awr/panel/conv-1.json')
-  assert.equal(panel.reads.at(-1).sessionId, 'conv-1')
+test('a project AWR does not manage gets the offer; one click starts the takeover and the card follows it by reading', async () => {
+  let current = offer()
+  const client = loadClient({ view: () => current, answer: (line) => { if (line.startsWith('/awr takeover')) current = running(); return 'Started taking the project over.' } })
+  const ui = await open(client)
+  assert.match(textOf(ui.byTestId('awr-offer')), /Let AWR keep track of this project.*It only adds a \.awr folder/)
+  await ui.click('awr-takeover-start')
+  assert.deepEqual(client.calls, ['/awr takeover --ui en'], 'one command; the data came with it')
+  assert.match(textOf(ui.byTestId('awr-running')), /Taking over the project.*Step 3 of 6 · Reviewing the draft.*You can keep working/)
+  const status = (name) => ui.find((node) => node.props['data-step'] === name).props['data-status']
+  assert.deepEqual(STEPS.map(status), ['done', 'done', 'running', 'pending', 'pending', 'pending'])
+  assert.deepEqual(client.timers(), [2500], 'it reads again in 2.5 s')
+  current = { ...running(), steps: steps(['done', 'done', 'done', 'running']) }
+  client.host.publish()
+  await client.fire(2500)
+  assert.equal(status('accept'), 'running')
+  assert.deepEqual(client.calls, ['/awr takeover --ui en'], 'following the takeover runs no command')
+  current = { ...managed(), state: 'completed', steps: steps(['done', 'done', 'done', 'done', 'done', 'done']), receipt: { organization: { goalTotal: 2, gapTotal: 9 }, awaitingConfirmation: [] } }
+  client.host.publish()
+  await client.fire(2500)
+  assert.match(textOf(ui.byTestId('awr-done')), /The takeover is done · AWR organized 2 goal\(s\)\. 9 detail\(s\) still need filling in/)
+  assert.deepEqual(client.timers(), [], 'nothing is read once it is done')
 })
 
-test('a file that is missing or older than 30 s makes the host write it: one command whose row is one sentence', async () => {
-  for (const snapshot of ['none', 'stale']) {
-    const panel = await openPanel({ snapshot })
-    assert.deepEqual(panel.calls, ['/awr panel en'], snapshot)
-    assert.deepEqual(panel.rows, ['AWR project · 0 in progress, 0 ready, 0 blocked'], snapshot)
-    assert.ok(panel.byTestId('awr-work'), 'and then the panel shows the data')
+test('a takeover whose data stops changing makes the card ask the host once; closing the card stops the reading', async () => {
+  const client = loadClient({ view: running })
+  const ui = await open(client)
+  for (let round = 0; round < 5; round += 1) await client.fire(2500)
+  assert.deepEqual(client.calls, [], 'five unchanged reads are not enough')
+  await client.fire(2500)
+  assert.deepEqual(client.calls, ['/awr panel --ui en'], 'the sixth asks once')
+  assert.deepEqual(client.timers(), [2500])
+  await client.press('Escape')
+  assert.deepEqual(client.timers(), [], 'a closed card reads nothing')
+  assert.equal(ui.byId('awr-panel'), undefined)
+})
+
+test('a takeover that stopped says why in words and where; the code and the raw message are in the technical details', async () => {
+  let current = stopped()
+  const client = loadClient({ view: () => current, answer: (line) => { if (line.startsWith('/awr takeover')) current = running(); return 'ok' } })
+  const ui = await open(client)
+  const block = textOf(ui.byTestId('awr-stopped'))
+  assert.match(block, /The takeover stopped/)
+  assert.match(block, /looks like a key or a password/)
+  assert.match(textOf(ui.byTestId('awr-stop-location')), /Where: docs\/README\.md:302/)
+  assert.ok(!ui.text().includes('secret_boundary') && !ui.text().includes('RuleViolation'), 'no reason code or raw message by default')
+  await ui.click(fold(ui))
+  assert.match(textOf(ui.byTestId('awr-tech')), /secret_boundary.*RuleViolation: content boundary/)
+  assert.match(textOf(ui.byId('awr-takeover-start')), /^Continue$/)
+  await ui.click('awr-takeover-start')
+  assert.deepEqual(client.calls, ['/awr takeover --ui en'])
+  assert.ok(ui.byTestId('awr-running'))
+})
+
+test('a reason this version does not know still gets a sentence, and a refusal to start is shown as the host wrote it', async () => {
+  const client = loadClient({
+    view: () => ({ ...stopped(), stop: { step: 'accept', reason: 'brand_new_reason', message: 'x' } }),
+    answer: () => ({ error: 'The takeover is already running.\nThe takeover of /work/demo is already running.' }),
+  })
+  const ui = await open(client)
+  assert.match(textOf(ui.byTestId('awr-reason')), /Something unexpected happened/)
+  await ui.click('awr-takeover-start')
+  assert.equal(textOf(ui.byTestId('awr-failure')), 'The takeover is already running.', 'the first line, the one written for people')
+})
+
+test('a conversation without a project, and a host that cannot be read, are said plainly', async () => {
+  const none = loadClient({ view: () => ({ projectRoot: null, state: 'unavailable', steps: [], stop: null, receipt: null }) })
+  assert.match(textOf((await open(none)).byTestId('awr-none')), /No project in this conversation/)
+  const broad = loadClient({ view: () => ({ projectRoot: null, state: 'unavailable', steps: [], stop: { step: 'preflight', reason: 'too_broad', message: 'x' }, receipt: null }) })
+  assert.match(textOf((await open(broad)).byTestId('awr-none')), /too broad to be one project/)
+  const noFiles = loadClient({ fileService: false, files: 'none' })
+  const ui = await open(noFiles)
+  assert.match(textOf(ui.byTestId('awr-error')), /The project state could not be read/)
+  assert.ok(!ui.text().includes('no file service'), 'the reason is folded')
+  await ui.click(fold(ui))
+  assert.match(ui.text(), /no file service for the plugin/)
+})
+
+test('Refresh asks the host once more', async () => {
+  const client = loadClient({ view: managed, work: () => workView() })
+  const ui = await open(client)
+  await ui.click('awr-refresh')
+  assert.deepEqual(client.calls, ['/awr panel --ui en'])
+})
+
+const A = 'a'.repeat(40)
+const B = 'b'.repeat(40)
+const fromGithub = (check) => ({ kind: 'github', version: '0.1.0', repo: 'originoneai/dsh-awr', ref: 'main', installed: A, ...(check ? { check } : {}) })
+const available = { checkedAt: 1, ref: 'main', latest: B, available: true, spec: `github:originoneai/dsh-awr#${B}` }
+
+test('a plugin installed from GitHub can check for a newer version and install it from the card', async () => {
+  let plugin = fromGithub()
+  const client = loadClient({ view: managed, work: () => workView(), plugin: () => plugin, answer: (line) => { if (line.startsWith('/awr update')) plugin = fromGithub(available); return 'A newer version is available.' } })
+  const ui = await open(client)
+  assert.match(textOf(ui.byTestId('awr-update')), /^Plugin 0\.1\.0Check for updates$/)
+  assert.ok(!ui.text().includes(A.slice(0, 7)), 'the commit is not shown by default')
+  await ui.click('awr-update-check')
+  assert.deepEqual(client.calls, ['/awr update check --ui en'])
+  assert.match(textOf(ui.byTestId('awr-update')), /Update available/)
+  await ui.click('awr-update-apply')
+  assert.deepEqual(client.installs.map((call) => call.spec), [`github:originoneai/dsh-awr#${B}`], 'the plugin manager installs the same repository pinned to the newest commit')
+  assert.match(textOf(ui.byTestId('awr-update')), /Updated\. Reloading/)
+})
+
+test('an update that needs a restart, fails or cannot reach GitHub says so, and the installed version is said to be unchanged', async () => {
+  const outcome = async (value) => {
+    const client = loadClient({ view: managed, work: () => workView(), plugin: () => fromGithub(available), install: async () => value })
+    const ui = await open(client)
+    await ui.click('awr-update-apply')
+    return textOf(ui.byTestId('awr-update'))
   }
+  assert.match(await outcome({ ok: true, value: { application: 'restart-required' } }), /Updated\. Restart DeepSeek Harness to use it/)
+  assert.match(await outcome({ ok: true, value: { application: 'failed', failedAt: 'spec-host' } }), /GitHub could not be reached\. Try again later/)
+  assert.match(await outcome({ ok: true, value: { application: 'failed', packageResult: { kind: 'timeout' } } }), /GitHub could not be reached/)
+  assert.match(await outcome({ ok: true, value: { application: 'failed', error: { code: 'incompatible-version' } } }), /The update did not go through\. The installed version is unchanged/)
+  assert.match(await outcome({ ok: false, error: { code: 'gateway/forbidden' } }), /The update did not go through/)
 })
 
-test('a closed panel asks the host nothing, even while a takeover runs; the dot shows what the file says', async () => {
-  const panel = await openPanel({ state: running, open: false })
-  assert.deepEqual(panel.calls, [], 'no command')
-  assert.deepEqual(panel.timers(), [], 'and no timer is waiting')
-  assert.equal(panel.byTestId('awr-dot').props['data-state'], 'running')
-  const none = await openPanel({ snapshot: 'none', open: false })
-  assert.deepEqual(none.calls, [], 'a missing file asks nothing either while the panel is closed')
-  assert.equal(none.byTestId('awr-dot').props['data-state'], 'loading')
-})
-
-test('while a takeover runs the panel reads the file every 2.5 s and asks the host nothing', async () => {
-  let current = running()
-  const panel = await openPanel({ state: () => current })
-  assert.deepEqual(panel.timers(), [2500])
-  assert.equal(panel.step('review'), 'running')
-  const reads = panel.reads.length
-  current = { ...running(), steps: [...running().steps.slice(0, 2), { name: 'review', status: 'done' }, { name: 'accept', status: 'running' }] }
-  panel.publish()
-  await panel.fire()
-  assert.equal(panel.reads.length, reads + 1, 'one read for one tick')
-  assert.equal(panel.step('review'), 'done')
-  assert.equal(panel.step('accept'), 'running')
-  assert.deepEqual(panel.timers(), [2500], 'and the next tick is waiting')
-  for (let round = 0; round < 3; round += 1) {
-    panel.publish()
-    await panel.fire()
+test('only the exact shape of an update is ever installed, and without a plugin manager there is no Update button', async () => {
+  for (const spec of ['github:someone/else#main', 'https://evil.example/x.tgz', `github:originoneai/dsh-awr#${B} --ignore-scripts`, 'link:/tmp/x', undefined]) {
+    const client = loadClient({ view: managed, work: () => workView(), plugin: () => fromGithub({ ...available, spec }) })
+    const ui = await open(client)
+    await ui.click('awr-update-apply')
+    assert.deepEqual(client.installs, [], String(spec))
   }
-  assert.deepEqual(panel.calls, [], 'not one command, so not one row')
+  const noManager = loadClient({ view: managed, work: () => workView(), plugin: () => fromGithub(available), manager: false })
+  const ui = await open(noManager)
+  assert.match(textOf(ui.byTestId('awr-update')), /Update available/)
+  assert.equal(ui.byId('awr-update-apply'), undefined)
 })
 
-test('the polling ends when the takeover is no longer running, and when the panel is closed', async () => {
-  let current = running()
-  const panel = await openPanel({ state: () => current })
-  current = { ...running(), state: 'stopped', stop: { step: 'review', reason: 'review_failed', message: 'The review failed.' } }
-  panel.publish()
-  await panel.fire()
-  assert.deepEqual(panel.timers(), [], 'stopped: nothing is waiting')
-  assert.match(panel.text(), /The review failed\./)
-  const open = await openPanel({ state: running })
-  assert.deepEqual(open.timers(), [2500])
-  await open.press('Escape')
-  assert.deepEqual(open.timers(), [], 'a panel that is closed reads nothing')
-  const done = await openPanel({ state: () => ({ ...STATE, state: 'completed', steps: [] }) })
-  assert.deepEqual(done.timers(), [])
-})
-
-test('a takeover whose file stops changing makes the panel ask the host once, and the reading goes on', async () => {
-  const panel = await openPanel({ state: running })
-  for (let round = 0; round < 5; round += 1) await panel.fire()
-  assert.deepEqual(panel.queries(), [], 'five unchanged reads are not enough')
-  await panel.fire()
-  assert.deepEqual(panel.queries(), ['/awr panel en'], 'the sixth asks once')
-  assert.deepEqual(panel.rows, ['Taking the project over · reviewing the draft (step 3 of 6)'])
-  assert.deepEqual(panel.timers(), [2500], 'the host wrote the file again, and the panel goes on reading it')
-  await panel.fire()
-  assert.equal(panel.queries().length, 1, 'a file that changed again is not asked about again')
-})
-
-test('Refresh asks the host once more; the sentence is in Chinese for a Chinese interface', async () => {
-  const zh = await openPanel({ language: 'zh-CN', snapshot: 'none', state: running })
-  assert.deepEqual(zh.queries(), ['/awr panel zh'])
-  assert.deepEqual(zh.rows, ['正在接管项目 · 审阅草稿（第 3/6 步）'])
-  await zh.click('awr-refresh')
-  assert.equal(zh.queries().length, 2)
-  const english = await openPanel({ language: 'fr-FR', snapshot: 'none' })
-  assert.deepEqual(english.queries(), ['/awr panel en'])
-})
-
-test('nothing the panel does puts data in the conversation: every row is a plain sentence, no query asks for JSON', async () => {
-  const panel = await openPanel({ state: running, snapshot: 'none', answer: (line) => (line.startsWith('/awr claim') ? 'Claimed W-1 for AWR session S-1 (project revision 8).' : 'done') })
-  await panel.click('awr-refresh')
-  await panel.fire()
-  assert.ok(panel.rows.length >= 2)
-  for (const row of panel.rows) {
-    assert.ok(!/[{}\[\]]|<!--|-->|"/.test(row), `no JSON or markup in: ${row}`)
-    assert.ok(!row.includes('\n'), `one line: ${row}`)
+test('a plugin that runs from a folder, or was not installed from GitHub, offers no update and says why in the details', async () => {
+  for (const [kind, why] of [['checkout', /Runs from a local folder\. Update it with git/], ['other', /Not installed from GitHub/]]) {
+    const client = loadClient({ view: managed, work: () => workView(), plugin: () => ({ kind, version: '0.1.0' }) })
+    const ui = await open(client)
+    assert.equal(textOf(ui.byTestId('awr-update')), 'Plugin 0.1.0')
+    assert.equal(ui.byId('awr-update-check'), undefined)
+    await ui.click(fold(ui))
+    assert.match(textOf(ui.byTestId('awr-tech')), why)
   }
-  assert.ok(!panel.calls.some((line) => /--json|status/.test(line)), `no command asks for JSON: ${panel.calls.join(' | ')}`)
+  const up = loadClient({ view: managed, work: () => workView(), plugin: () => fromGithub({ ...available, available: false }) })
+  assert.match(textOf((await open(up)).byTestId('awr-update')), /Up to date/)
 })
 
-test('after an action the panel reads what the host wrote with it; when the host wrote nothing it asks once', async () => {
-  const wrote = await openPanel({ answer: () => 'Claimed W-1 for AWR session S-1 (project revision 8).' })
-  await wrote.click('awr-claim')
-  assert.deepEqual(wrote.calls, ['/awr claim'])
-  const silent = await openPanel({ publishes: false, answer: () => 'Claimed W-1 for AWR session S-1 (project revision 8).' })
-  await silent.click('awr-claim')
-  assert.deepEqual(silent.calls, ['/awr claim', '/awr panel en'], 'the file was older than the command, so the host is asked to write it')
+test('a check that fails says so in the host\'s own first line', async () => {
+  const client = loadClient({ view: managed, work: () => workView(), plugin: () => fromGithub(), answer: () => ({ error: 'Could not check for updates.\nGitHub did not answer within 10 s.' }) })
+  const ui = await open(client)
+  await ui.click('awr-update-check')
+  assert.equal(textOf(ui.byTestId('awr-update-failure')), 'Could not check for updates.')
 })
 
-test('the takeover button starts it and then reads the file the host wrote with it', async () => {
-  let current = { state: 'not_initialized', projectRoot: '/work/demo', steps: [], stop: null }
-  const panel = await openPanel({ state: () => current, answer: (line) => { if (line === '/awr takeover') current = { ...running() }; return 'Started the takeover of /work/demo. It runs in the background.' } })
-  assert.ok(panel.byId('awr-takeover-start'))
-  await panel.click('awr-takeover-start')
-  assert.deepEqual(panel.calls, ['/awr takeover'], 'one row, the one the user asked for')
-  assert.equal(panel.step('review'), 'running')
-  assert.deepEqual(panel.timers(), [2500], 'and the panel follows it by reading')
-})
-
-test('the path of the file is the same one the host writes, with the separator of a Windows home', async () => {
-  const windows = await openPanel({ home: 'C:\\Users\\mac', state: running })
-  assert.equal(windows.reads.at(-1).path, win32.join('C:\\Users\\mac', '.local', 'state', 'dsh-awr', 'panel', 'conv-1.json'))
-  const posix = await openPanel({ home: '/home/u' })
-  assert.equal(posix.reads.at(-1).path, snapshotPath('conv-1', '/home/u'))
-})
-
-test('without the file service the panel says so instead of showing nothing', async () => {
-  const panel = await openPanel({ fileService: false, snapshot: 'none' })
-  assert.match(panel.text(), /no file service for the panel/)
-})
-
-test('the panel says which awr it uses and how the takeover runs, and why when there is none', async () => {
-  const withAwr = await openPanel({ state: () => ({ ...STATE, awr: { cli: '/dev/awr', source: 'env', version: '0.8.0-dev', takeover: 'awr' } }) })
-  const info = textOf(withAwr.byTestId('awr-info'))
-  assert.match(info, /awr 0\.8\.0-dev · \/dev\/awr/)
-  assert.match(info, /runs through awr takeover/)
-  const legacy = await openPanel({ state: () => ({ ...STATE, awr: { cli: '/opt/homebrew/bin/awr', source: 'path', version: '0.7.0', takeover: 'plugin' } }) })
-  assert.match(textOf(legacy.byTestId('awr-info')), /runs in the plugin \(this awr has no awr takeover\)/)
-  const none = await openPanel({ state: () => ({ ...STATE, awr: { error: 'No awr was found on PATH.' } }) })
-  assert.match(textOf(none.byTestId('awr-info')), /awr: No awr was found on PATH\./)
-  const unknown = await openPanel()
-  assert.equal(unknown.byTestId('awr-info'), undefined, 'nothing is shown when the host sent no awr')
-})
-
-test('a long work key does not break the claim button: it is shortened and the full key is the tooltip', async () => {
-  const key = 'md-01da5526bf2dd4bcdcdb8025c57c2c24fcc89747307b1e6e452e330fc92b8694'
-  const panel = await openPanel({ work: () => workView({ bound_work: { key, title: 'Search endpoint', status: 'planned', next_action: null, blocker: null } }) })
-  assert.equal(textOf(panel.byId('awr-claim')), 'Claim md-01da5526b…2b8694')
-  assert.equal(panel.byId('awr-claim').props.title, key)
-  await panel.click('awr-claim')
-  assert.deepEqual(panel.calls, ['/awr claim'], 'the command names no key: the host works the bound work out from the session')
-  const short = await openPanel({ work: () => workView() })
-  assert.equal(textOf(short.byId('awr-claim')), 'Claim W-1', 'a short key is shown whole')
-})
-
-test('the receipt says in words where the organization stands', async () => {
-  const receipt = (state) => ({ state: 'completed', projectRoot: '/work/demo', steps: [], receipt: { organization: { state, goalTotal: 2, gapTotal: 9 }, mapped: { sources: [] }, created: { writes: [] }, awaitingConfirmation: [] } })
-  const needs = await openPanel({ state: () => receipt('needs_organization') })
-  assert.match(textOf(needs.byTestId('awr-receipt')), /Result: the goals still need to be organized; 2 goal\(s\), 9 open gap\(s\)/)
-  const ready = await openPanel({ state: () => receipt('ready') })
-  assert.match(textOf(ready.byTestId('awr-receipt')), /Result: ready; 2 goal/)
-  const other = await openPanel({ state: () => receipt('something_new') })
-  assert.match(textOf(other.byTestId('awr-receipt')), /Result: something_new; 2 goal/, 'a state this panel does not know is shown as it came')
+test('every sentence exists in both languages, and the Chinese interface is Chinese', async () => {
+  const client = loadClient({ view: managed, work: () => workView(), language: 'zh' })
+  const ui = await open(client)
+  assert.match(ui.text(), /由 AWR 管理/)
+  assert.match(ui.text(), /这个会话在做/)
+  const { en, zh } = client.dictionaries.awr
+  assert.deepEqual(Object.keys(zh).sort(), Object.keys(en).sort(), 'the two dictionaries have the same keys')
+  for (const dictionary of [en, zh]) {
+    for (const [key, value] of Object.entries(dictionary)) assert.ok(!/[!！]/.test(value), `no exclamation mark in ${key}`)
+  }
+  for (const key of Object.keys(en)) {
+    const placeholders = (text) => (text.match(/\{\w+\}/g) ?? []).sort().join()
+    assert.equal(placeholders(zh[key]), placeholders(en[key]), `the same placeholders in ${key}`)
+  }
 })

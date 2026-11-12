@@ -116,6 +116,19 @@ test('the awr tool passes the command through and asks for text only for help', 
   assert.ok(awr.calls.every((call) => call.options.timeoutMs < 120_000), 'awr gives up before DSH does')
 })
 
+test('whoever shows the work is told after the agent ran a command, also a failed one, never for help, and telling never breaks the tool', async () => {
+  const told = []
+  const awr = scripted({ work: () => ({ ok: true }), session: () => { throw new AwrError('failed', 'RuleViolation: no', { code: 'RuleViolation', awrMessage: 'no' }) }, help: () => ({ output: 'Usage' }) })
+  const { run } = createAwrTools({ awr, bindings: bindingsOf({ c1: bindingOf() }), onRun: (agent, words) => told.push([agent.session.id, words.join(' ')]) })
+  await run.execute({ args: ['work', 'claim', 'W-1'] }, { agent: agentOf('c1') })
+  await assert.rejects(() => run.execute({ args: ['session', 'end'] }, { agent: agentOf('c1') }))
+  await run.execute({ args: ['help'] }, { agent: agentOf('c1') })
+  await run.execute({ args: ['work', 'show', '--help'] }, { agent: agentOf('c1') })
+  assert.deepEqual(told, [['c1', 'work claim W-1'], ['c1', 'session end']])
+  const throwing = createAwrTools({ awr, bindings: bindingsOf({ c1: bindingOf() }), onRun: () => { throw new Error('the interface broke') } })
+  assert.deepEqual(await throwing.run.execute({ args: ['work', 'show', 'W-1'] }, { agent: agentOf('c1') }), { ok: true })
+})
+
 test('errors from awr reach the model with their code and AWR\'s own suggestion', async () => {
   const conflict = new AwrError('failed', 'RevisionConflict: revision conflict: expected 5, actual 9', { code: 'RevisionConflict', awrMessage: 'revision conflict: expected 5, actual 9' })
   const budget = new AwrError('failed', 'BudgetExceeded: x', { code: 'BudgetExceeded', awrMessage: 'context budget exceeded: required 783, budget 100', awrDetails: { next_action: 'awr context compile --budget 783' } })
