@@ -1,10 +1,10 @@
 // DeepSeek Harness plugin that connects a conversation to AWR (Agent Work Runtime).
 //
 // Capabilities are added one work item at a time, using the surfaces recorded in
-// docs/dsh-surfaces.md. Loaded so far: binding each conversation to an AWR session (DSH-013).
+// docs/dsh-surfaces.md. Loaded so far: binding each conversation to an AWR session (DSH-013) and the /awr command (DSH-015).
 import { appendFileSync } from 'node:fs'
 import { createAwr } from './lib/awr-runtime.js'
-import { watchConversations } from './lib/conversation.js'
+import { registerAwrCommand, watchConversations } from './lib/conversation.js'
 
 export const name = 'dsh-awr'
 
@@ -30,5 +30,7 @@ export function apply(ctx) {
       }
     : undefined
   trace?.({ event: 'apply' })
-  watchConversations(ctx, { awr: createAwr(), trace })
+  const awr = createAwr()
+  const bindings = watchConversations(ctx, { awr, trace })
+  registerAwrCommand(ctx, { awr, bindings })
 }
