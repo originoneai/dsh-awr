@@ -2,11 +2,11 @@
 // so the bound, unbound, missing and mismatch cases are exercised without a real AWR.
 import assert from 'node:assert/strict'
 import { createHash } from 'node:crypto'
-import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import test from 'node:test'
-import { AwrError, createAwr, explain } from '../lib/awr-runtime.js'
+import { AwrError, createAwr, explain, nativeBehindLauncher, nativeTarget } from '../lib/awr-runtime.js'
 
 const BINDING_REPORT = { program: { version: '0.7.0' }, schema_version: 14, read_only: true, version: 1 }
 
@@ -21,7 +21,8 @@ function scratch(t) {
  * Write a fake awr that logs every call and answers by command word.
  * `answers` maps a substring of the arguments to the stdout it prints; `sleep` delays the answer.
  */
-function fakeAwr(dir, name, answers, { sleep = 0 } = {}) {
+function fakeAwr(dir, name, answers, { sleep = 0, mkdir = false } = {}) {
+  if (mkdir) mkdirSync(dir, { recursive: true })
   const bin = join(dir, name)
   const log = join(dir, `${name}.log`)
   const cases = Object.entries(answers)
@@ -90,6 +91,31 @@ test('unbound: an awr in a fallback directory is found when PATH has none, as in
   const winner = fakeAwr(first, 'awr', healthy)
   const both = createAwr({ env: { PATH: first }, fallbackDirs: [dir] })
   assert.equal((await both.resolve(project(t))).cli, winner.bin)
+})
+
+test('an npm launcher is replaced by the native binary beside it, so no node is needed', async (t) => {
+  const target = nativeTarget()
+  if (!target) return t.skip('no native target for this platform')
+  const prefix = scratch(t)
+  const scope = join(prefix, 'lib', 'node_modules', '@originoneai')
+  mkdirSync(join(scope, 'awr', 'bin'), { recursive: true })
+  mkdirSync(join(prefix, 'bin'))
+  const launcher = join(scope, 'awr', 'bin', 'awr.cjs')
+  writeFileSync(launcher, '#!/usr/bin/env node\nconsole.error("the launcher must not run")\n')
+  chmodSync(launcher, 0o755)
+  symlinkSync(launcher, join(prefix, 'bin', 'awr'))
+  // No native package yet: the launcher is kept.
+  assert.equal(await nativeBehindLauncher(join(prefix, 'bin', 'awr')), join(prefix, 'bin', 'awr'))
+  const native = fakeAwr(join(scope, `awr-${target}`, 'bin').replace(/^/, ''), 'awr', healthy, { mkdir: true })
+  const nativeReal = realpathSync(native.bin) // the launcher is resolved through symlinks, as macOS temp dirs are
+  assert.equal(await nativeBehindLauncher(join(prefix, 'bin', 'awr')), nativeReal)
+  // Through the runner: PATH holds only the launcher, and the native binary is what runs.
+  const awr = createAwr({ env: { PATH: join(prefix, 'bin') }, fallbackDirs: [] })
+  const root = project(t)
+  assert.equal((await awr.resolve(root)).cli, nativeReal)
+  assert.deepEqual(await awr.run(root, ['status']), { ok: true, project_revision: 7 })
+  // A plain executable is returned unchanged.
+  assert.equal(await nativeBehindLauncher(native.bin), native.bin)
 })
 
 test('missing: the pinned cli does not exist', async (t) => {

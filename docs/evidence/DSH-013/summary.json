@@ -1,0 +1,63 @@
+{
+  "note": "DeepSeek Harness 0.2.2-rc.1, dev profile dsh-awr-dev (headless), in packages/app of a disposable AWR project. The model call fails (no API key) after agent/created, so only the plugin's listener is exercised.",
+  "runs": [
+    {
+      "run": "new conversation",
+      "agent_created": {
+        "source": "startup",
+        "payload_keys": [
+          "agent",
+          "source",
+          "signal"
+        ],
+        "session_header_keys": [
+          "version",
+          "id",
+          "createdAt",
+          "cwd",
+          "isSeeded"
+        ],
+        "conversation_id": "session-ec86462a-4090-43a3-9995-eacc1c5720bc"
+      },
+      "result": {
+        "event": "bound",
+        "outcome": "created",
+        "sessionId": "01M773H1TA0A3FENX3XPSXV0MW",
+        "externalSession": "dsh:session-ec86462a-4090-43a3-9995-eacc1c5720bc",
+        "work": {
+          "key": "INTAKE-001",
+          "why": "blocked"
+        },
+        "message": null
+      }
+    },
+    {
+      "run": "resumed conversation (--session-id)",
+      "agent_created": {
+        "source": "resume",
+        "payload_keys": [
+          "agent",
+          "source",
+          "signal"
+        ],
+        "session_header_keys": [
+          "version",
+          "id",
+          "createdAt",
+          "cwd",
+          "isSeeded",
+          "delegationDepth"
+        ],
+        "conversation_id": "session-ec86462a-4090-43a3-9995-eacc1c5720bc"
+      },
+      "result": {
+        "event": "bound",
+        "outcome": "existing",
+        "sessionId": "01M773H1TA0A3FENX3XPSXV0MW",
+        "externalSession": "dsh:session-ec86462a-4090-43a3-9995-eacc1c5720bc",
+        "work": null,
+        "message": null
+      }
+    }
+  ]
+}

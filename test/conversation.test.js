@@ -85,22 +85,35 @@ test('outside an AWR project nothing is run and nothing is recorded', async (t) 
   assert.equal(watcher.get('session-1'), undefined)
 })
 
-test('the listener returns before awr finishes, so conversation start is not held', async (t) => {
+test('the listener waits for the binding, but only up to the limit', async (t) => {
   const { nested } = projectTree(t)
   let release
   const gate = new Promise((resolve) => { release = resolve })
   const awr = { run: async (root, args) => { await gate; return args[0] === 'client' && args[1] === 'show' ? { binding: { session_id: 'S1' } } : { session: { status: 'active' } } } }
-  const ctx = fakeCtx()
-  const watcher = watchConversations(ctx, { awr })
-  const started = Date.now()
-  await ctx.handlers['agent/created'](agentIn(nested))
-  assert.ok(Date.now() - started < 1000, 'the listener must not wait for awr')
-  let settled = false
-  watcher.get('session-1').then(() => { settled = true })
+
+  // Within the limit: the listener returns only once the binding has settled.
+  const waited = fakeCtx()
+  const watcher = watchConversations(waited, { awr, waitMs: 5_000 })
+  const handler = waited.handlers['agent/created'](agentIn(nested, 'waits'))
+  let returned = false
+  handler.then(() => { returned = true })
   await new Promise((resolve) => setImmediate(resolve))
-  assert.equal(settled, false)
+  assert.equal(returned, false, 'the listener must wait for awr')
   release()
-  assert.equal((await watcher.get('session-1')).outcome, 'existing')
+  await handler
+  assert.equal((await watcher.get('waits')).outcome, 'existing')
+
+  // Past the limit: the listener lets the conversation start, and the binding still resolves later.
+  // The plugin's own timer is unref'd so it never holds the process open; keep the loop alive here.
+  const keepAlive = setTimeout(() => {}, 2_000)
+  t.after(() => clearTimeout(keepAlive))
+  const slow = new Promise(() => {})
+  const hung = fakeCtx()
+  const bounded = watchConversations(hung, { awr: { run: () => slow }, waitMs: 50 })
+  const started = Date.now()
+  await hung.handlers['agent/created'](agentIn(nested, 'hangs'))
+  assert.ok(Date.now() - started < 2_000, 'a slow awr must not hold the conversation back')
+  assert.ok(bounded.get('hangs'), 'the pending binding is still recorded')
 })
 
 test('a failing awr is reported as a warning and never makes the listener throw', async (t) => {
