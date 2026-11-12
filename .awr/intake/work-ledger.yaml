@@ -351,11 +351,13 @@ work_items:
   "verification": {"evidence_level":"locally_verified"}
 - "id": "WORK-c5b7c2d8464326271b6233b7e00504fa"
   "title": "DSH-052: Let the DSH panel claim, checkpoint and end the session"
-  "status": "planned"
+  "status": "completed"
   "acceptance": ["The panel offers claim, checkpoint and end for an active AWR session, each running the /awr command of the same name, and refuses bad input before sending it.","The behavior is covered by tests that fail when the checks are removed, and the panel doc says what was and was not checked in DSH."]
   "depends_on": ["DSH-051"]
   "goal": ["intake-goal"]
   "kind": "implementation"
-  "next_action": "Complete DSH-052 with the registered evidence"
+  "next_action": "Complete WORK-c5b7c2d8464326271b6233b7e00504fa with the registered evidence"
   "priority": "P2"
   "summary": "The panel (DSH-051) only observed the session and offered the takeover button. The gap was management actions: claim, checkpoint and end."
+  "evidence": ["docs/evidence/DSH-052/completion-report.json"]
+  "verification": {"evidence_level":"locally_verified"}

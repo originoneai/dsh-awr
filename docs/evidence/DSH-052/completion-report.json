@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "work_item": "WORK-c5b7c2d8464326271b6233b7e00504fa",
+  "source_sha": "99215b0da957f98fc5c46c4ec233b17abc678413",
+  "command": "node --test (234 tests, of which 9 in test/client.test.js run the shipped client.js in a vm against a stand-in for React and a stub host); six mutations of client.js, each restored",
+  "scope": [
+    "client.js",
+    "test/client.test.js",
+    "docs/panel.md",
+    "README.md",
+    "docs/evidence/DSH-052"
+  ],
+  "verified_at": 1794483667878,
+  "checks": [
+    {
+      "name": "The panel offers claim, checkpoint and end and refuses bad input before sending it",
+      "passed": true,
+      "details": "While the conversation's AWR session is active the panel shows 'Manage this session'. Claim runs /awr claim and is shown only when the session holds no claim and the bound work is neither completed nor closed. Save a checkpoint runs /awr checkpoint DIGEST :: NEXT from two required fields, collapses whitespace and newlines to single spaces, and refuses an empty field or one holding '::' before anything is sent (six input pairs tested, zero commands sent). End the session asks first, notes that ending a session does not complete its work, and sends one of three outcomes whatever the select holds (a value 'ended; rm -rf /' is sent as 'ended'). A refusal from the host is shown in red without a retry or a refresh; the buttons are disabled while a command runs so a double click sends one command; the actions disappear when the session is not active. Limits: run in a vm against a stand-in for React and a stub host, not inside DeepSeek Harness; one project per panel.",
+      "criteria": [
+        "The panel offers claim, checkpoint and end for an active AWR session, each running the /awr command of the same name, and refuses bad input before sending it."
+      ]
+    },
+    {
+      "name": "The behavior is covered by tests that fail when the checks are removed, and the panel doc says what was and was not checked",
+      "passed": true,
+      "details": "test/client.test.js has 9 tests. Removing the '::' check, the whitespace collapse, the outcome list, the disabled state while a command runs, the active-session condition, or the end confirmation form each turned at least one test red (checked one at a time on a copy, file restored and diffed identical after). The full suite passes: 234 tests, 0 failures, 225 before this change. docs/panel.md has an Actions section with the guards and a Not checked entry stating that the three buttons were not exercised inside DeepSeek Harness (the /awr claim, checkpoint and end commands behind them were checked in DSH under DSH-015).",
+      "criteria": [
+        "The behavior is covered by tests that fail when the checks are removed, and the panel doc says what was and was not checked in DSH."
+      ]
+    }
+  ]
+}
