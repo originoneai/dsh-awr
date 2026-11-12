@@ -7,6 +7,7 @@ import { dirname, join } from 'node:path'
 import test from 'node:test'
 import { fileURLToPath } from 'node:url'
 import { createAwr } from '../lib/awr-runtime.js'
+import { bindingFor } from '../lib/binding.js'
 import { watchConversations } from '../lib/conversation.js'
 import { findProjectRoot } from '../lib/project.js'
 
@@ -75,6 +76,38 @@ test('a conversation in a project subdirectory is bound against the project root
   assert.ok(calls.every(([projectRoot]) => projectRoot === root))
   const bind = calls.find((c) => c[2] === 'bind')
   assert.ok(bind.includes('deepseek-flash'), 'the model label is passed on')
+})
+
+test('a conversation this instance never bound (the host loaded the plugin again) is found in awr, read-only, and kept', async (t) => {
+  const { root, nested } = projectTree(t)
+  const calls = []
+  const awr = {
+    async run(projectRoot, args) {
+      calls.push([projectRoot, ...args])
+      if (args[0] === 'client' && args[1] === 'show') return { binding: args.includes('dsh:conv-9') ? { session_id: 'S9' } : null }
+      if (args[0] === 'session' && args[1] === 'show') return { session: { id: args[2], status: args[2] === 'S9' ? 'active' : 'ended' } }
+      throw new Error(`unexpected ${args.join(' ')}`)
+    },
+  }
+  const watcher = watchConversations(fakeCtx(), { awr })
+  const agent = agentIn(nested, 'conv-9').agent
+  assert.equal(watcher.get('conv-9'), undefined, 'this instance saw no agent/created for it')
+  const found = await bindingFor(watcher, agent)
+  assert.deepEqual(found, { projectRoot: root, outcome: 'existing', sessionId: 'S9', externalSession: 'dsh:conv-9' })
+  assert.ok(calls.every((call) => ['client', 'session'].includes(call[1]) && call[2] === 'show'), 'nothing was bound, started or claimed')
+  assert.deepEqual(await watcher.get('conv-9'), found, 'what was found is kept, so the next question asks awr nothing')
+  const before = calls.length
+  await bindingFor(watcher, agent)
+  assert.equal(calls.length, before)
+  // A conversation whose session ended, one that was never bound, one outside a project, and an awr that fails: no binding.
+  assert.equal(await bindingFor(watcher, agentIn(nested, 'conv-ended').agent), undefined)
+  assert.equal(watcher.get('conv-ended'), undefined, 'nothing is kept for it, so a later look is a new one')
+  assert.equal(await bindingFor(watcher, agentIn(scratch(t), 'conv-outside').agent), undefined, 'a directory outside a project has none')
+  const broken = watchConversations(fakeCtx(), { awr: { run: async () => { throw new Error('awr is gone') } } })
+  assert.equal(await bindingFor(broken, agentIn(nested, 'conv-1').agent), undefined)
+  assert.equal(bindingFor(watcher, { session: {} }), undefined)
+  // A store that only holds what it was given (a test double) answers just that.
+  assert.equal(bindingFor({ get: () => undefined }, agentIn(nested, 'x').agent), undefined)
 })
 
 /** A fork as the listener sees it: a seeded session with the length of the history it inherited. */
