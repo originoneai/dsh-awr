@@ -236,6 +236,74 @@ test('a dependency pinned to a commit that never named a branch follows the defa
   }
 })
 
+const C = 'c'.repeat(40)
+const D = 'd'.repeat(40)
+const E = 'e'.repeat(40)
+const F = 'f'.repeat(40)
+/** What `git ls-remote <url> 'refs/tags/*'` prints: a lightweight tag, an annotated one (tag object, then the commit as ^{}), and others. */
+const TAGS = [
+  `${A}\trefs/tags/v0.1.0`,
+  `${'1'.repeat(40)}\trefs/tags/v0.2.0`,
+  `${B}\trefs/tags/v0.2.0^{}`,
+  `${C}\trefs/tags/v0.10.0`,
+  `${D}\trefs/tags/v0.11.0-rc.1`,
+  `${E}\trefs/tags/v1.0.0-beta`,
+  `${F}\trefs/tags/nightly`,
+]
+
+test('a plugin installed at a release tag follows the releases: the highest version, not the last in the list, prereleases left out', async () => {
+  const runner = lsRemote(TAGS)
+  const found = await latestCommit({ owner: 'o', repo: 'r', ref: 'v0.1.0' }, { runner })
+  assert.deepEqual(lsRemote.last.args.slice(-2), ['https://github.com/o/r.git', 'refs/tags/*'], 'all tags are asked in one call')
+  assert.equal(found.ref, 'v0.10.0', 'v0.10.0 is newer than v0.2.0')
+  assert.equal(found.commit, C)
+  assert.deepEqual([...found.releases].sort(), [A, B, C, D, E].sort(), 'the commit of an annotated tag is the peeled one; nightly is no release')
+  // From v0.2.0 on: older releases are not offered, and an annotated tag's commit is the peeled one.
+  const again = await latestCommit({ owner: 'o', repo: 'r', ref: 'v0.2.0' }, { runner: lsRemote(TAGS.filter((line) => !line.includes('v0.10.0'))) })
+  assert.deepEqual([again.ref, again.commit], ['v0.2.0', B])
+  // A prerelease follows prereleases and releases; a release does not follow a prerelease.
+  const pre = await latestCommit({ owner: 'o', repo: 'r', ref: 'v0.11.0-rc.1' }, { runner })
+  assert.equal(pre.ref, 'v1.0.0-beta', 'a prerelease sees the later prerelease')
+  const beta = await latestCommit({ owner: 'o', repo: 'r', ref: 'v1.0.0-beta' }, { runner })
+  assert.equal(beta.ref, 'v1.0.0-beta', 'and nothing is newer than the last one')
+  // A tag that GitHub does not have is said, not guessed.
+  await assert.rejects(latestCommit({ owner: 'o', repo: 'r', ref: 'v9.9.9' }, { runner }), /no release tag "v9\.9\.9" in o\/r/)
+  await assert.rejects(latestCommit({ owner: 'o', repo: 'r', ref: 'v0.1.0' }, { runner: lsRemote([]) }), /no release tag/)
+  // A tag that was installed and no longer exists is not replaced by a newer one on a guess.
+  await assert.rejects(latestCommit({ owner: 'o', repo: 'r', ref: 'v0.1.5' }, { runner }), /no release tag "v0\.1\.5"/)
+  // A branch is still asked as a branch, one call for it.
+  const branch = await latestCommit({ owner: 'o', repo: 'r', ref: 'main' }, { runner: lsRemote([`${B}\trefs/heads/main`]) })
+  assert.deepEqual([branch.ref, branch.commit, branch.releases], ['main', B, undefined])
+  assert.equal(lsRemote.last.args.at(-1), 'main')
+})
+
+test('the card follows releases through updates: an old release is offered the new one, the newest is up to date, a commit that is no release is not called older', async () => {
+  const profileFor = (spec, commit) => profile(spec, commit ? `  version: https://codeload.github.com/originoneai/dsh-awr/tar.gz/${commit}\n` : undefined)
+  const releases = lsRemote([`${A}\trefs/tags/v0.1.0`, `${B}\trefs/tags/v0.2.0`])
+  const cases = [
+    ['v0.1.0 installed: v0.2.0 is on offer', 'github:originoneai/dsh-awr#v0.1.0', A, true],
+    ['v0.2.0 installed (pinned by the update): up to date', `github:originoneai/dsh-awr#${B}`, B, false],
+    ['a commit that is none of the releases is not offered the older one', `github:originoneai/dsh-awr#${C}`, C, false],
+  ]
+  for (const [why, spec, commit, available] of cases) {
+    const { dir, root } = await profileFor(spec, commit)
+    try {
+      const followFile = join(dir, 'state', 'follow.json')
+      // The first check names the tag; after an update the spec is a commit and the remembered tag is what is followed.
+      if (spec.includes('#v')) await createPluginUpdater({ where: { root, profileDir: dir }, runner: releases, followFile }).check()
+      else await mkdir(join(dir, 'state'), { recursive: true }).then(() => writeFile(followFile, JSON.stringify({ 'originoneai/dsh-awr': 'v0.1.0' })))
+      const updater = createPluginUpdater({ where: { root, profileDir: dir }, runner: releases, followFile })
+      const answer = await updater.check()
+      assert.equal(answer.check.available, available, why)
+      assert.equal(answer.check.latest, B, why)
+      assert.equal(answer.check.spec, `github:originoneai/dsh-awr#${B}`, why)
+      assert.equal((await updater.describe()).check.available, available, `${why}: and as the panel describes it`)
+    } finally {
+      await rm(dir, { recursive: true, force: true })
+    }
+  }
+})
+
 test('the description never carries a raw dependency spec, so a credential in one cannot reach the panel', async () => {
   const { dir, root } = await profile('https://user:secret-token@github.com/originoneai/dsh-awr')
   try {

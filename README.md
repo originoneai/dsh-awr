@@ -4,15 +4,16 @@ A [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) (DSH) plug
 [AWR (Agent Work Runtime)](https://github.com/originoneai/agent-work-runtime) manage work state
 for projects developed inside DSH.
 
-Status: **working, not released.** Checked in DeepSeek Harness `0.2.2-rc.1`: in the signed-in desktop app with a
-real model (the one-click takeover on public projects, `docs/evidence/DSH-022`) and in the web and headless profiles
-with a local stand-in model (everything else). It binds each conversation to an AWR session, puts the AWR work
-context in the prompt, gives the model the `awr` tools and a workflow skill, offers `/awr` commands and a state panel,
-takes a project over in one click with a restricted reviewer subagent, asks for checkpoints, reports compactions,
-suggests evidence and handles forks. Its interface is for people: the conversation shows one quiet line for what AWR
-does and nothing for what the interface asks, the header card speaks in plain words and folds every engineering fact,
-the **Progress** tab shows the whole project (mainlines, dependencies, lanes) the way AWR's own overview does, and a
-plugin installed from GitHub can check for and install a newer commit from the card. MIT licensed and public; `v0.1.0` is the first release ([docs/owner-decisions.md](docs/owner-decisions.md)).
+Status: **v0.2.0.** Checked in DeepSeek Harness `0.2.2-rc.2` (the signed-in desktop app on macOS arm64, with a real model)
+and, for what the app cannot show, in the web and headless profiles with a local stand-in model. It binds each
+conversation to an AWR session, puts the AWR work context in the prompt, gives the model the `awr` tools and a workflow
+skill, offers `/awr` commands, takes a project over in one click with a restricted reviewer subagent, asks for
+checkpoints, reports compactions, suggests evidence and handles forks.
+
+Its interface is for people. The conversation shows one quiet line for what AWR does and nothing for what the
+interface asks; the AWR card in the header speaks in plain words and folds every engineering fact; the **Progress** tab
+shows the whole project (mainlines, dependencies, lanes) the way AWR's own overview does; and the card checks GitHub for
+a newer version of the plugin and installs it. MIT licensed and public ([docs/owner-decisions.md](docs/owner-decisions.md)).
 The ledger is `.awr/intake/work-ledger.yaml`.
 
 ## Install
@@ -21,11 +22,18 @@ In DeepSeek Harness open Plugins, choose Add plugin, and enter `https://github.c
 terminal:
 
 ```sh
-dsh plugin --profile <profile> add github:originoneai/dsh-awr#v0.1.0
+dsh plugin --profile <profile> add github:originoneai/dsh-awr#v0.2.0
 ```
 
 The plugin runs the `awr` CLI of the machine it is on (see [docs/awr-runtime.md](docs/awr-runtime.md)); install AWR
-first. The MCP route needs an `awr-mcp` that contains originoneai/awr#614 (docs/dsh-001-l0-check.md).
+first. The Progress tab needs an awr with `overview snapshot` (0.7.0 has it). The MCP route needs an `awr-mcp` that
+contains originoneai/awr#614 (docs/dsh-001-l0-check.md).
+
+**Updating.** DeepSeek Harness's plugin page updates registry packages only, so the plugin's own card does it: the AWR
+card in the conversation header has **Check for updates** and **Update**. A plugin installed at a release tag
+(`#v0.2.0`) follows newer release tags; one installed from a branch (`#main`, or no `#` at all for the default branch)
+follows that branch. The update installs the newest commit pinned (`github:originoneai/dsh-awr#<commit>`) with the
+plugin manager, which puts the profile back if it fails ([docs/panel.md](docs/panel.md)).
 
 ## Develop
 
@@ -77,7 +85,7 @@ No DSH-specific client dialect is added to AWR.
 | P1 | Workflow skill | `ctx.skills.register` | Teaches reading, claims, checkpoints, expected revisions, preview/accept, evidence and completion (see [docs/skill.md](docs/skill.md)) |
 | P2 | Evidence candidates | event `tools/result` | Suggest, never auto-register |
 | P2 | Session mapping | none | AWR already stores it (`awr client bind`); forks resume via `--from-session` |
-| P2 | UI panel | `dsh.client` + slots, `/awr state` | Bound work, claim expiry, blockers, counts, and claim, checkpoint and end buttons (see [docs/panel.md](docs/panel.md)) |
+| P2 | Interface | `dsh.client` + slots (`conversation.session.header.actions`, `conversation.view`, `conversation.chat.commandview`) | The header card, the Progress tab and quiet conversation rows, all in plain words (see [docs/panel.md](docs/panel.md), [docs/progress-page.md](docs/progress-page.md), [docs/conversation-rows.md](docs/conversation-rows.md)) |
 
 Every surface above was checked against DeepSeek Harness desktop `0.2.2-rc.1` on 2026-11-11. The
 per-surface result, what changed and the evidence are in [docs/dsh-surfaces.md](docs/dsh-surfaces.md).

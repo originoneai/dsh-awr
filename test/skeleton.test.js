@@ -38,9 +38,26 @@ test('every locale has a title and description in sentence case', () => {
   assert.ok(words.every((w) => w === w.toLowerCase() || /^[A-Z]{2,}$/.test(w)), `sentence case: ${title}`)
 })
 
-test('icon is an SVG within the 256 KiB limit', () => {
-  assert.ok(statSync(join(root, 'icon.svg')).size <= 256 * 1024)
-  assert.match(read('icon.svg'), /^<svg[\s>]/)
+test('the plugin is named AWR 项目及上下文管控 in Chinese and AWR project and context control in English', () => {
+  assert.equal(JSON.parse(read('locale/zh.json')).meta.title, 'AWR 项目及上下文管控')
+  assert.equal(JSON.parse(read('locale/en.json')).meta.title, 'AWR project and context control')
+})
+
+test('the icon is the logo, white in the dark theme: an SVG within the 256 KiB limit that embeds the PNG and switches on the colour scheme', () => {
+  const file = join(root, 'icon.svg')
+  assert.ok(statSync(file).size <= 256 * 1024, 'DeepSeek Harness refuses a larger icon')
+  const svg = read('icon.svg')
+  assert.match(svg, /^<svg[\s>]/)
+  const embedded = /<image id="logo"[^>]* href="data:image\/png;base64,([A-Za-z0-9+/=]+)"/.exec(svg)
+  assert.ok(embedded, 'the logo is embedded as a PNG data URI (an image in an img may load nothing else)')
+  const png = Buffer.from(embedded[1], 'base64')
+  assert.deepEqual([...png.subarray(0, 8)], [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a], 'a PNG')
+  assert.equal(png.readUInt32BE(16), png.readUInt32BE(20), 'square')
+  assert.equal(png[25], 6, 'RGBA: a transparent background')
+  // An image follows the colour scheme DeepSeek Harness sets on its page: in the dark theme every colour of the logo becomes white.
+  assert.match(svg, /@media \(prefers-color-scheme: dark\) \{ #logo \{ filter: url\(#white\); \} \}/)
+  assert.match(svg, /<feColorMatrix type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1 0"\/>/, 'all three channels are 1 and the alpha is kept')
+  assert.ok(!existsSync(join(root, 'icon.png')), 'one icon in the package')
 })
 
 test('apply runs against a stub context and registers the conversation listener and asks for commands', async () => {

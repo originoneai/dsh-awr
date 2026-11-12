@@ -8,7 +8,7 @@ Raw material is in `docs/evidence/DSH-010/`.
 A plain ESM package at the repository root, no build step: `package.json` (manifest with
 `dsh.bundle.patch`, exports for the entry point, `./locale/*.json` and `./icon`), `cordis.patch.yml`
 (inserts the plugin row), `index.js` (`name` and an `apply(ctx)` that only logs), `locale/en.json`,
-`locale/zh.json`, `icon.svg` and `test/skeleton.test.js`. The license is `UNLICENSED` and the
+`locale/zh.json`, `icon.png` (it was `icon.svg` until 0.2.0) and `test/skeleton.test.js`. The license is `UNLICENSED` and the
 package `private` until the owner decides (DSH-041).
 
 ## How it was checked

@@ -72,6 +72,10 @@ and DeepSeek Harness's plugin page updates registry packages only. The card ther
   ever sent. The result is `applied` (the client and the host are loaded again; the card closes and the plugin is
   as new as the commit), `restart-required` (the card says so) or a failure (said in words; the raw code is in the
   technical details).
+- A plugin installed at a **release tag** (`#v0.2.0`) follows the releases: a tag never moves, so the check lists the tags
+  (`git ls-remote`, one call) and offers the highest version from the installed one on (a prerelease only to one that is
+  itself a prerelease; `v0.10.0` is newer than `v0.2.0`). A commit that is none of the release tags is not called older
+  than the newest release, so a plugin somebody installed from a branch by hand is not offered a downgrade.
 - The dependency of an updated plugin names a commit, not a branch, so the branch it follows is remembered in
   `<home>/.local/state/dsh-awr/follow.json` (repository and branch, nothing else) and asked at the next check. Without it
   the second check asked the repository's default branch and offered to move the plugin there.
@@ -96,8 +100,9 @@ and DeepSeek Harness's plugin page updates registry packages only. The card ther
   blocker), the incomplete-project line, that no engineering fact is visible until the details are opened, that there are
   no buttons or fields for the agent's actions, the offer and the running takeover, and the update (check, install,
   the exact spec, a restart, failures, a lost answer, a host still running old code, an offer asked again on opening).
-- `test/plugin-update.test.js` (14 tests): the repository and branch in every form pnpm saves a dependency, the commit
-  of the lockfile, the commit-pinned dependency that remembers its branch, an install that happened after the check,
+- `test/plugin-update.test.js` (16 tests): the repository and branch in every form pnpm saves a dependency, the commit
+  of the lockfile, the commit-pinned dependency that remembers its branch, release tags (the highest version, prereleases,
+  a commit that is no release), an install that happened after the check,
   `git ls-remote` without credentials, and that no raw spec (so no credential) reaches the panel.
 - `test/conversation.test.js`, `test/panel-snapshot.test.js`: a conversation the instance never bound is found in awr
   without starting or claiming anything, and the panel's data has its work.
