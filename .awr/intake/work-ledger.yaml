@@ -268,7 +268,7 @@ work_items:
 - id: DSH-004
   title: Get stock awr-mcp accepted by DSH's MCP client
   kind: defect
-  status: ready
+  status: in_progress
   priority: P0
   required: true
   goal: intake-goal
@@ -277,4 +277,4 @@ work_items:
   acceptance:
   - Without any shim, an awr-mcp entry in a DSH 0.2.2-rc.1 profile stays connected and awr_query with child_tool awr_project_status returns the fixture project's identity.
   - The decision on where the fix lives (AWR or this plugin) and its reason are recorded.
-  next_action: Report the defect to the AWR repository with the captured error and wire logs, and ask the owner where the fix should live.
+  next_action: "Wait for the owner's decision on originoneai/awr#613 (fix in AWR or handle in the plugin); once a fixed awr-mcp exists, rerun the DSH MCP check without the shim."
