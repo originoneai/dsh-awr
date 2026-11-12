@@ -329,3 +329,18 @@ work_items:
   next_action: Complete DSH-016 with the registered evidence
   "evidence": ["docs/evidence/DSH-016/completion-report.json"]
   "verification": {"evidence_level":"locally_verified"}
+- id: DSH-005
+  title: Rebuild the lab environment from main and keep its binaries runnable on macOS
+  kind: implementation
+  status: completed
+  priority: P2
+  required: false
+  goal: intake-goal
+  depends_on: [DSH-004]
+  summary: PR 614 (the fix for awr#613) and PR 616 merged, so the lab build no longer needs to be main plus an extra commit. The rebuild also showed that a copied lab binary can be killed with exit 137 on macOS although its bytes equal the build's.
+  acceptance:
+  - The lab build is origin/main with nothing on top, its manifest says so, and the plugin's full test suite passes against it, including the tests that run the real awr.
+  - The build script leaves lab binaries that run on macOS, and docs/lab-environment.md describes the build as it is.
+  next_action: Complete DSH-005 with the registered evidence
+  "evidence": ["docs/evidence/DSH-005/completion-report.json"]
+  "verification": {"evidence_level":"locally_verified"}

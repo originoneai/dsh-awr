@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "work_item": "DSH-005",
+  "source_sha": "791bcc8b1fdb46d842023760495bca8ea1fcbd8d",
+  "command": "scripts/build-awr-lab.sh <clone of origin/main> (cargo build --release --locked -p awr-cli -p awr-mcp), awr --version, node --test (docs/evidence/DSH-005)",
+  "scope": [
+    "scripts/build-awr-lab.sh",
+    "docs/lab-environment.md",
+    "docs/evidence/DSH-005"
+  ],
+  "verified_at": 1794475893875,
+  "checks": [
+    {
+      "name": "The lab build is origin/main and the full suite passes against it",
+      "passed": true,
+      "criteria": [
+        "The lab build is origin/main with nothing on top, its manifest says so, and the plugin's full test suite passes against it, including the tests that run the real awr."
+      ],
+      "details": "The lab was rebuilt from a fresh clone at origin/main 037f66c9; build.json records source_commit equal to origin_main_commit, 0 commits not on origin/main and no uncommitted tracked changes; awr and awr-mcp report 0.7.0 (037f66c9). node --test ran 222 tests with 0 failures against it, including the tests that run the real awr, and awr status opened this repository's own project created by older builds with no migration prompt. Limits: one rebuild; schema versions were not compared, only that the older project opened and the suite passed; the released 0.7.0 was not rerun for the mixed-use check."
+    },
+    {
+      "name": "The build script leaves binaries that run on macOS and the doc describes the build",
+      "passed": true,
+      "criteria": [
+        "The build script leaves lab binaries that run on macOS, and docs/lab-environment.md describes the build as it is."
+      ],
+      "details": "The first copy of awr exited 137 with no output on every run although its checksum equalled the build target's binary, which ran; the 24 tests that run the real awr failed on it. codesign --force --sign - on the copy made it run. scripts/build-awr-lab.sh now signs both copies ad hoc on macOS; rerunning it produced a manifest with both versions filled and a suite of 222 passing tests. docs/lab-environment.md now says: baseline main at 037f66c9 with nothing on top, the fix is in main (PR 614, 71c1acfe), the released 0.7.0 still lacks it, the signing step and the 2026-11-12 check. Limits: the signing step runs only where codesign exists; the cause of the kill (the provenance attribute on the copy) was inferred from the fix, not diagnosed further."
+    }
+  ]
+}
