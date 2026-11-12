@@ -494,7 +494,7 @@ work_items:
   "verification": {"evidence_level":"locally_verified"}
 - "id": "WORK-86209b90c2c372304dfb742923ab0878"
   "title": "DSH-064: Release 0.2.0: the update follows release tags, and the plugin has its name and logo"
-  "status": "draft"
+  "status": "completed"
   "acceptance": ["A plugin installed at a release tag is offered the newest release tag by Check for updates (v0.10.0 is newer than v0.2.0, prereleases only for a prerelease) and is never offered an older commit; the plugin is named AWR 项目及上下文管控 (English: AWR project and context control) and has the owner's logo, which is plain white in the dark theme.","Version 0.2.0 is released: package.json says 0.2.0, tag v0.2.0 is on the merged commit, and a GitHub release with notes exists."]
   "depends_on": ["WORK-5fbaebd1b940cce21825828254ef68e6"]
   "goal": ["intake-goal"]
@@ -502,3 +502,5 @@ work_items:
   "next_action": "Complete DSH-064 with the registered evidence"
   "priority": "P0"
   "summary": "Owner: publish a new version once the pull requests are merged, name the plugin AWR 项目及上下文管控 and use the supplied logo, white in dark mode. The Progress tab, the plain card, the quiet conversation and the update button of 0.2.0 are DSH-059 to DSH-063; the README tells people to install a release tag, so the update check has to follow release tags too."
+  "evidence": ["docs/evidence/DSH-064/completion-report.json"]
+  "verification": {"evidence_level":"locally_verified"}

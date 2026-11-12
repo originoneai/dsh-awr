@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "work_item": "WORK-86209b90c2c372304dfb742923ab0878",
+  "source_sha": "034f62566cc646062900b539ee2325e500af536b",
+  "command": "node --test (369 tests pass, 0 skipped, with AWR_TAKEOVER_BIN set); mutations of the release-tag logic (6, each restored, 0 survive); the released tags read with the real lib/plugin-update.js against GitHub; the icon loaded as a data URL in an img in Chromium under a light and a dark colour scheme",
+  "scope": [
+    "lib/plugin-update.js",
+    "locale/en.json",
+    "locale/zh.json",
+    "icon.svg",
+    "package.json",
+    "README.md",
+    "docs/panel.md",
+    "docs/dsh-010-skeleton-check.md",
+    "test/plugin-update.test.js",
+    "test/skeleton.test.js",
+    "docs/evidence/DSH-064"
+  ],
+  "verified_at": 1794510852135,
+  "checks": [
+    {
+      "name": "A plugin installed at a release tag is offered the newest release tag and never an older commit; the plugin has its name and logo, white in the dark theme",
+      "passed": true,
+      "details": "test/plugin-update.test.js (16 tests): the highest version rather than the last listed (v0.10.0 over v0.2.0), prereleases only for a prerelease, the peeled commit of an annotated tag, a commit that is no release tag not called older, a tag that no longer exists said and not guessed, the memory of the followed tag across an update; six mutations of that logic each fail a test. Against GitHub after the release (git ls-remote --tags of originoneai/dsh-awr: v0.1.0 and v0.2.0): installed at v0.1.0 the check answers v0.2.0 (034f625), installed at v0.2.0 it answers v0.2.0 itself. test/skeleton.test.js: the titles AWR 项目及上下文管控 and AWR project and context control, an icon.svg of 79 KB (limit 256 KiB) that embeds an RGBA PNG and carries the dark-scheme rule and the white colour matrix. In Chromium the icon loaded as a data:image/svg+xml;base64 URL in an img (how DeepSeek Harness hands it to the page) is the gradient logo under color-scheme light and plain white under color-scheme dark, at 128, 64, 36 and 20 px, and in a 48 px frame. The new name and logo were not seen in the desktop app's plugin page (its window was on another desktop), and following a newer tag was not run with a tag that is newer than the release itself.",
+      "criteria": [
+        "A plugin installed at a release tag is offered the newest release tag by Check for updates (v0.10.0 is newer than v0.2.0, prereleases only for a prerelease) and is never offered an older commit; the plugin is named AWR 项目及上下文管控 (English: AWR project and context control) and has the owner's logo, which is plain white in the dark theme."
+      ]
+    },
+    {
+      "name": "Version 0.2.0 is released: package.json, the tag on the merged commit, a GitHub release with notes",
+      "passed": true,
+      "details": "package.json says 0.2.0 at 034f625 (PR 39). git ls-remote shows refs/tags/v0.2.0 at 034f62566cc646062900b539ee2325e500af536b, and https://github.com/originoneai/dsh-awr/releases/tag/v0.2.0 holds the notes (what is new, install and update, what was checked and what was not).",
+      "criteria": [
+        "Version 0.2.0 is released: package.json says 0.2.0, tag v0.2.0 is on the merged commit, and a GitHub release with notes exists."
+      ]
+    }
+  ]
+}
