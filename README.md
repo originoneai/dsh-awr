@@ -24,7 +24,7 @@ scripts/build-awr-lab.sh <awr-checkout>    # the local AWR this plugin is develo
 - Binding a conversation to an AWR session: [docs/binding.md](docs/binding.md). The `/awr` command:
   [docs/commands.md](docs/commands.md). The AWR work context in the prompt:
   [docs/prompt-context.md](docs/prompt-context.md). The AWR tools the model can call:
-  [docs/tools.md](docs/tools.md).
+  [docs/tools.md](docs/tools.md). The takeover module: [docs/takeover.md](docs/takeover.md).
 
 ## What the plugin is for
 

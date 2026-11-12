@@ -1,0 +1,230 @@
+{
+  "version": 1,
+  "id": "79c5877a8906",
+  "projectRoot": "/var/folders/zb/1lrbbz6d47j8q48s1qxznzn80000gn/T/takeover-demo-proj-Z8ExUK",
+  "startedAt": 1794466355426,
+  "updatedAt": 1794466355746,
+  "status": "completed",
+  "rounds": 1,
+  "steps": {
+    "preflight": {
+      "status": "done",
+      "startedAt": 1794466355426,
+      "finishedAt": 1794466355447,
+      "result": {
+        "initialized": false,
+        "adopted": false,
+        "gitHead": "ff3fe2d5e0845d0a79a13f7e83cf424b3ae56dce"
+      }
+    },
+    "preview": {
+      "status": "done",
+      "startedAt": 1794466355447,
+      "finishedAt": 1794466355546,
+      "result": {
+        "draftPath": "/var/folders/zb/1lrbbz6d47j8q48s1qxznzn80000gn/T/takeover-demo-state-AacgmO/takeover-demo-proj-Z8ExUK-f523e59118ef/draft.json",
+        "inventoryFingerprint": "99a3dc31a183816522e2077ebc073e7415c36315220582be0e8bd036564d294e",
+        "inventory": 3,
+        "sources": [
+          {
+            "path": "docs/PLAN.md",
+            "domain": "plan",
+            "adapter": "markdown-heading-v1",
+            "role": "primary"
+          },
+          {
+            "path": "TODO.md",
+            "domain": "ledger",
+            "adapter": "markdown-ledger-v1",
+            "role": "primary"
+          },
+          {
+            "path": ".awr/intake/GOALS.md",
+            "domain": "goal",
+            "adapter": "markdown-heading-v1",
+            "role": "primary"
+          },
+          {
+            "path": "README.md",
+            "domain": "plan",
+            "adapter": "markdown-heading-v1",
+            "role": "supporting"
+          }
+        ],
+        "gaps": [
+          "No authoritative goal source was identified; the proposed intake source needs review."
+        ],
+        "generatedFiles": [
+          ".awr/intake/GOALS.md"
+        ],
+        "git": {
+          "head": "ff3fe2d5e0845d0a79a13f7e83cf424b3ae56dce",
+          "meaning": "Observed Git state only; implementation and business acceptance have not been inferred.",
+          "tracked_changes": ""
+        }
+      }
+    },
+    "review": {
+      "status": "done",
+      "startedAt": 1794466355546,
+      "finishedAt": 1794466355547,
+      "result": {
+        "reviewedPath": "/var/folders/zb/1lrbbz6d47j8q48s1qxznzn80000gn/T/takeover-demo-state-AacgmO/takeover-demo-proj-Z8ExUK-f523e59118ef/reviewed.json",
+        "reviewed": true,
+        "changedFiles": [
+          ".awr/intake/GOALS.md"
+        ]
+      }
+    },
+    "accept": {
+      "status": "done",
+      "startedAt": 1794466355547,
+      "attempted": true,
+      "fingerprint": "sha256:fc2eecacec5d91884a50a0a826166914929cfd840a038efe133c6d2908d1b239",
+      "finishedAt": 1794466355715,
+      "result": {
+        "fingerprint": "sha256:fc2eecacec5d91884a50a0a826166914929cfd840a038efe133c6d2908d1b239",
+        "writes": [
+          {
+            "action": "create",
+            "path": ".awr/project.toml"
+          },
+          {
+            "action": "create",
+            "path": ".gitignore"
+          },
+          {
+            "action": "create",
+            "path": ".awr/intake/GOALS.md"
+          },
+          {
+            "action": "create",
+            "path": ".awr/intake/inventory.json"
+          },
+          {
+            "action": "create",
+            "path": ".awr/intake/project.toml"
+          }
+        ],
+        "writtenOutsideAwr": [
+          ".gitignore"
+        ]
+      }
+    },
+    "organize": {
+      "status": "done",
+      "startedAt": 1794466355715,
+      "finishedAt": 1794466355735,
+      "result": {
+        "state": "needs_organization",
+        "gapTotal": 8,
+        "goalTotal": 1,
+        "executableWorkTotal": 0,
+        "goals": [
+          {
+            "key": "file:///private/var/folders/zb/1lrbbz6d47j8q48s1qxznzn80000gn/T/takeover-demo-proj-Z8ExUK/.awr/intake/GOALS.md#portal",
+            "status": "candidate",
+            "title": "Deliver a document portal for the support team"
+          }
+        ],
+        "actions": [
+          "goals",
+          "work",
+          "evidence",
+          "recheck"
+        ],
+        "gaps": [
+          {
+            "code": "goal_unconfirmed",
+            "action": "goals",
+            "detail": "Goal is a draft, unknown, stale, empty or an intake placeholder. Preserve uncertain intent and record its source before declaring it active.",
+            "target": "file:///private/var/folders/zb/1lrbbz6d47j8q48s1qxznzn80000gn/T/takeover-demo-proj-Z8ExUK/.awr/intake/GOALS.md#portal"
+          },
+          {
+            "code": "work_structure_incomplete",
+            "action": "work",
+            "detail": "Missing or invalid: nonempty unique acceptance, next_action",
+            "target": "md-01da5526bf2dd4bcdcdb8025c57c2c24fcc89747307b1e6e452e330fc92b8694"
+          },
+          {
+            "code": "work_goal_missing",
+            "action": "work",
+            "detail": "Link this work to its goal using goal/goals in YAML or a goal column in the Markdown table. Do not infer a business relationship from filenames.",
+            "target": "md-01da5526bf2dd4bcdcdb8025c57c2c24fcc89747307b1e6e452e330fc92b8694"
+          },
+          {
+            "code": "work_structure_incomplete",
+            "action": "work",
+            "detail": "Missing or invalid: nonempty unique acceptance, next_action",
+            "target": "md-0bf1d245547b7b2a2c59d3c80a6348ffddb8d38f8e19046aff89ef34fc6fc4e0"
+          },
+          {
+            "code": "work_goal_missing",
+            "action": "work",
+            "detail": "Link this work to its goal using goal/goals in YAML or a goal column in the Markdown table. Do not infer a business relationship from filenames.",
+            "target": "md-0bf1d245547b7b2a2c59d3c80a6348ffddb8d38f8e19046aff89ef34fc6fc4e0"
+          },
+          {
+            "code": "work_structure_incomplete",
+            "action": "work",
+            "detail": "Missing or invalid: nonempty unique acceptance",
+            "target": "md-a63ef00cfb9bd38370c1c79dbf7061d163c74c831f702054fd5a99a9093ad355"
+          },
+          {
+            "code": "work_goal_missing",
+            "action": "work",
+            "detail": "Link this work to its goal using goal/goals in YAML or a goal column in the Markdown table. Do not infer a business relationship from filenames.",
+            "target": "md-a63ef00cfb9bd38370c1c79dbf7061d163c74c831f702054fd5a99a9093ad355"
+          },
+          {
+            "code": "completion_not_checked",
+            "action": "evidence",
+            "detail": "Not checked in this query: no explicit source SHA was supplied. This is neither a verification failure nor proof of completion. Inspect the original report and its recorded source version; never fill historical evidence with current HEAD.",
+            "target": "md-a63ef00cfb9bd38370c1c79dbf7061d163c74c831f702054fd5a99a9093ad355"
+          }
+        ],
+        "sources": [
+          {
+            "domain": "goal",
+            "freshness": "fresh",
+            "locator": "file:///private/var/folders/zb/1lrbbz6d47j8q48s1qxznzn80000gn/T/takeover-demo-proj-Z8ExUK/.awr/intake/GOALS.md",
+            "revision": 1,
+            "role": "primary"
+          },
+          {
+            "domain": "ledger",
+            "freshness": "fresh",
+            "locator": "file:///private/var/folders/zb/1lrbbz6d47j8q48s1qxznzn80000gn/T/takeover-demo-proj-Z8ExUK/TODO.md",
+            "revision": 1,
+            "role": "primary"
+          },
+          {
+            "domain": "plan",
+            "freshness": "fresh",
+            "locator": "file:///private/var/folders/zb/1lrbbz6d47j8q48s1qxznzn80000gn/T/takeover-demo-proj-Z8ExUK/README.md",
+            "revision": 1,
+            "role": "supporting"
+          },
+          {
+            "domain": "plan",
+            "freshness": "fresh",
+            "locator": "file:///private/var/folders/zb/1lrbbz6d47j8q48s1qxznzn80000gn/T/takeover-demo-proj-Z8ExUK/docs/plan.md",
+            "revision": 1,
+            "role": "primary"
+          }
+        ],
+        "truncated": false,
+        "rounds": 0
+      }
+    },
+    "receipt": {
+      "status": "done",
+      "startedAt": 1794466355736,
+      "finishedAt": 1794466355746,
+      "result": {
+        "receiptPath": "/var/folders/zb/1lrbbz6d47j8q48s1qxznzn80000gn/T/takeover-demo-proj-Z8ExUK/.awr/takeover/receipt.json"
+      }
+    }
+  },
+  "stop": null
+}
