@@ -70,7 +70,7 @@ work_items:
 - id: DSH-010
   title: Create the plugin package skeleton that DSH loads
   kind: implementation
-  status: planned
+  status: completed
   priority: P0
   required: true
   goal: intake-goal
@@ -79,7 +79,9 @@ work_items:
   - The package builds, declares its dsh manifest in package.json, and exports name and apply.
   - After a local link install, the plugin appears in the DSH composition dump and its apply function runs.
   - A test command runs in CI or locally and is documented in README.md.
-  next_action: Scaffold the package with the make-dsh-plugin skill and install it through a local link.
+  next_action: Complete DSH-010 with docs/dsh-010-skeleton-check.md and docs/evidence/DSH-010 as evidence.
+  "evidence": ["docs/evidence/DSH-010/completion-report.json"]
+  "verification": {"evidence_level":"locally_verified"}
 - id: DSH-011
   title: Select the awr binary and refuse to run on an incompatible runtime
   kind: implementation

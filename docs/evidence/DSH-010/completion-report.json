@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "work_item": "DSH-010",
+  "source_sha": "f6c6e1fb59d682725d2a34f3e1f3cb167a306cd9",
+  "command": "npm test; dsh dsh-awr-dev --from-default-profile headless; dsh plugin --profile dsh-awr-dev add link:<repo>; dsh dsh-awr-dev --dump-config; dsh dsh-awr-dev \"say ok\" with and without a control package",
+  "scope": [
+    "package.json",
+    "cordis.patch.yml",
+    "index.js",
+    "locale",
+    "icon.svg",
+    "test",
+    "README.md",
+    "docs/dsh-010-skeleton-check.md",
+    "docs/evidence/DSH-010"
+  ],
+  "verified_at": 1794458120332,
+  "checks": [
+    {
+      "name": "Package manifest, exports and tests",
+      "passed": true,
+      "details": "The package is plain ESM with no build step. package.json declares dsh.bundle.patch ./cordis.patch.yml and exports ., ./locale/*.json and ./icon; index.js exports name and apply. npm test ran 6 tests, 6 passed, covering the manifest, exported display resources, sentence-case titles, the icon size limit, and apply against a stub context that rejects any use of ctx other than logger.",
+      "criteria": [
+        "The package builds, declares its dsh manifest in package.json, and exports name and apply."
+      ]
+    },
+    {
+      "name": "Local link install, composition dump and activation",
+      "passed": true,
+      "details": "A dev profile created from the headless template had the package installed by dsh plugin add link:. The composed tree from dsh --dump-config lists the plugin's layer and row. Booting the profile printed no entry did not activate warning for it. A control package built the same way printed from its apply on stderr, so the loader calls apply for a linked bundle. Not observed: the skeleton's own log line, because ctx.logger output is not shown by the headless profile at its default level; this and the fact that the desktop app was not used are stated in docs/dsh-010-skeleton-check.md.",
+      "criteria": [
+        "After a local link install, the plugin appears in the DSH composition dump and its apply function runs."
+      ]
+    },
+    {
+      "name": "Test command documented",
+      "passed": true,
+      "details": "README.md has a Develop section naming npm test (Node's built-in runner, no dependencies); it was run locally and passed. No CI is configured for this repository.",
+      "criteria": [
+        "A test command runs in CI or locally and is documented in README.md."
+      ]
+    }
+  ]
+}
