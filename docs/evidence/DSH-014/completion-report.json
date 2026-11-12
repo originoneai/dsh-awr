@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "work_item": "DSH-014",
+  "source_sha": "f124e74651ab886df7ff88cb1540e224311d8f1c",
+  "command": "node --test (81 tests, including the real awr); dsh dsh-awr-dev headless with scripts/fake-model.mjs standing in for the model (DEEPSEEK_BASE_URL on 127.0.0.1): new conversation, --session-id resume unchanged, resume after a checkpoint with an open loop, resume with the compaction threshold forced down, and DSH_AWR_CONTEXT_BUDGET=50",
+  "scope": [
+    "lib/prompt-context.js",
+    "lib/awr-runtime.js",
+    "lib/commands.js",
+    "lib/conversation.js",
+    "index.js",
+    "test",
+    "scripts/fake-model.mjs",
+    "docs/prompt-context.md",
+    "docs/evidence/DSH-014"
+  ],
+  "verified_at": 1794464457180,
+  "checks": [
+    {
+      "name": "The assembled prompt carries the bound work's next action, open loops and compiled context",
+      "passed": true,
+      "details": "In DeepSeek Harness 0.2.2-rc.1 (headless dev profile, a local stand-in for the model that records what DSH sends), the first model request of a new conversation held a '# AWR work context' section inside DSH's runtime-context snapshot with the AWR session, project, work and revision, then awr context compile's rendered text including 'Next Action:'. After a checkpoint with an open loop was written, the next request carried a newer snapshot with 'Checkpoint Open Loops: decide the milestone names', and the stand-in answered with the next action and that open loop (docs/evidence/DSH-014/live-dsh.json). Unit and real-awr tests (test/prompt-context.test.js) cover the same text, the revision cache and an unchanged project giving the identical string. Limits: headless profile and a stand-in model, not the desktop app and not a real model; whether a model uses the context well was not measured.",
+      "criteria": [
+        "The assembled prompt contains the bound work's next action, open loops and compiled context."
+      ]
+    },
+    {
+      "name": "After a native compaction the injected context is present again in the next request",
+      "passed": true,
+      "details": "With the compaction threshold forced down, DSH condensed the history (two summary requests, whose text was the stand-in's reply 'I see no AWR context.', which holds no AWR section) and the request that followed began with the compacted summary and a fresh 'Current runtime context' snapshot that again held '# AWR work context' at the then-current project revision, with the open loop (docs/evidence/DSH-014/live-dsh.json, after_compaction_first_message). The plugin does no special work for this: it registers the text as a required runtime context and DSH re-appends its snapshot when compaction replaced the retained one. Limits: one forced compaction in the headless profile; a compaction triggered by real token pressure in the desktop app was not observed.",
+      "criteria": [
+        "After a native compaction the injected context is present again in the next request."
+      ]
+    },
+    {
+      "name": "SourceStale and BudgetExceeded are surfaced to the conversation, not bypassed or truncated away",
+      "passed": true,
+      "details": "With DSH_AWR_CONTEXT_BUDGET=50 the real awr answered BudgetExceeded (required 660, budget 50) and the model request in DeepSeek Harness carried the notice '# AWR work context unavailable' with AWR's message and its suggested command, instead of any context; the budget is never raised and nothing is cut to fit. A real awr on a ledger that does not parse answered ContextIncomplete and the plugin gave the same kind of notice, and returned to the context once the ledger was fixed (test/prompt-context.test.js, real awr). SourceStale is covered by a scripted test only: no real awr failure with that code was produced, and the plugin treats every awr error code the same way, so this rests on the generic path. While the project cannot be compiled the earlier context is not served. Along the way the runner was found to read only stdout, which reported every real awr error as invalid_output; it now reads stderr too (test/awr-runtime.test.js).",
+      "criteria": [
+        "SourceStale and BudgetExceeded are surfaced to the conversation and are not bypassed or truncated away."
+      ]
+    }
+  ]
+}

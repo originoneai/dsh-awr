@@ -127,7 +127,7 @@ work_items:
 - id: DSH-014
   title: Inject AWR work context into the DSH prompt
   kind: implementation
-  status: planned
+  status: completed
   priority: P0
   required: true
   goal: intake-goal
@@ -136,7 +136,9 @@ work_items:
   - The assembled prompt contains the bound work's next action, open loops and compiled context.
   - After a native compaction the injected context is present again in the next request.
   - SourceStale and BudgetExceeded are surfaced to the conversation and are not bypassed or truncated away.
-  next_action: Register a required prompt context that renders from awr status and context compile, cached by project revision.
+  next_action: Complete DSH-014 with the registered evidence
+  "evidence": ["docs/evidence/DSH-014/completion-report.json"]
+  "verification": {"evidence_level":"locally_verified"}
 - id: DSH-015
   title: Provide /awr slash commands for status, claim, checkpoint and end
   kind: implementation
