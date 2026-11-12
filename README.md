@@ -9,7 +9,10 @@ real model (the one-click takeover on public projects, `docs/evidence/DSH-022`) 
 with a local stand-in model (everything else). It binds each conversation to an AWR session, puts the AWR work
 context in the prompt, gives the model the `awr` tools and a workflow skill, offers `/awr` commands and a state panel,
 takes a project over in one click with a restricted reviewer subagent, asks for checkpoints, reports compactions,
-suggests evidence and handles forks. MIT licensed and public; `v0.1.0` is the first release ([docs/owner-decisions.md](docs/owner-decisions.md)).
+suggests evidence and handles forks. Its interface is for people: the conversation shows one quiet line for what AWR
+does and nothing for what the interface asks, the header card speaks in plain words and folds every engineering fact,
+the **Progress** tab shows the whole project (mainlines, dependencies, lanes) the way AWR's own overview does, and a
+plugin installed from GitHub can check for and install a newer commit from the card. MIT licensed and public; `v0.1.0` is the first release ([docs/owner-decisions.md](docs/owner-decisions.md)).
 The ledger is `.awr/intake/work-ledger.yaml`.
 
 ## Install
@@ -28,8 +31,13 @@ first. The MCP route needs an `awr-mcp` that contains originoneai/awr#614 (docs/
 
 ```sh
 npm test                                   # package tests, Node's built-in runner, no dependencies
+npm run build                              # client.js is generated from client/*.js; a test fails when it is stale
 scripts/build-awr-lab.sh <awr-checkout>    # the local AWR this plugin is developed against
 ```
+
+`client.js` (the part that runs in the browser) is one generated file: edit the parts in `client/` and run
+`npm run build`. A running DeepSeek Harness loads a rebuilt `client.js` again without a restart; a change of the host half
+(`index.js`, `lib/`) needs one.
 
 - The AWR build used for development and how it differs from the release:
   [docs/lab-environment.md](docs/lab-environment.md).
@@ -42,7 +50,8 @@ scripts/build-awr-lab.sh <awr-checkout>    # the local AWR this plugin is develo
   [docs/prompt-context.md](docs/prompt-context.md). The AWR tools the model can call:
   [docs/tools.md](docs/tools.md). The takeover module: [docs/takeover.md](docs/takeover.md); its button, subagent and panel in DSH:
   [docs/takeover-ui.md](docs/takeover-ui.md); the same takeover through `awr takeover`:
-  [docs/takeover-cli.md](docs/takeover-cli.md). The AWR state panel: [docs/panel.md](docs/panel.md). The workflow skill: [docs/skill.md](docs/skill.md). Checkpoint requests: [docs/checkpoints.md](docs/checkpoints.md). Compactions reported to AWR: [docs/compaction.md](docs/compaction.md). Evidence candidates from tool results: [docs/evidence-candidates.md](docs/evidence-candidates.md). Real-model takeover runbook (DSH-022): [docs/dsh-022-runbook.md](docs/dsh-022-runbook.md).
+  [docs/takeover-cli.md](docs/takeover-cli.md). The AWR card in the header and updating from GitHub: [docs/panel.md](docs/panel.md). What the conversation shows of AWR:
+[docs/conversation-rows.md](docs/conversation-rows.md). The Progress tab: [docs/progress-page.md](docs/progress-page.md). The workflow skill: [docs/skill.md](docs/skill.md). Checkpoint requests: [docs/checkpoints.md](docs/checkpoints.md). Compactions reported to AWR: [docs/compaction.md](docs/compaction.md). Evidence candidates from tool results: [docs/evidence-candidates.md](docs/evidence-candidates.md). Real-model takeover runbook (DSH-022): [docs/dsh-022-runbook.md](docs/dsh-022-runbook.md).
 
 ## What the plugin is for
 

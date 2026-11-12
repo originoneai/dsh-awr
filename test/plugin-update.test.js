@@ -225,7 +225,7 @@ test('a dependency pinned to a commit that never named a branch follows the defa
     await assert.rejects(readFile(followFile, 'utf8'), 'a check of a commit-pinned dependency has no branch to remember')
     // A file that is not what was written is ignored, not trusted.
     await mkdir(dirname(followFile), { recursive: true })
-    for (const garbage of ['not json', '[]', '{"originoneai/dsh-awr": 7}']) {
+    for (const garbage of ['not json', '[]', 'null', '"text"', '{"originoneai/dsh-awr": 7}', '{"originoneai/dsh-awr": ""}']) {
       await writeFile(followFile, garbage)
       asked.length = 0
       await updater.check()

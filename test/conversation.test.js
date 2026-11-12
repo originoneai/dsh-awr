@@ -84,7 +84,7 @@ test('a conversation this instance never bound (the host loaded the plugin again
   const awr = {
     async run(projectRoot, args) {
       calls.push([projectRoot, ...args])
-      if (args[0] === 'client' && args[1] === 'show') return { binding: args.includes('dsh:conv-9') ? { session_id: 'S9' } : null }
+      if (args[0] === 'client' && args[1] === 'show') return { binding: args.includes('dsh:conv-9') ? { session_id: 'S9' } : args.includes('dsh:conv-ended') ? { session_id: 'S-old' } : null }
       if (args[0] === 'session' && args[1] === 'show') return { session: { id: args[2], status: args[2] === 'S9' ? 'active' : 'ended' } }
       throw new Error(`unexpected ${args.join(' ')}`)
     },

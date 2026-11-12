@@ -299,8 +299,10 @@ test('an update that went through is not reported as failed because the answer o
   plugin = fromGithub(available)
   const failed = loadClient({ view: managed, work: () => workView(), plugin: () => plugin, install: async () => ({ ok: true, value: { application: 'failed', error: { code: 'incompatible-version' } } }) })
   const ui = await open(failed)
+  failed.calls.length = 0
   await ui.click('awr-update-apply')
   assert.match(textOf(ui.byTestId('awr-update')), /The update did not go through/)
+  assert.deepEqual(failed.calls, ['/awr panel --ui en'], 'the host is asked after a failure as well')
 })
 
 test('once the update is applied the host is asked for the facts again', async () => {

@@ -1,98 +1,116 @@
-# The AWR state panel (DSH-051, DSH-052)
+# The AWR card in the conversation header (DSH-051, DSH-052, DSH-061)
 
-The **AWR** action in the conversation header (`client.js`, introduced for the takeover in
-`docs/takeover-ui.md`) shows, for a project AWR manages, what `awr status` says about it and what this
-conversation is doing in it, and lets the user claim, checkpoint and end the conversation's AWR session
-(DSH-052). Code: `lib/state-view.js`; the host command is `/awr state [--json]`.
+The **AWR** action in the conversation header (`client/40-popover.js`, built into `client.js`) is a small light and
+the card it opens. It says in plain words how the project stands and what needs the person; every engineering fact
+(identifiers, revisions, paths, the `awr` in use) is folded under **Technical details**, closed until someone opens it.
+The whole project is on the **Progress** tab (`docs/progress-page.md`), not here.
 
-## What it shows
+## What the card shows
 
-- **This conversation:** the project's revision, and the AWR session the conversation is bound to with its
-  status.
-- **Bound work:** the work item (key, title, status), its next action and its blocker, or "no blocker".
-- **Claim:** each claim this session holds, with its expiry, or "no expiry", or "This session holds no
-  claim".
-- **Project:** how many items are in progress, ready and blocked, and the blocked ones with their
-  blockers.
-- Below that, for a project that was just taken over, the steps and the receipt (DSH-021).
+For a project AWR manages:
 
-- **awr:** at the bottom, which `awr` the plugin uses (version and path), why it was chosen (`binding`, `env` for
-  `DSH_AWR_CLI`, or `path`), and whether the takeover runs through `awr takeover` or in the plugin.
+- the project's name and "Managed by AWR", and after a takeover one line of what it did ("Takeover done · 1 goal, 8
+  details still to fill in");
+- three numbers: **In progress**, **Ready**, **Not ready**. They are what `awr status` counts for the whole queue
+  (`current_total`, `ready_count`, `blocked_count`); the lists it also returns are a sample of five each and are not
+  counted. The third is red only when something is recorded as blocking work;
+- **This conversation is on:** the work the conversation's AWR session is bound to, with its next step or its blocker;
+- **Needs you:** work with a recorded blocker, goals nobody confirmed, and, while the project is incomplete, one line
+  saying that no work can start until the missing details are filled in. Work that merely is not ready is not listed one
+  by one in that case: AWR starts nothing in a project whose goal, acceptance criteria and next steps are incomplete
+  (`organization.business_execution_ready` is false), and saying so once is the truth;
+- the plugin's version, and for a plugin installed from GitHub **Check for updates** (below).
 
-A conversation that is not bound shows the project's counts and lists and says it is not bound.
+The light is green when the person has nothing to do, amber when something needs them (a recorded blocker, an
+incomplete project, a goal waiting for confirmation), blue while a takeover runs and red where one stopped. A project
+AWR does not manage shows the offer to take it over (`docs/takeover-ui.md`).
 
-## Actions (DSH-052)
+## No controls for what the agent does
 
-While the conversation's AWR session is `active`, the panel adds **Manage this session**. Each button runs
-the `/awr` command of the same name, so the panel and the conversation do the same thing, a refusal reads
-the same in both, and every action is a line in the conversation's log.
-
-| Button | Command | Notes |
-| --- | --- | --- |
-| **Claim W-1** | `/awr claim` | Shown when the session holds no claim and the bound work is not completed or closed |
-| **Save a checkpoint** | `/awr checkpoint DIGEST :: NEXT` | Two fields, both required; whitespace and newlines collapse to single spaces; a field that holds `::` is refused before anything is sent |
-| **End the session** | `/awr end ended\|interrupted\|incomplete` | Asks first with the note that ending a session does not complete its work; the outcome comes from a fixed list |
-
-After a command the panel shows the host's answer as it came and reads the state again. A refusal (for
-example a revision conflict) is shown in red, nothing is retried and the state is not re-read, so the
-user looks first and then acts again. The buttons are disabled while a command runs, so a double click
-sends one command. The actions disappear when the session is no longer active.
+The card has no buttons or fields for claiming work, saving a checkpoint or ending the session. The agent does these
+itself through its `awr` tools, and a person who wants to can type `/awr claim`, `/awr checkpoint DIGEST :: NEXT` or
+`/awr end ended|interrupted|incomplete`. They were buttons and two text fields in DSH-052; the first real use showed
+people asking what to type into them and what a "digest" was, so they were taken out (DSH-061).
 
 ## Where the numbers come from
 
-Everything is what awr says, passed on as it came; nothing is derived or cached on the DSH side, so the
-panel cannot disagree with `awr status` for the same project:
+Everything is what awr says, passed on as it came; the card cannot disagree with `awr status` for the same project:
 
 | Shown | From |
 | --- | --- |
-| project name, revision, counts, the lists, the next action | `awr status` |
+| name, revision, the queues, the next action | `awr status` |
+| the three numbers | `awr status` `current_total`, `ready_count`, `blocked_count` (an older awr that counts none: the length of the list) |
+| whether work can start | `awr status` `organization.business_execution_ready`, and the gaps `project_gap_total` |
+| why work is held back | `awr status` `blocked[].structural_codes`, kept in the file for the technical details |
 | session status | `awr session show <session>` |
-| bound work | `awr work show <key>`; the key is the binding's, or for a conversation resumed from an earlier run the compiled context of the session names it (also when AWR calls that context incomplete) |
-| claim and expiry | the items of `awr status` that this session claims, then `awr work show <key>` (`active_claims[].expires_at`) |
+| bound work | `awr work show <key>`; the key is the binding's, or for a conversation resumed from an earlier run the compiled context of the session names it |
+| claim and expiry | the items of `awr status` that this session claims, then `awr work show <key>` |
 
-AWR lists the intake task of a project that still needs organization under "blocked" even though its own
-status is `ready` and it has no blocker text; the panel shows the list as AWR gives it.
+The card reads its data from a file the host writes, not from a command (`lib/panel-snapshot.js`), because every command
+run is a row in the conversation and no plugin can switch that off. Opening the card on a file written in the last 30 s
+leaves nothing in the conversation; the host writes the file again after the agent ran an awr command that can change
+the work, and every 2 s while a takeover runs. A closed card reads nothing but, once, to colour its light.
 
-The panel reads its data from a file the host writes, not from a command (see `docs/takeover-ui.md`), because every
-command run is a row in the conversation and no plugin can switch that off. Opening the panel on a file written in
-the last 30 s, a click on one of the buttons above, and the steps of a running takeover all leave no row of their own:
-the host writes the file again when `/awr claim`, `checkpoint`, `end` or `takeover` ran, and every 2 s while a takeover
-runs, and the panel reads it. A closed panel reads nothing but, once, to colour its dot.
+## After the plugin is updated
+
+DeepSeek Harness loads an updated plugin without a restart, and a conversation that was open then has no `agent/created`
+for the new instance, so nothing is bound for it. The binding store (`lib/conversation.js`) looks the conversation up in
+awr when it holds none (`client show`, `session show`: read-only, an active session only) and keeps what it finds; the
+card, the `/awr` commands and the awr tools use it (`lib/binding.js`, `bindingFor`). Without it the card lost the
+project's numbers and the agent lost its AWR context until DeepSeek Harness restarted.
+
+## Updating from GitHub (DSH-059)
+
+A plugin installed from GitHub (`github:owner/repo`) keeps the version of its package.json however many commits it has,
+and DeepSeek Harness's plugin page updates registry packages only. The card therefore checks and installs itself.
+
+- **Check for updates** asks GitHub (`git ls-remote`, no credentials, no prompt, 10 s) for the newest commit of the
+  branch the plugin follows and compares it with the commit the profile's `pnpm-lock.yaml` names. The answer is shown as
+  "Update available" with an **Update** button, or "Up to date".
+- **Update** has DeepSeek Harness's plugin manager install `github:owner/repo#<newest commit>` (`installBundle`). It
+  replaces the dependency in one step and puts the profile back if that fails. Only a spec of exactly that shape is
+  ever sent. The result is `applied` (the client and the host are loaded again; the card closes and the plugin is
+  as new as the commit), `restart-required` (the card says so) or a failure (said in words; the raw code is in the
+  technical details).
+- The dependency of an updated plugin names a commit, not a branch, so the branch it follows is remembered in
+  `<home>/.local/state/dsh-awr/follow.json` (repository and branch, nothing else) and asked at the next check. Without it
+  the second check asked the repository's default branch and offered to move the plugin there.
+- The host reads the installed commit and version each time it describes itself, and says which version its own process
+  loaded. When the files on disk are newer than that, the card says a restart is needed.
+- DeepSeek Harness loads the updated plugin while `installBundle` is still answering, so the answer can be lost or arrive
+  as an error for an update that went through. The card asks the host after any outcome and does not report a failed or
+  running update once the host says the commit that was offered is the one installed. A card that opens on an offered
+  update asks the host again, so it does not offer what is installed already.
+- A plugin that runs from a folder (a development checkout) or from a registry package offers no update and says why.
+- The check and the install run in the host and the client respectively; neither is a command in the conversation (the
+  check is `/awr update check --ui <language>`, which the conversation shows as no row).
 
 ## Checked
 
-- `test/state-view.test.js` (6 tests): the view with scripted awr output (the bound work, the claim and
-  its expiry, the blocked work and its blocker, the four lists, who else claims what, a claim without
-  an expiry, a session without claims, an unbound conversation, a work item that cannot be read, a
-  conversation resumed without a work key, complete and incomplete contexts); `/awr state` in words and
-  as JSON. Against the real awr on a disposable project: the view equals `awr status` for the same
-  project (revision, name, counts, the four lists, the next action) when the conversation is bound with
-  no claim, after a claim with a TTL (the expiry is `acquired_at + ttl`), after the work is blocked with a
-  reason (the blocker shows in the bound work and the blocked list), and after the session ended (no
-  claims).
-- In DeepSeek Harness 0.2.2-rc.1 (`docs/evidence/DSH-051`, web profile in the app browser pane): on a real
-  open-source project that had been taken over, the panel showed the bound session, the bound work with
-  its next action, the claim with the expiry awr had set (checked to the second), and the project's
-  counts and blocked list; after the work was moved to blocked with a reason the panel showed `[blocked]`,
-  the blocker text and the same text in the blocked list, equal to `awr status` read from the CLI.
-
-- `test/client.test.js` (9 tests, DSH-052): the shipped `client.js` run in a `vm` context against a small
-  stand-in for React (hook state, synchronous re-render) and a stub host that records command lines. Claim
-  shown and sent once, hidden when a claim is held, the work is finished or there is no bound work; actions
-  only for an `active` session; checkpoint sent as one line with collapsed whitespace, refused when a
-  field is empty or holds `::` (nothing sent); end asks first, sends only one of the three outcomes
-  whatever the select holds, and the actions go away with the session; a refusal shown in red without a
-  retry or refresh; buttons disabled while a command runs. Removing the `::` check, the whitespace
-  collapse, the outcome list, the disabled state, the status condition or the confirmation form each
-  turns a test red.
+- `test/state-view.test.js`, `test/panel-text.test.js`, `test/product-text.test.js`: the view with scripted awr output
+  (bound work, claim and expiry, blocked work and its blocker, the queues and their totals, whether work can start, the
+  structural codes, who else claims what, a session without claims, an unbound conversation), and that the typed state
+  and status count the whole queue. Against the real awr: the view equals `awr status` for the same project.
+- `test/client.test.js`: `client.js` run in a `vm` context against a small stand-in for React (hook state per instance)
+  and a stub host that records command lines: the light, the numbers (sample versus total, red only for a recorded
+  blocker), the incomplete-project line, that no engineering fact is visible until the details are opened, that there are
+  no buttons or fields for the agent's actions, the offer and the running takeover, and the update (check, install,
+  the exact spec, a restart, failures, a lost answer, a host still running old code, an offer asked again on opening).
+- `test/plugin-update.test.js` (14 tests): the repository and branch in every form pnpm saves a dependency, the commit
+  of the lockfile, the commit-pinned dependency that remembers its branch, an install that happened after the check,
+  `git ls-remote` without credentials, and that no raw spec (so no credential) reaches the panel.
+- `test/conversation.test.js`, `test/panel-snapshot.test.js`: a conversation the instance never bound is found in awr
+  without starting or claiming anything, and the panel's data has its work.
+- In DeepSeek Harness 0.2.2-rc.2 with the real model (DeepSeek-V4.1-Flash) and an awr built from the modified code
+  (`DSH_AWR_CLI`): the card on a taken-over project, on this project and on the 597-item AWR project; the plugin
+  installed from a GitHub branch, **Check for updates** and **Update** from the card across five commits, which found
+  the three defects fixed above (the stale answer, the lost branch, the lost binding) and, in a fourth, the lost answer.
 
 ## Not checked
 
-- The three buttons in DeepSeek Harness itself (the app or the web profile): the tests use a stand-in
-  for React and a stub host. The `/awr claim`, `/awr checkpoint` and `/awr end` commands behind them were
-  checked in DSH (DSH-015).
-- A multi-project overview: the panel shows the one project of the conversation.
-- Several claims at once, and claims by other conversations (the lists mark them; not drawn in the panel).
-- A very long list: the panel shows the first six blocked items.
-- Updating while the panel stays open: it reads when opened, not on every change in AWR.
-- The desktop app (DSH's shell around the same client).
+- The card in the headless or web profile: the tests use a stand-in for React and a stub host, the desktop app was
+  driven by hand.
+- The corrected lost-answer handling in the app after the last fix: the failure was seen in the app, the fix has unit
+  tests.
+- A plugin installed from a registry (`npm`): it offers no update here.
+- Several claims at once and claims by other conversations (the lists mark them; the card does not draw them).

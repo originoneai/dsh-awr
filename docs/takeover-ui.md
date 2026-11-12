@@ -1,15 +1,15 @@
 # One-click takeover in DSH (DSH-021)
 
 The module (`docs/takeover.md`) does the work; this is how DSH starts it, who reviews the draft, and
-where the result is shown. Code: `lib/takeover-host.js` (host), `client.js` (browser), the command in
-`lib/commands.js`.
+where the result is shown. Code: `lib/takeover-host.js` (host), `client/*.js` built into `client.js` (browser), the
+command in `lib/commands.js`.
 
 ## What the user does
 
-Opens the **AWR** action in the conversation header (it sits with the subagent and job lists) and clicks
-**Take over this project**. The panel then shows the steps as they finish, and at the end the receipt:
-what the project's files were read as, what was created, the goals that wait for the owner to confirm,
-and that nothing was committed or pushed. The same thing is available as `/awr takeover` and
+Opens the **AWR** action in the conversation header (it sits with the subagent and job lists), or the **Progress** tab,
+and clicks **Start taking over**. The card then shows the steps as they finish, and at the end what it did (one line,
+"Takeover done · 1 goal, 8 details still to fill in"); the receipt's facts are in the technical details. Nothing is
+committed or pushed. The same thing is available as `/awr takeover` and
 `/awr takeover status [--json]`. The conversation stays usable the whole time, and when the takeover
 completes the conversation is bound to AWR (`bindings.rebind`), so its next step carries the AWR context
 and tools (`docs/prompt-context.md`, `docs/tools.md`).
@@ -59,12 +59,19 @@ on the child's directory did not restrict it at all; the live check caught that.
 
 ## Client
 
-`client.js` registers a lazy factory into `conversation.session.header.actions`
-(`window.__ModuleLoader__.load`, React from the module table, no build step; `package.json` has
-`dsh.client` and the `./client` export). It holds no logic: it runs `/awr takeover` and
-`/awr takeover status --json` through `ctx.remote.commands.execute(sessionId, line, [])` and draws the
-reply. Text goes through the client locale service (English and Chinese); colors and radii come from
-DSH's theme variables; the panel is portaled to the page body and closes on an outside click or Escape.
+`client.js` is one file loaded through `window.__ModuleLoader__.load` (React from the module table; `package.json` has
+`dsh.client` and the `./client` export). It is **generated**: the source is the parts in `client/` (`10-text.js`
+dictionaries, `20-core.js` styles and shared pieces, `30-data.js` the data hooks, `40-popover.js` the header card,
+`50-page.js` the Progress tab, `60-rows.js` the conversation rows, `90-tail.js` the registrations), and
+`npm run build` (`scripts/build-client.mjs`) writes them in file-name order into the one factory. A test fails when
+`client.js` is not what the parts build. The client registers three things: the header card
+(`conversation.session.header.actions`), the Progress tab (`conversation.view`) and the renderer of the `/awr` rows
+(`conversation.chat.commandview`, `docs/conversation-rows.md`). It holds no logic of AWR: it reads files the host writes
+and runs `/awr` commands through `ctx.remote.commands.execute(sessionId, line, [])`, each with `--ui <language>` so the
+host answers in the interface's language. Text goes through the client locale service (English and Chinese); colors and
+radii come from DSH's theme variables; the card is portaled to the page body and closes on an outside click or Escape.
+`remote.pluginManager` (the update, `docs/panel.md`) is an optional service: the client asks for it with
+`ctx.inject(['remote.pluginManager'], …)` and shows no Update button without it.
 
 The panel also shows where a stop is (`README.md:1468 (credential)` for a secret-boundary stop), and for a
 project AWR manages the work state of `docs/panel.md`.
@@ -85,8 +92,10 @@ app showed the comment in the row, so the data now does not travel in any comman
   Refresh, after an action whose command did not write the file, and once when a running takeover's file has not
   changed for 12 s (the host stopped writing). It never asks with `--json`.
 - **The host keeps the file current.** `/awr claim`, `checkpoint`, `end` and `takeover` write it before they answer;
-  while a takeover runs the host writes it every 2 s until it is no longer running. The panel reads it every 2.5 s while
-  it is open and a takeover runs. A closed panel reads it once, to colour its dot.
+  the awr tools the agent runs write it again 1.5 s after the last command that can change the work (only for a
+  conversation whose card or tab was opened); while a takeover runs the host writes it every 2 s until it is no longer
+  running. The card reads it every 2.5 s while it is open and a takeover runs. A closed card reads it once, to colour its
+  light. The progress file of the Progress tab (`docs/progress-page.md`) is written next to it the same way.
 - `inject` has to be the plain list (`['slots', 'locale', 'remote', 'remote.commands', 'remote.workspaceFiles']`):
   DeepSeek Harness's client loader does not load a plugin whose `inject` is an object with `optional`. A profile whose
   DeepSeek Harness does not mount `workspaceFiles` therefore does not show the panel at all (0.2.2-rc.2 does).
@@ -158,3 +167,20 @@ DeepSeek Harness 0.2.2-rc.2 desktop, the plugin installed from its local directo
   (`01M785HHWFCW5CRYK4NB996PEF`) and the ended session.
 - The two refusals the first presses met are in the conversation as readable red lines: "Name the work to claim: /awr
   claim WORK" and "ContextIncomplete: …".
+
+## Checked in the desktop app (DSH-060, DSH-061, DSH-062)
+
+The same setup, the awr rebuilt from all the modified code, the demo project `ui-demo` reset to a plain Markdown TODO and
+the real model (DeepSeek-V4.1-Flash) as the reviewer:
+
+- A takeover started from the Progress tab ran in about 20 s (three subagents, "step 3 of 6" on the way) and finished
+  without a single row in the conversation; the 35 raw JSON rows of earlier runs read as eight one-line sentences, each
+  with its details folded.
+- The card and the tab told one story after it: "0 in progress, 0 ready, 2 not ready", "8 details still to fill in", one
+  goal waiting for confirmation. (They had not at first: the tab called the two items ready because AWR's dependency
+  graph does, and `awr status` counted them blocked because the project is incomplete. The tab now holds ready work back
+  while AWR starts none.)
+- The 597-item AWR project: the card's numbers are the whole queue (24, 23, 39), not the five listed; the tab drew the
+  mainlines, the dependency graph (with the chain of a card picked out) and the lanes, and the detail of a card.
+- The plugin installed from a GitHub branch replaced the local link in one step, and **Check for updates** / **Update**
+  worked across five commits (`docs/panel.md`).

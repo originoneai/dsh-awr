@@ -9,7 +9,19 @@ session and creates no model message. The result is shown by DSH outside the mod
 | `/awr claim [WORK]` | `awr work claim WORK --session <bound session> --expected-revision <current>`; WORK defaults to the work the conversation was bound to |
 | `/awr checkpoint DIGEST :: NEXT` | `awr context compile --session <bound session>` to get the context hash (the session knows its work, so a resumed conversation works too), then `awr session checkpoint` with your digest and next action |
 | `/awr end [ended\|interrupted\|incomplete]` | `awr session end --outcome …` (default `ended`); the reply says that work is not completed by ending a session |
+| `/awr takeover [status]` | the one-click takeover of a project AWR does not manage yet ([takeover-ui.md](takeover-ui.md)) |
+| `/awr update [check]` | asks GitHub whether the plugin has a newer commit ([panel.md](panel.md)); the card does the installing |
 | `/awr help` | the list above |
+
+Two more are the interface's own questions and are not for typing: `/awr panel` makes the host write the data of the card
+and `/awr progress [refresh]` the data of the Progress tab ([progress-page.md](progress-page.md)); both answer one sentence
+and the conversation draws no row for them.
+
+**The first line is for a person.** Every answer starts with a sentence in plain words ("3 in progress, 4 ready, 2
+blocked"; "Claimed “Search endpoint” for this conversation.") and the technical details follow on the next lines, which the
+conversation folds ([conversation-rows.md](conversation-rows.md)). The interface's commands carry `--ui zh|en` so the answer
+is in its language; typed, the sentence is English. The counts are those AWR reports for the whole queue, not the length
+of the five it lists.
 
 Code: `lib/commands.js`, mounted by `registerAwrCommand` in `lib/conversation.js`.
 
