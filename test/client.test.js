@@ -280,6 +280,29 @@ test('after an update the card is rebuilt: an offer that was taken is asked agai
   assert.match(textOf((await open(current)).byTestId('awr-update')), /Check for updates/)
 })
 
+test('an update that went through is not reported as failed because the answer of the call was lost', async () => {
+  // DeepSeek Harness loads the updated plugin while the call is open: the call may end as an error although the files changed.
+  let plugin = fromGithub(available)
+  const installed = () => { plugin = { ...fromGithub({ ...available, available: false }), installed: B, version: '0.1.1', running: '0.1.1' } }
+  for (const install of [async () => { installed(); throw new Error('the connection went away') }, async () => { installed(); return { ok: false, error: { code: 'gateway/closed' } } }]) {
+    plugin = fromGithub(available)
+    const client = loadClient({ view: managed, work: () => workView(), plugin: () => plugin, install })
+    const ui = await open(client)
+    client.calls.length = 0
+    await ui.click('awr-update-apply')
+    assert.deepEqual(client.calls, ['/awr panel --ui en'], 'the host is asked what is installed')
+    const line = textOf(ui.byTestId('awr-update'))
+    assert.match(line, /^Plugin 0\.1\.1Up to date/, 'and what it says is shown')
+    assert.equal(ui.byTestId('awr-update-failure'), undefined, 'no failure is reported for an update that happened')
+  }
+  // A failure that left the plugin as it was is still a failure, and says so once the host has been asked.
+  plugin = fromGithub(available)
+  const failed = loadClient({ view: managed, work: () => workView(), plugin: () => plugin, install: async () => ({ ok: true, value: { application: 'failed', error: { code: 'incompatible-version' } } }) })
+  const ui = await open(failed)
+  await ui.click('awr-update-apply')
+  assert.match(textOf(ui.byTestId('awr-update')), /The update did not go through/)
+})
+
 test('once the update is applied the host is asked for the facts again', async () => {
   const client = loadClient({ view: managed, work: () => workView(), plugin: () => fromGithub(available) })
   const ui = await open(client)
