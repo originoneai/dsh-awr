@@ -404,3 +404,13 @@ work_items:
   "next_action": "Complete DSH-056 with the registered evidence"
   "priority": "P0"
   "summary": "Seen in the real desktop app: every state query of the panel is a command row in the conversation, and its text was the JSON the panel parses (about fifteen rows for one takeover, some while the panel was closed). The owner: the conversation should show what a person can read, not JSON or run logs."
+- "id": "WORK-cdd95f497497a0b512f83950f5a8cc8d"
+  "title": "DSH-057: Choose the awr, show which one is used, and keep a real model within the files AWR accepts"
+  "status": "planned"
+  "acceptance": ["The plugin can be told which awr to use, the panel shows which awr it uses and how the takeover runs, and a file the reviewer writes that AWR does not accept is dropped and reported instead of stopping the run at accept.","This is shown in the real DeepSeek Harness desktop app with a real model and an awr built from the changed code."]
+  "depends_on": ["WORK-75524ae8d9d61067cb6f9293f0b8bfe3"]
+  "goal": ["intake-goal"]
+  "kind": "defect"
+  "next_action": "Complete DSH-057 with the registered evidence"
+  "priority": "P0"
+  "summary": "Two findings of the first real run in the desktop app: the plugin used the released awr 0.7.0 although an awr built from the changed code was first on the PATH of the app, because DSH replaces the PATH of its runtime with the login shell PATH, and nothing in the UI said which awr ran; and a real model wrote WORK_ITEMS.md, which AWR refuses, so the takeover stopped at accept."

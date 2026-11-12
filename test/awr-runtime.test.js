@@ -70,6 +70,38 @@ test('unbound: uses the awr on PATH', async (t) => {
   assert.ok(onPath.calls().length >= 2, 'one preflight call and one status call')
 })
 
+test('DSH_AWR_CLI names the awr for a project that is not pinned, ahead of the one on PATH', async (t) => {
+  const forced = fakeAwr(scratch(t), 'awr', healthy)
+  const onPath = fakeAwr(scratch(t), 'awr', healthy)
+  const root = project(t)
+  const awr = createAwr({ env: { PATH: join(onPath.bin, '..'), DSH_AWR_CLI: forced.bin } })
+  assert.deepEqual(await awr.run(root, ['status']), { ok: true, project_revision: 7 })
+  assert.equal((await awr.resolve(root)).source, 'env')
+  assert.equal((await awr.resolve(root)).cli, forced.bin)
+  assert.ok(forced.calls().length >= 2)
+  assert.equal(onPath.calls().length, 0, 'the awr on PATH is not called')
+})
+
+test('a project pinned to an awr keeps it whatever DSH_AWR_CLI says', async (t) => {
+  const bound = fakeAwr(scratch(t), 'awr', healthy)
+  const forced = fakeAwr(scratch(t), 'awr', healthy)
+  const root = project(t, { cli: bound.bin, cli_sha256: sha(bound.bin), program_version: '0.7.0', schema_version: 14 })
+  const awr = createAwr({ env: { PATH: '', DSH_AWR_CLI: forced.bin } })
+  assert.equal((await awr.resolve(root)).source, 'binding')
+  assert.equal(forced.calls().length, 0)
+})
+
+test('DSH_AWR_CLI that is relative, missing or not executable stops with a message that names it', async (t) => {
+  const dir = scratch(t)
+  const plain = join(dir, 'awr')
+  writeFileSync(plain, 'not executable')
+  chmodSync(plain, 0o644)
+  for (const value of ['awr', join(dir, 'absent'), plain]) {
+    const awr = createAwr({ env: { PATH: dir, DSH_AWR_CLI: value } })
+    await assert.rejects(awr.resolve(project(t)), (error) => error instanceof AwrError && error.kind === 'missing' && error.message.includes(value) && /DSH_AWR_CLI/.test(error.message), value)
+  }
+})
+
 test('missing: no binding file and no awr on PATH stops with a readable message', async (t) => {
   const awr = createAwr({ env: { PATH: scratch(t) }, fallbackDirs: [] })
   const root = project(t)

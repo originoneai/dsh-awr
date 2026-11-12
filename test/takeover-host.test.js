@@ -22,6 +22,7 @@ import {
   createTakeoverController,
   describeRun,
   formatRun,
+  OWNED_INTAKE_FILES,
   parseReview,
   resultText,
   takeoverRootFor,
@@ -110,7 +111,7 @@ test('the reviewer\'s answer is parsed from a json fence or bare, merged over th
   assert.equal(fenced.draft.inventory_fingerprint, 'fp', 'the rest of the draft is untouched')
   assert.equal(fenced.notes, 'Based on README.md.')
   assert.deepEqual(parseReview(JSON.stringify({ generated_files: files }), DRAFT).draft.generated_files, files)
-  const merged = parseReview(JSON.stringify({ generated_files: { '.awr/intake/extra.md': 'x' } }), DRAFT)
+  const merged = parseReview(JSON.stringify({ generated_files: { '.awr/intake/PLAN.md': 'x' } }), DRAFT)
   assert.equal(Object.keys(merged.draft.generated_files).length, 2, 'files it did not return keep the draft\'s text')
   // the last fence wins when the reviewer quotes an example first
   assert.deepEqual(parseReview('```json\n{"generated_files":{"a":"b"}}\n```\nand then\n```json\n' + JSON.stringify({ generated_files: files }) + '\n```', DRAFT).draft.generated_files, files)
@@ -488,4 +489,25 @@ test('parseReview puts the intake work back and says so, and the prompt tells th
   const prompt = buildReviewPrompt({ root: '/p', draft: DRAFT, history: '' })
   assert.match(prompt, /Keep the draft's generated intake work item \(INTAKE-001\)/)
   assert.match(prompt, /never leave work_items empty/)
+})
+
+test('a file AWR does not accept is dropped and the receipt says so; the other files go on', () => {
+  // A real model (DeepSeek-V4.1-Flash in the desktop app) wrote WORK_ITEMS.md next to GOALS.md; AWR refused the draft at accept.
+  const files = { '.awr/intake/GOALS.md': '# A goal {#g status=candidate}\n', '.awr/intake/WORK_ITEMS.md': '- [ ] Search endpoint\n', 'README.md': '# overwritten\n', '../escape.md': 'x' }
+  const answer = parseReview(JSON.stringify({ generated_files: files, notes: 'From the README.' }), DRAFT)
+  assert.deepEqual(Object.keys(answer.draft.generated_files).sort(), Object.keys(DRAFT.generated_files).sort(), 'only what AWR accepts is in the reviewed draft')
+  assert.equal(answer.draft.generated_files['.awr/intake/GOALS.md'], files['.awr/intake/GOALS.md'])
+  assert.match(answer.notes, /From the README\./)
+  assert.match(answer.notes, /3 file\(s\) the reviewer wrote were not used \(\.awr\/intake\/WORK_ITEMS\.md, README\.md, \.\.\/escape\.md\)/)
+  assert.match(answer.notes, /GOALS\.md, PLAN\.md, RULES\.md, work-ledger\.yaml/)
+  // nothing usable left: the review fails with the names, not with a rule violation later
+  assert.throws(() => parseReview(JSON.stringify({ generated_files: { '.awr/intake/WORK_ITEMS.md': 'x' } }), DRAFT), (error) => error instanceof TakeoverStop && error.reason === 'review_failed' && /WORK_ITEMS\.md/.test(error.message))
+  for (const name of OWNED_INTAKE_FILES) assert.equal(Object.keys(parseReview(JSON.stringify({ generated_files: { [`.awr/intake/${name}`]: 'x' } }), DRAFT).draft.generated_files).includes(`.awr/intake/${name}`), true, name)
+})
+
+test('the review prompt names the four files AWR accepts and says what to do when the project has its own ledger', () => {
+  const prompt = buildReviewPrompt({ root: '/p', draft: DRAFT, history: '' })
+  assert.match(prompt, /only these four names: GOALS\.md, PLAN\.md, RULES\.md and work-ledger\.yaml/)
+  assert.match(prompt, /WORK_ITEMS\.md or NOTES\.md/)
+  assert.match(prompt, /If the draft has no work-ledger\.yaml, the project already has a ledger of its own/)
 })

@@ -36,6 +36,11 @@ and tools (`docs/prompt-context.md`, `docs/tools.md`).
   paths outside the project (symlinks resolved), credential files (`.env*`, keys, `.npmrc`, ...: what it
   reads goes to the model provider), and every other tool. `grep` is left out on purpose: it returns
   matching lines, and no guard can keep those from coming out of a `.env` the search covers.
+- **Only the four owned files:** AWR accepts exactly `GOALS.md`, `PLAN.md`, `RULES.md` and `work-ledger.yaml` under
+  `.awr/intake/`. A real model (DeepSeek-V4.1-Flash, in the desktop app) wrote a `WORK_ITEMS.md` next to `GOALS.md` and AWR
+  refused the draft at accept. The prompt now names the four files and says that a project with a ledger of its own (no
+  `work-ledger.yaml` in the draft) gets no work items; and `parseReview` drops any other file and says so in the
+  receipt's review note, instead of letting the run stop later. If nothing usable is left the review fails with the names.
 - **The generated work is kept:** a real model once returned a ledger with `work_items: []`, removing the generated
   intake item; with no work item AWR has nothing to bind a conversation to, so the new conversation got no AWR
   context (docs/evidence/DSH-022/run1-findings.json). The reviewer prompt now says to keep INTAKE-001 unless the

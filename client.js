@@ -80,6 +80,10 @@ window.__ModuleLoader__.load({
       'action.invalid': 'Fill in both fields, and leave out "::".',
       'action.working': 'Working…',
       'panel.refresh': 'Refresh',
+      'awr.info': 'awr {version} · {where}',
+      'awr.takeover.awr': 'The takeover runs through awr takeover.',
+      'awr.takeover.plugin': 'The takeover runs in the plugin (this awr has no awr takeover).',
+      'awr.error': 'awr: {message}',
     }
     const zh = {
       'trigger.label': 'AWR',
@@ -152,6 +156,10 @@ window.__ModuleLoader__.load({
       'action.invalid': '两项都要填写，且不能含 "::"。',
       'action.working': '处理中…',
       'panel.refresh': '刷新',
+      'awr.info': 'awr {version} · {where}',
+      'awr.takeover.awr': '接管通过 awr takeover 运行。',
+      'awr.takeover.plugin': '接管由插件自己运行（这个 awr 没有 awr takeover）。',
+      'awr.error': 'awr：{message}',
     }
 
     const FALLBACK = (key, params) => (en[key] ?? key).replace(/\{(\w+)\}/g, (_, name) => String(params?.[name] ?? ''))
@@ -404,6 +412,11 @@ window.__ModuleLoader__.load({
             list(receipt.awaitingConfirmation ?? [], (goal) => `${goal.title ?? goal.key} (${goal.status})`),
             h('div', { style: { ...styles.small, marginTop: 8 } }, t('receipt.git'))))
         }
+      }
+      if (view?.awr) {
+        body.push(view.awr.cli
+          ? h('div', { key: 'awr', 'data-testid': 'awr-info', style: { ...styles.small, marginTop: 10 } }, h('div', { style: styles.mono }, t('awr.info', { version: view.awr.version ?? '?', where: view.awr.cli })), h('div', null, t(`awr.takeover.${view.awr.takeover === 'awr' ? 'awr' : 'plugin'}`)))
+          : h('div', { key: 'awr', 'data-testid': 'awr-info', style: { ...styles.small, ...styles.error, marginTop: 10 } }, t('awr.error', { message: view.awr.error ?? '' })))
       }
       return h(React.Fragment, null, button, ReactDOM.createPortal(h('div', { ref: panel, role: 'dialog', 'aria-label': t('panel.title'), id: 'awr-panel', style: { ...styles.panel, top: anchor.top, left: anchor.left } }, h('div', { style: { ...styles.title, display: 'flex', justifyContent: 'space-between', alignItems: 'center' } }, t('panel.title'), h('button', { id: 'awr-refresh', type: 'button', style: { ...styles.action, margin: 0, padding: '2px 8px' }, onClick: refresh }, t('panel.refresh'))), ...body), document.body))
     }

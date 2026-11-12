@@ -16,6 +16,9 @@ conversation is doing in it, and lets the user claim, checkpoint and end the con
   blockers.
 - Below that, for a project that was just taken over, the steps and the receipt (DSH-021).
 
+- **awr:** at the bottom, which `awr` the plugin uses (version and path), why it was chosen (`binding`, `env` for
+  `DSH_AWR_CLI`, or `path`), and whether the takeover runs through `awr takeover` or in the plugin.
+
 A conversation that is not bound shows the project's counts and lists and says it is not bound.
 
 ## Actions (DSH-052)

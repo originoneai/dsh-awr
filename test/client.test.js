@@ -360,3 +360,16 @@ test('every query the panel makes is a sentence a person can read in the convers
   assert.ok(!panel.queries().some((line) => /--json/.test(line)), 'no query asks for JSON')
   assert.ok(!panel.calls.some((line) => /--json/.test(line)))
 })
+
+test('the panel says which awr it uses and how the takeover runs, and why when there is none', async () => {
+  const withAwr = await openPanel({ state: () => ({ ...STATE, awr: { cli: '/dev/awr', source: 'env', version: '0.8.0-dev', takeover: 'awr' } }) })
+  const info = textOf(withAwr.byTestId('awr-info'))
+  assert.match(info, /awr 0\.8\.0-dev · \/dev\/awr/)
+  assert.match(info, /runs through awr takeover/)
+  const legacy = await openPanel({ state: () => ({ ...STATE, awr: { cli: '/opt/homebrew/bin/awr', source: 'path', version: '0.7.0', takeover: 'plugin' } }) })
+  assert.match(textOf(legacy.byTestId('awr-info')), /runs in the plugin \(this awr has no awr takeover\)/)
+  const none = await openPanel({ state: () => ({ ...STATE, awr: { error: 'No awr was found on PATH.' } }) })
+  assert.match(textOf(none.byTestId('awr-info')), /awr: No awr was found on PATH\./)
+  const unknown = await openPanel()
+  assert.equal(unknown.byTestId('awr-info'), undefined, 'nothing is shown when the host sent no awr')
+})

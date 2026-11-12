@@ -16,7 +16,11 @@ const status = await awr.run(root, ['status'])
 1. If `<root>/.awr/runtime-binding.json` exists, its absolute `cli` is used and the `awr` on `PATH`
    is never started. The file must name an executable. If it carries `cli_sha256`, the file's hash
    must match.
-2. Otherwise the first `awr` on `PATH`.
+2. Otherwise the `awr` that the environment variable `DSH_AWR_CLI` names (an absolute path to an executable file; the
+   plugin stops with a message that names it when it is not one). Use it for a build under test, or for an `awr` that is
+   not on the `PATH` DeepSeek Harness gives its runtime: the desktop app replaces the `PATH` of the app with that of the
+   login shell, so a directory put first on the `PATH` of the app process never reaches the plugin.
+3. Otherwise the first `awr` on `PATH`, then the usual install directories.
 
 Before the first command for a project the plugin runs the read-only `awr runtime binding` once.
 With a binding file, `program_version` and `schema_version` in the file must equal what awr

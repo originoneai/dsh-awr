@@ -13,7 +13,7 @@ import test from 'node:test'
 import { fileURLToPath } from 'node:url'
 import { createAwr } from '../lib/awr-runtime.js'
 import { TakeoverStop } from '../lib/takeover.js'
-import { cliStateDir, cliTakeoverAvailable, normalizeReceipt, normalizeRecord, readCliRun, runTakeoverViaCli } from '../lib/takeover-cli.js'
+import { awrInfo, cliStateDir, cliTakeoverAvailable, normalizeReceipt, normalizeRecord, readCliRun, runTakeoverViaCli } from '../lib/takeover-cli.js'
 import { createTakeoverController, describeRun } from '../lib/takeover-host.js'
 
 const here = dirname(fileURLToPath(import.meta.url))
@@ -63,6 +63,20 @@ test('the answer is kept for a minute and asked again after that', async () => {
   assert.equal(asked, 2)
   await cliTakeoverAvailable(awr, '/other', now)
   assert.equal(asked, 3, 'each project is asked for itself')
+})
+
+test('which awr is used, why, and how the takeover runs, for the panel', async () => {
+  const awr = (found, document) => ({ resolve: async () => found, run: async () => document })
+  const withCli = awr({ cli: '/dev/awr', source: 'env' }, { program: { version: '0.8.0-dev' }, capabilities: [CAPABILITY] })
+  assert.deepEqual(await awrInfo(withCli, '/p'), { cli: '/dev/awr', source: 'env', version: '0.8.0-dev', takeover: 'awr' })
+  const released = awr({ cli: '/opt/homebrew/bin/awr', source: 'path' }, { program: { version: '0.7.0' }, capabilities: [] })
+  assert.deepEqual(await awrInfo(released, '/p'), { cli: '/opt/homebrew/bin/awr', source: 'path', version: '0.7.0', takeover: 'plugin' })
+  const unknown = awr({ cli: '/x/awr', source: 'binding', report: { program: { version: '0.4.0' } } }, null)
+  assert.equal((await awrInfo(unknown, '/p')).version, '0.4.0', 'the binding report gives the version when the capabilities cannot be read')
+  const missing = { resolve: async () => { throw new Error('No awr was found on PATH and the project has no .awr/runtime-binding.json.') }, run: async () => ({}) }
+  const gone = await awrInfo(missing, '/p')
+  assert.match(gone.error, /No awr was found/)
+  assert.equal(gone.cli, undefined)
 })
 
 // --- the view ---------------------------------------------------------------------------------------------------
