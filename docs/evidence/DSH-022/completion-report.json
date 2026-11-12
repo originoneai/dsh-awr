@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "work_item": "DSH-022",
+  "source_sha": "e9ab21a6a9730bc41a978fdfc778afc9c5b5a785",
+  "command": "DeepSeek Harness 0.2.2-rc.1 desktop app (signed in, DeepSeek-V4.1-Flash via the account provider), plugin installed through Plugins > Add plugin from this repository; /awr takeover and the AWR header panel's Take over this project button on fresh public clones; scripts/dsh022-collect.sh; hand review against README and files (docs/evidence/DSH-022/REVIEW.md)",
+  "scope": [
+    "lib/takeover-host.js",
+    "test/takeover-host.test.js",
+    "docs/takeover-ui.md",
+    "docs/evidence/DSH-022",
+    "docs/dsh-022-runbook.md"
+  ],
+  "verified_at": 1794479594052,
+  "checks": [
+    {
+      "name": "Two existing projects reach a final organization state with no human input",
+      "passed": true,
+      "criteria": [
+        "On at least two existing projects with prior development history, one click reaches a final organization state with no human input, and the receipts are retained."
+      ],
+      "details": "wshobson/agents (34 commits) and modelcontextprotocol/experimental-ext-grouping (17 commits) were taken over with the real model in the desktop app: agents in 55 s (run 1), 26 s (run 2) and 36 s (run 3, started by one click on the AWR panel's Take over this project button), grouping in 69 s; each reached the receipt's final state needs_organization (steps preflight to receipt done, no question asked, no human input after the start), with the receipt retained in .awr/takeover/receipt.json and copied to docs/evidence/DSH-022. needs_organization, not ready, is the honest end state: the goal stays a candidate until the owner confirms it. A third project, apache/doris-mcp-server (60 commits), stopped at the preview with secret_boundary at README.md:1468 (category only, no value) and was left untouched, as designed; it is not counted. Limits: the slash command started two of the runs and the grouping run, the button one; all projects are public clones; one model."
+    },
+    {
+      "name": "Goals and work items reviewed against README and history, with defects recorded",
+      "passed": true,
+      "criteria": [
+        "For each project the resulting goals and work items are reviewed against its README and history, and any invented or wrong intent is recorded as a defect."
+      ],
+      "details": "Every goal, success criterion and work item of the agents run 2 and the grouping run was traced to a README line or a file and found supported (REVIEW.md): 48 listed files exist, frontmatter complete, model totals 8/29/11 match, license MIT; the grouping work items match its README Work Tracking rows and the experiments and conformance documents, and contract.json lists the pending gates. No invented goal, owner, date or completion was found. Defects recorded: (1) run 1 of agents: the reviewer replaced the ledger with work_items: [], removing INTAKE-001, so awr had nothing to bind and the conversation got no AWR context; fixed in PR 22 (prompt rule and keepIntakeWork, 225 tests, 8 of 8 mutations caught) and not reproduced in later runs; (2) minor and open: priority and required of the new grouping work items are the reviewer's inference, not stated in the README. Limits: the history was read for context (commit lists) but claims were checked against the files, not commit by commit; the review is by hand."
+    },
+    {
+      "name": "A new conversation shows the AWR context without further setup",
+      "passed": true,
+      "criteria": [
+        "After takeover, a new DSH conversation on the project shows the AWR context without further setup."
+      ],
+      "details": "After the fix, a new conversation created after each takeover was bound by the plugin at creation (agents: session-171ae92d bound to AWR session 01M77MNNCBJB05ME82XK8D12PD; grouping: session-beba632e bound to 01M77MWTJN09SHY2DZMJ7YZX6A) and the real model, told to use only the AWR context in its prompt and read no files, named the goal (candidate) and the bound work item (INTAKE-001 for agents, REQ-ALIGN for grouping) with its next action, matching the ledgers; the conversation that ran each takeover was also bound right after it. Before the fix (run 1) the model answered that its prompt had no AWR context. Limits: the answers are the model's, checked by hand against the ledgers; the context was flagged INCOMPLETE by awr because the goal is unconfirmed, which the model said."
+    }
+  ]
+}
