@@ -137,3 +137,30 @@ real('against the real awr: bind, resume, and continue after the session ended, 
   assert.equal(next.successorOf, first.sessionId)
   assert.notEqual(next.sessionId, first.sessionId)
 })
+
+real("against the real awr: binding next to another session's claim leaves that claim alone", async (t) => {
+  const state = mkdtempSync(join(tmpdir(), 'dsh-awr-bind-state-'))
+  const root = mkdtempSync(join(tmpdir(), 'dsh-awr-bind-proj-'))
+  t.after(() => {
+    rmSync(state, { recursive: true, force: true })
+    rmSync(root, { recursive: true, force: true })
+  })
+  const env = { ...process.env, AWR_LOCAL_HOME: state, AWR_LOCAL_WEB: '0', PATH: `${dirname(lab)}:${process.env.PATH}` }
+  const cli = (...args) => JSON.parse(execFileSync(lab, ['--project', root, '--json', ...args], { env, encoding: 'utf8' }))
+  execFileSync('git', ['init', '-q', '-b', 'main'], { cwd: root })
+  cli('init', '--goal', 'Check binding beside another session claim', '--accept')
+  const owner = cli('session', 'start', '--work', 'INTAKE-001', '--agent', 'someone-else', '--provider', 'test', '--model', 'test', '--claim', '--ttl-ms', '600000', '--expected-revision', String(cli('status').project_revision))
+  const ownerId = owner.session.id
+  const before = cli('session', 'show', ownerId).claims
+
+  const awr = createAwr({ env })
+  // chooseWork skips claimed work; an explicit key shows that even then nothing is taken over.
+  assert.equal((await bindConversation(awr, { projectRoot: root, conversationId: 'beside-1' })).outcome, 'skipped')
+  const bound = await bindConversation(awr, { projectRoot: root, conversationId: 'beside-1', workKey: 'INTAKE-001' })
+  assert.equal(bound.outcome, 'created')
+  assert.notEqual(bound.sessionId, ownerId)
+  assert.deepEqual(cli('session', 'show', bound.sessionId).claims ?? [], [], 'the bound session holds no claim')
+  const after = cli('session', 'show', ownerId).claims
+  assert.deepEqual(after.map((c) => [c.id, c.status]), before.map((c) => [c.id, c.status]), 'the other session keeps its claim')
+  assert.equal(after[0].status, 'active')
+})
