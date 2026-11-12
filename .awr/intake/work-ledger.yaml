@@ -231,14 +231,16 @@ work_items:
 - id: DSH-032
   title: Bundle a skill that teaches the AWR workflow
   kind: implementation
-  status: planned
+  status: completed
   priority: P1
   required: false
   goal: intake-goal
   depends_on: [DSH-010]
   acceptance:
   - The skill is discovered by DSH and covers preview then accept, expected revisions, evidence registration and the conditions for work complete.
-  next_action: Write the skill and confirm DSH's skill discovery path for plugin-bundled skills.
+  next_action: Complete DSH-032 with the registered evidence
+  "evidence": ["docs/evidence/DSH-032/completion-report.json"]
+  "verification": {"evidence_level":"locally_verified"}
 - id: DSH-040
   title: Decide whether the takeover orchestration moves into the AWR CLI
   kind: decision

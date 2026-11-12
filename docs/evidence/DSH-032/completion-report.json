@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "work_item": "DSH-032",
+  "source_sha": "41858c203252bbd4d00fbdd6c8f75c3dc176755c",
+  "command": "node --test (155 tests; test/skill.test.js runs the real awr); DeepSeek Harness 0.2.2-rc.1 web profile with the stand-in model: the catalog the model receives and the skill tool loading awr-workflow (docs/evidence/DSH-032)",
+  "scope": [
+    "lib/skill.js",
+    "index.js",
+    "test/skill.test.js",
+    "docs/skill.md",
+    "docs/evidence/DSH-032"
+  ],
+  "verified_at": 1794470665296,
+  "checks": [
+    {
+      "name": "The skill is discovered by DSH and covers preview then accept, expected revisions, evidence registration and the conditions for work complete",
+      "passed": true,
+      "details": "In DeepSeek Harness 0.2.2-rc.1 (web profile) the catalog of available skills that the model receives lists awr-workflow with its description, and the skill tool loads it by name and returns <skill_content name=\"awr-workflow\"> with its sections (docs/evidence/DSH-032/live-dsh.json). The text covers preview then accept (the fingerprint, --accept, --expected-preview, --source-fingerprint), expected revisions (--expected-revision, --expected-project-revision, RevisionConflict, never force), evidence registration (the completion report, work prepare-completion, evidence add) and the conditions for work complete (dependencies, every acceptance criterion verified, evidence registered, the work in progress, work complete and nothing else), plus reading, claims, checkpoints and boundaries; test/skill.test.js checks these topics are present and, against the real awr, that every command and option the skill names exists. The first live attempt failed ('loaded skill source must be a string': a skill needs content and source), which the unit test now checks. Limits: the model was a stand-in, so that a real model loads and follows the skill is not shown; the web profile, not the desktop shell.",
+      "criteria": [
+        "The skill is discovered by DSH and covers preview then accept, expected revisions, evidence registration and the conditions for work complete."
+      ]
+    }
+  ]
+}
