@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "work_item": "DSH-021",
+  "source_sha": "22c7280ed954dc258322c5b2d332b3f75ca164ea",
+  "command": "node --test (144 tests; test/takeover-host.test.js runs the real awr); DeepSeek Harness 0.2.2-rc.1 web profile (dsh-awr-web) in the app browser pane with scripts/fake-model.mjs as the model: header button, panel, one click, reviewer subagent, receipt, conversation use during and after (docs/evidence/DSH-021)",
+  "scope": [
+    "client.js",
+    "lib/takeover-host.js",
+    "lib/commands.js",
+    "lib/conversation.js",
+    "lib/prompt-context.js",
+    "lib/awr-runtime.js",
+    "index.js",
+    "package.json",
+    "test/takeover-host.test.js",
+    "scripts/fake-model.mjs",
+    "docs/takeover-ui.md",
+    "docs/evidence/DSH-021"
+  ],
+  "verified_at": 1794469068943,
+  "checks": [
+    {
+      "name": "One click on an uninitialized project starts the run in the background and the conversation stays usable",
+      "passed": true,
+      "details": "In DeepSeek Harness 0.2.2-rc.1 (web profile, in the app browser pane), a conversation in a Git project with no AWR got an AWR action in its header. Opening it showed 'This project has no AWR work state yet' and a start button; one click ran /awr takeover, which returned at once, and the panel went from running (steps shown) to done with the receipt, in a few seconds with a slowed reviewer and in about 10 s otherwise. A message sent in the same conversation while the reviewer was working was answered immediately, and after the takeover the conversation was bound to AWR (awr tools offered, AWR context in its prompt). Tests with the real awr cover the controller returning before the run ends, a second click being refused while it runs, and resuming a stopped run. Limits: the web profile, not the desktop shell; the model was a stand-in.",
+      "criteria": [
+        "One click on an uninitialized project starts the run in the background and the user's conversation stays usable."
+      ]
+    },
+    {
+      "name": "The draft review runs in a subagent limited to reading inside the project",
+      "passed": true,
+      "details": "The review is a child of the conversation started with ctx.subagents.startActivation (it shows in DSH's subagent list). Across all its model requests it was offered glob and read and nothing else; it read the README and the plan, and its attempts to read /etc/hosts, the project's .env and to run bash were refused by the guard with a reason (docs/evidence/DSH-021/live-dsh.json). This is stricter than the criterion (reading files, calling awr and writing the takeover scope): the host calls awr and writes, and the child returns its draft as text, so it needs neither; grep is withheld because it could return lines of a credential file. The first version recognized the child by its directory and did not restrict it at all, which the live check showed; it is recognized by its parentSession now, and a reviewer that cannot be restricted fails its own creation. Eleven mutation checks fail tests. Limit: one child shape (spawn, in process).",
+      "criteria": [
+        "The draft-review step runs in a subagent limited to reading files, calling awr and writing the takeover scope."
+      ]
+    },
+    {
+      "name": "Goals the material cannot establish are recorded as candidate or needs_confirmation and no question is asked during the run",
+      "passed": true,
+      "details": "The prompt tells the reviewer that nobody can answer, that nothing may be invented, that goals are at most candidate or needs_confirmation, and that each goal names its provenance. The reviewer has no question tool (it is restricted to glob and read). The host also lowers any goal status the reviewer sets to active or confirmed to candidate, in Markdown goal headings and in the goals part of a YAML ledger, and notes it; work items are left as the material says. In the live run the goal came out as a candidate with provenance, and the receipt lists it under 'waiting for you to confirm'. Limit: the reviewer was a stand-in; whether a real model keeps to 'nothing invented' is not shown and is DSH-022.",
+      "criteria": [
+        "Goals the material cannot establish are recorded as candidate or needs_confirmation and no question is asked during the run."
+      ]
+    },
+    {
+      "name": "The receipt lists what was mapped, what was created and what awaits confirmation",
+      "passed": true,
+      "details": "The panel's receipt (and /awr takeover status) lists the files the project was read as with their adapters (docs/PLAN.md, TODO.md as a Markdown ledger, README.md, the intake goal file), the files created (.awr/project.toml, .gitignore, .awr/intake/GOALS.md, inventory.json, project.toml), the final organization state with goal and gap counts, the goals awaiting confirmation with their status, and that nothing was committed or pushed. The same data is in .awr/takeover/receipt.json (docs/evidence/DSH-021/receipt.json). The panel text is localized (checked in the app's Chinese UI).",
+      "criteria": [
+        "The receipt lists what was mapped, what was created and what awaits confirmation."
+      ]
+    }
+  ]
+}

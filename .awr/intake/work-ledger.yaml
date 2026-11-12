@@ -177,7 +177,7 @@ work_items:
 - id: DSH-021
   title: Add the takeover button, background subagent and receipt panel in DSH
   kind: implementation
-  status: planned
+  status: completed
   priority: P0
   required: true
   goal: intake-goal
@@ -187,7 +187,9 @@ work_items:
   - The draft-review step runs in a subagent limited to reading files, calling awr and writing the takeover scope.
   - Goals the material cannot establish are recorded as candidate or needs_confirmation and no question is asked during the run.
   - The receipt lists what was mapped, what was created and what awaits confirmation.
-  next_action: Wire the DSH-020 module to a DSH command and client entry point using the surfaces confirmed in DSH-002.
+  next_action: Complete DSH-021 with the registered evidence
+  "evidence": ["docs/evidence/DSH-021/completion-report.json"]
+  "verification": {"evidence_level":"locally_verified"}
 - id: DSH-022
   title: Prove the one-click takeover on real existing projects
   kind: verification
