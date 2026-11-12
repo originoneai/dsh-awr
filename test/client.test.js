@@ -8,6 +8,7 @@ import { dirname, join } from 'node:path'
 import test from 'node:test'
 import { fileURLToPath } from 'node:url'
 import vm from 'node:vm'
+import { panelText } from '../lib/panel-text.js'
 
 const source = readFileSync(join(dirname(fileURLToPath(import.meta.url)), '..', 'client.js'), 'utf8')
 
@@ -35,13 +36,22 @@ function createReact() {
       if (!(index in instance.slots)) instance.slots[index] = factory()
       return instance.slots[index]
     },
-    useCallback: (callback) => callback,
-    useEffect() {},
+    useCallback(callback, deps) {
+      const index = instance.index++
+      const same = (a, b) => a && b && a.length === b.length && a.every((item, i) => Object.is(item, b[i]))
+      if (!(index in instance.slots) || !same(instance.slots[index].deps, deps)) instance.slots[index] = { callback, deps }
+      return instance.slots[index].callback
+    },
+    // Effects run after the render they belong to, again only when their dependencies changed, after the cleanup of the
+    // last run: what the panel's timer and its outside-click listeners rely on.
+    useEffect(effect, deps) {
+      instance.pending.push({ index: instance.effectIndex++, effect, deps })
+    },
   }
   const ReactDOM = { createPortal: (node) => ({ type: 'portal', props: {}, children: [node] }) }
   /** Mount a function component; every state change renders it again, synchronously. */
   function mount(Component, props) {
-    const mounted = { slots: [], index: 0, tree: null }
+    const mounted = { slots: [], index: 0, effectIndex: 0, pending: [], effects: [], tree: null }
     const expand = (node) => {
       if (Array.isArray(node)) return node.map(expand)
       if (node === null || node === undefined || typeof node === 'boolean' || typeof node !== 'object') return node
@@ -54,10 +64,18 @@ function createReact() {
     mounted.render = () => {
       instance = mounted
       mounted.index = 0
+      mounted.effectIndex = 0
+      mounted.pending = []
       try {
         mounted.tree = expand(React.createElement(Component, props))
       } finally {
         instance = undefined
+      }
+      for (const { index, effect, deps } of mounted.pending) {
+        const last = mounted.effects[index]
+        if (last && deps && last.deps && deps.length === last.deps.length && deps.every((item, i) => Object.is(item, last.deps[i]))) continue
+        last?.cleanup?.()
+        mounted.effects[index] = { deps, cleanup: effect() }
       }
     }
     mounted.render()
@@ -93,16 +111,25 @@ const workView = (patch = {}) => ({
 
 /**
  * Open the panel of a conversation. `answer(line, calls)` returns the text (or `{ error }`) for a command line; it
- * may return a promise. `/awr takeover status --json` and `/awr state --json` come from `state()` and `work()`.
+ * may return a promise. `/awr panel` is answered from `state()` and `work()`, as the host answers it.
  */
-async function openPanel({ state = () => STATE, work = () => workView(), answer = () => 'done' } = {}) {
+async function openPanel({ state = () => STATE, work = () => workView(), answer = () => 'done', open = true, language = 'en-US' } = {}) {
   const { React, ReactDOM, mount } = createReact()
   const calls = []
+  const timers = []
+  const listeners = new Map()
   let Action
   let factory
   const context = vm.createContext({
     window: { innerWidth: 1200, __ModuleLoader__: { load: (module) => { factory = module.factory } } },
-    document: { body: {}, addEventListener() {}, removeEventListener() {} },
+    document: {
+      body: {},
+      addEventListener: (type, listener) => listeners.set(type, [...(listeners.get(type) ?? []), listener]),
+      removeEventListener: (type, listener) => listeners.set(type, (listeners.get(type) ?? []).filter((item) => item !== listener)),
+    },
+    navigator: { language },
+    setTimeout: (fn, ms) => { timers.push({ fn, ms, live: true }); return timers.length - 1 },
+    clearTimeout: (id) => { if (timers[id]) timers[id].live = false },
     console,
   })
   vm.runInContext(source, context)
@@ -112,8 +139,12 @@ async function openPanel({ state = () => STATE, work = () => workView(), answer 
       commands: {
         async execute(sessionId, line) {
           calls.push(line)
-          if (line === '/awr takeover status --json') return { ok: true, value: { result: { kind: 'success', text: JSON.stringify(state()) } } }
-          if (line === '/awr state --json') return { ok: true, value: { result: { kind: 'success', text: JSON.stringify(work()) } } }
+          if (line.startsWith('/awr panel')) {
+            // As the host answers: one sentence, the data in a comment, the work state only for a project AWR manages.
+            const view = state()
+            const managed = view.state === 'initialized' || view.state === 'completed'
+            return { ok: true, value: { result: { kind: 'success', text: panelText(view, managed ? work() : undefined, 'en') } } }
+          }
           const reply = await answer(line, calls)
           if (reply?.error) return { ok: true, value: { result: { kind: 'error', text: reply.error } } }
           return { ok: true, value: { result: { kind: 'success', text: reply } } }
@@ -133,6 +164,22 @@ async function openPanel({ state = () => STATE, work = () => workView(), answer 
   }
   const panel = {
     calls,
+    /** The timers that are waiting, by delay. */
+    timers: () => timers.filter((timer) => timer.live).map((timer) => timer.ms),
+    /** Fire the timer that is waiting, as the clock would. */
+    async fire() {
+      const timer = timers.find((item) => item.live)
+      assert.ok(timer, 'no timer is waiting')
+      timer.live = false
+      timer.fn()
+      await settle()
+    },
+    /** What the panel asked the host for with `/awr panel`. */
+    queries: () => calls.filter((line) => line.startsWith('/awr panel')),
+    async press(key) {
+      for (const listener of listeners.get('keydown') ?? []) listener({ type: 'keydown', key })
+      await settle()
+    },
     byId: (id) => find((node) => node.props.id === id),
     byTestId: (id) => find((node) => node.props['data-testid'] === id),
     async click(id) {
@@ -149,8 +196,10 @@ async function openPanel({ state = () => STATE, work = () => workView(), answer 
     },
     text: () => textOf(root.tree),
   }
-  await panel.click('awr-header-action')
-  await settle()
+  if (open) {
+    await panel.click('awr-header-action')
+    await settle()
+  }
   return panel
 }
 
@@ -165,7 +214,7 @@ test('a session that holds no claim offers to claim its bound work, and the clic
   assert.deepEqual(panel.calls.filter((line) => line.startsWith('/awr claim')), ['/awr claim'])
   assert.equal(panel.byId('awr-claim'), undefined, 'once it holds the claim, the button is gone')
   assert.match(textOf(panel.byTestId('awr-action-result')), /Claimed W-1/)
-  assert.equal(panel.calls.at(-1), '/awr state --json', 'the panel reads the state again after the command')
+  assert.equal(panel.calls.at(-1), '/awr panel en', 'the panel reads the state again after the command')
 })
 
 test('no claim button when the session already holds a claim or the work is finished', async () => {
@@ -263,4 +312,51 @@ test('while a command runs the buttons are disabled, so a double click sends one
   await settle()
   assert.equal(panel.calls.filter((line) => line === '/awr claim').length, 1)
   assert.equal(panel.byId('awr-checkpoint-open').props.disabled, false)
+})
+
+const running = () => ({ state: 'running', projectRoot: '/work/demo', steps: [{ name: 'preflight', status: 'done' }, { name: 'preview', status: 'done' }, { name: 'review', status: 'running' }] })
+
+test('a closed panel asks the host nothing, even while a takeover runs', async () => {
+  const panel = await openPanel({ state: running, open: false })
+  assert.equal(panel.calls.length, 0, 'nothing is asked until someone opens the panel')
+  assert.deepEqual(panel.timers(), [], 'and no timer is waiting')
+})
+
+test('an open panel asks once, then at 5 s and slower, never faster than every 30 s in the end', async () => {
+  const panel = await openPanel({ state: running })
+  assert.equal(panel.queries().length, 1, 'one query when it is opened')
+  const waited = []
+  for (let round = 0; round < 6; round += 1) {
+    waited.push(panel.timers()[0])
+    await panel.fire()
+  }
+  assert.deepEqual(waited, [5000, 8500, 14450, 24565, 30000, 30000])
+  assert.equal(panel.queries().length, 7, 'one query for each time the timer fired')
+})
+
+test('no timer waits once the takeover is not running, and closing the panel stops the one that does', async () => {
+  const done = await openPanel({ state: () => ({ ...STATE, state: 'completed', steps: [] }) })
+  assert.deepEqual(done.timers(), [])
+  const open = await openPanel({ state: running })
+  assert.deepEqual(open.timers(), [5000])
+  await open.press('Escape')
+  assert.deepEqual(open.timers(), [], 'a panel that is closed asks nothing')
+})
+
+test('Refresh asks once more; the host is asked in Chinese for a Chinese interface', async () => {
+  const panel = await openPanel({ language: 'zh-CN' })
+  assert.deepEqual(panel.queries(), ['/awr panel zh'])
+  await panel.click('awr-refresh')
+  assert.equal(panel.queries().length, 2)
+  const english = await openPanel({ language: 'fr-FR' })
+  assert.deepEqual(english.queries(), ['/awr panel en'])
+})
+
+test('every query the panel makes is a sentence a person can read in the conversation', async () => {
+  const panel = await openPanel({ state: running })
+  // The text the stand-in host returned for the panel's query is what the conversation would show.
+  const text = panelText(running(), undefined, 'en')
+  assert.ok(!/^[\s{[]/.test(text), 'it does not start with JSON')
+  assert.ok(!panel.queries().some((line) => /--json/.test(line)), 'no query asks for JSON')
+  assert.ok(!panel.calls.some((line) => /--json/.test(line)))
 })

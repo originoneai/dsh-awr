@@ -79,6 +79,7 @@ window.__ModuleLoader__.load({
       'action.endNote': 'Ending a session does not complete its work.',
       'action.invalid': 'Fill in both fields, and leave out "::".',
       'action.working': 'Working…',
+      'panel.refresh': 'Refresh',
     }
     const zh = {
       'trigger.label': 'AWR',
@@ -150,6 +151,7 @@ window.__ModuleLoader__.load({
       'action.endNote': '结束会话不会完成其中的工作。',
       'action.invalid': '两项都要填写，且不能含 "::"。',
       'action.working': '处理中…',
+      'panel.refresh': '刷新',
     }
 
     const FALLBACK = (key, params) => (en[key] ?? key).replace(/\{(\w+)\}/g, (_, name) => String(params?.[name] ?? ''))
@@ -183,6 +185,19 @@ window.__ModuleLoader__.load({
     }
     const OUTCOMES = ['ended', 'interrupted', 'incomplete']
     const FINISHED = new Set(['completed', 'closed_without_completion'])
+
+    /** The data a `/awr panel` answer carries after its sentence, in an HTML comment (see lib/panel-text.js). */
+    function decodePanel(text) {
+      const found = String(text ?? '').match(/<!--awr-panel:([\s\S]*?)-->/)
+      if (!found) return undefined
+      try {
+        return JSON.parse(found[1])
+      } catch {
+        return undefined
+      }
+    }
+    /** The language of the sentence the host writes into the conversation: Chinese for a Chinese interface. */
+    const panelLanguage = () => (typeof navigator !== 'undefined' && String(navigator.language ?? '').toLowerCase().startsWith('zh') ? 'zh' : 'en')
 
     /** `ctx.remote.commands.execute` returns `{ ok, value: { result: { kind, text } } }` or `{ ok: false, error }`. */
     async function runCommand(ctx, sessionId, line) {
@@ -222,40 +237,30 @@ window.__ModuleLoader__.load({
       const [note, setNote] = React.useState(undefined)
       const refresh = React.useCallback(async () => {
         try {
-          const text = await runCommand(ctx, sessionId, '/awr takeover status --json')
-          const next = JSON.parse(text)
-          setView(next)
+          // One query, whose conversation row is a readable sentence; the data is in a comment after it (lib/panel-text.js).
+          const payload = decodePanel(await runCommand(ctx, sessionId, `/awr panel ${panelLanguage()}`))
+          if (!payload?.view) throw new Error('the host answered without the panel data')
+          setView(payload.view)
+          setWork(payload.work ?? undefined)
           setError(undefined)
-          // A project AWR manages also has work state to show; asked only then, and only when the panel is looked at.
-          if (next.state === 'initialized' || next.state === 'completed') {
-            try {
-              setWork(JSON.parse(await runCommand(ctx, sessionId, '/awr state --json')))
-            } catch {
-              setWork(undefined)
-            }
-          } else {
-            setWork(undefined)
-          }
         } catch (failure) {
           setError(String(failure?.message ?? failure))
         }
       }, [ctx, sessionId])
 
-      // Every command the panel runs is a line in the conversation's timeline and an entry in its log, so the panel
-      // asks only when it is opened, after a click, and while a takeover is running: at a growing interval when the
-      // panel is open, every 10 seconds when it is closed (so the dot does not stay "running" after it ends). A
-      // conversation nobody looked at, and a project with no takeover running, cost nothing.
-      const delay = React.useRef(2000)
+      // The conversation shows a row for every command, so the panel asks as little as it can: when it is opened, after
+      // a click or a press of Refresh, and, only while it is open and a takeover is running, at a growing interval
+      // (5 s, then slower up to 30 s). A closed panel asks nothing: the dot shows what it last saw.
+      const delay = React.useRef(5000)
       React.useEffect(() => {
-        if (view?.state !== 'running') {
-          delay.current = 2000
+        if (view?.state !== 'running' || !open) {
+          delay.current = 5000
           return undefined
         }
-        const wait = open ? delay.current : 10000
         const timer = setTimeout(() => {
-          delay.current = Math.min(delay.current * 1.6, 10000)
+          delay.current = Math.min(delay.current * 1.7, 30000)
           refresh()
-        }, wait)
+        }, delay.current)
         return () => clearTimeout(timer)
       }, [open, view, refresh])
 
@@ -400,7 +405,7 @@ window.__ModuleLoader__.load({
             h('div', { style: { ...styles.small, marginTop: 8 } }, t('receipt.git'))))
         }
       }
-      return h(React.Fragment, null, button, ReactDOM.createPortal(h('div', { ref: panel, role: 'dialog', 'aria-label': t('panel.title'), id: 'awr-panel', style: { ...styles.panel, top: anchor.top, left: anchor.left } }, h('div', { style: styles.title }, t('panel.title')), ...body), document.body))
+      return h(React.Fragment, null, button, ReactDOM.createPortal(h('div', { ref: panel, role: 'dialog', 'aria-label': t('panel.title'), id: 'awr-panel', style: { ...styles.panel, top: anchor.top, left: anchor.left } }, h('div', { style: { ...styles.title, display: 'flex', justifyContent: 'space-between', alignItems: 'center' } }, t('panel.title'), h('button', { id: 'awr-refresh', type: 'button', style: { ...styles.action, margin: 0, padding: '2px 8px' }, onClick: refresh }, t('panel.refresh'))), ...body), document.body))
     }
 
     return {

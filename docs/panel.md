@@ -50,8 +50,9 @@ panel cannot disagree with `awr status` for the same project:
 AWR lists the intake task of a project that still needs organization under "blocked" even though its own
 status is `ready` and it has no blocker text; the panel shows the list as AWR gives it.
 
-The panel asks only when it is opened (two command runs, `/awr takeover status --json` and
-`/awr state --json`), because every command run is a line in the conversation's timeline.
+The panel asks only when it is opened, after a click or Refresh, and while a takeover runs and the panel is open
+(`/awr panel`, one command whose conversation row is a sentence; see `docs/takeover-ui.md`), because every command run is
+a row in the conversation. A closed panel asks nothing.
 
 ## Checked
 

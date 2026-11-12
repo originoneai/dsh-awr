@@ -64,10 +64,16 @@ DSH's theme variables; the panel is portaled to the page body and closes on an o
 The panel also shows where a stop is (`README.md:1468 (credential)` for a secret-boundary stop), and for a
 project AWR manages the work state of `docs/panel.md`.
 
-A command run is a line in the conversation's timeline and an entry in its log, and there is no quiet
-way to ask for a state. So the panel asks only when it is opened, after a click, and while a takeover is
-running (a growing interval when open, every 10 seconds when closed). A conversation nobody looked at
-costs nothing.
+DeepSeek Harness records every command run as a row in the conversation and shows the text the command returned; no
+plugin can switch that off (the Client's remote capabilities are fixed at build time, so a plugin cannot add a quiet
+call either). The panel therefore asks as little as it can, and what it asks is readable (DSH-056):
+
+- It asks `/awr panel zh|en`, whose text is **one sentence** ("Taking the project over · reviewing the draft (step 3
+  of 6)"). The data the panel draws from follows in an HTML comment, which a Markdown view does not show
+  (`lib/panel-text.js`). It never asks with `--json`, which used to put a line of raw JSON in the conversation for each
+  query, about fifteen for one takeover.
+- It asks when it is opened, after a click or a press of Refresh, and only while it is open and a takeover is running,
+  at 5 s and then slower up to 30 s. A closed panel asks nothing.
 
 ## Checked
 

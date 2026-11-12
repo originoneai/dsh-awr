@@ -394,3 +394,13 @@ work_items:
   "next_action": "Fix createSubagentReview, make the test fake reject the nested shape, verify in the desktop app"
   "priority": "P0"
   "summary": "First real operation of the panel in the desktop app (0.2.2-rc.2) with a real model: the takeover stopped at the review with \"The review subagent failed: Cannot read properties of undefined (reading id)\". startActivation now reads spec.parent.id from a flat spec; the plugin sent parent, cwd and prompt nested in request, the shape of rc.1 and of its documentation. The fake subagent service of the tests had the old shape, so every test passed."
+- "id": "WORK-98192defe36aa6433e78538b159fdcbb"
+  "title": "DSH-056: Keep raw JSON and polling logs out of the conversation"
+  "status": "planned"
+  "acceptance": ["Nothing the panel asks for shows as JSON or a log line in the conversation: its own queries return one readable sentence and keep the data out of sight, and a panel that is closed asks nothing.","This is shown in the real DeepSeek Harness desktop app: a takeover with a real model leaves only readable lines in the conversation."]
+  "depends_on": ["DSH-051"]
+  "goal": ["intake-goal"]
+  "kind": "defect"
+  "next_action": "Complete DSH-056 with the registered evidence"
+  "priority": "P0"
+  "summary": "Seen in the real desktop app: every state query of the panel is a command row in the conversation, and its text was the JSON the panel parses (about fifteen rows for one takeover, some while the panel was closed). The owner: the conversation should show what a person can read, not JSON or run logs."
