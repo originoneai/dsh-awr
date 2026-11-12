@@ -46,6 +46,20 @@ function fakeTimers() {
   }
 }
 
+test('a conversation the plugin instance has not bound (loaded again by an update) still gets its work in the file', async () => {
+  const initialized = { projectRoot: '/p', state: 'initialized', steps: [], stop: null, receipt: null }
+  const status = { project: 'demo', project_id: 'P1', project_revision: 3, counts: { planned: 2 }, current: [], ready: [], blocked: [], waiting: [] }
+  const awr = { run: async (root, args) => { if (args[0] === 'status') return status; throw new Error(`unexpected ${args.join(' ')}`) } }
+  const asked = []
+  const found = { get: () => undefined, ensure: async (who) => { asked.push(who.session.id); return { projectRoot: '/p', outcome: 'existing' } } }
+  const { collectPanel } = await import('../lib/panel-snapshot.js')
+  const panel = await collectPanel({ takeover: { status: async () => initialized }, awr, bindings: found, agent: agent('conv-1') })
+  assert.deepEqual(asked, ['conv-1'])
+  assert.equal(panel.work.project.name, 'demo', 'the work is read, not left empty until DeepSeek Harness restarts')
+  const lost = await collectPanel({ takeover: { status: async () => initialized }, awr, bindings: { get: () => undefined }, agent: agent('conv-1') })
+  assert.equal(lost.work, undefined, 'a store that cannot find the binding leaves the work out, as before')
+})
+
 test('the snapshot is one JSON file with the view, the work and when it was written', async () => {
   await withDirectory(async (dir) => {
     const publisher = createPanelPublisher({ takeover: fakeTakeover([stopped]), awr: idle, bindings: nobody, dir, now: () => 1234 })
