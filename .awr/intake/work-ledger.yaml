@@ -140,7 +140,7 @@ work_items:
 - id: DSH-015
   title: Provide /awr slash commands for status, claim, checkpoint and end
   kind: implementation
-  status: planned
+  status: completed
   priority: P0
   required: true
   goal: intake-goal
@@ -148,7 +148,9 @@ work_items:
   acceptance:
   - Each command runs the matching awr operation and shows its result or error.
   - Every mutating command sends the current expected revision and reports a revision conflict instead of retrying blindly.
-  next_action: Register the commands on the confirmed command registry surface.
+  next_action: Complete DSH-015 with docs/commands.md and docs/evidence/DSH-015.
+  "evidence": ["docs/evidence/DSH-015/completion-report.json"]
+  "verification": {"evidence_level":"locally_verified"}
 - id: DSH-020
   title: Build the unattended takeover orchestration as a host-independent module
   kind: implementation

@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "work_item": "DSH-015",
+  "source_sha": "867f8d5fd6b80e1261b84bde092d7d990cfb8e20",
+  "command": "npm test; /awr status, claim, checkpoint and end typed in the DeepSeek Harness 0.2.2-rc.1 desktop app with the plugin installed from its local directory; DSH session log and awr session show read back from outside DSH; headless dev-profile boot without the commands service",
+  "scope": [
+    "lib/commands.js",
+    "lib/conversation.js",
+    "index.js",
+    "test/commands.test.js",
+    "docs/commands.md",
+    "docs/evidence/DSH-015"
+  ],
+  "verified_at": 1794461900321,
+  "checks": [
+    {
+      "name": "Each command runs the matching awr operation and shows its result or error",
+      "passed": true,
+      "details": "In the desktop app, /awr appeared in the command list with its description, and /awr status, /awr claim, /awr checkpoint ... :: ... and /awr end interrupted each logged command/done with kind success and the text recorded in docs/evidence/DSH-015/desktop-commands.json. awr read back the bound session as interrupted, its checkpoint with the digest and next action as typed, and its claim released. Errors (unknown subcommand, incomplete checkpoint, bad outcome, no AWR project, stopped awr) are covered by tests against scripted awr programs; the whole sequence also runs against the real awr in test/commands.test.js. Limits: how DSH renders the reply on screen was not investigated (in a conversation with no model turn the text was not visible, only logged), and the plugin was uninstalled from the desktop app afterwards.",
+      "criteria": [
+        "Each command runs the matching awr operation and shows its result or error."
+      ]
+    },
+    {
+      "name": "Mutating commands send the current expected revision and report a conflict without retrying",
+      "passed": true,
+      "details": "claim, checkpoint and end read the project revision first and pass it as --expected-revision (asserted for each in scripted tests; the real-awr test and the desktop run succeeded with it). A scripted RevisionConflict from awr is reported once with the awr message and nothing written, and the test asserts exactly one attempt. Removing the expected revision from end fails tests. Limit: a revision conflict was not produced inside DSH.",
+      "criteria": [
+        "Every mutating command sends the current expected revision and reports a revision conflict instead of retrying blindly."
+      ]
+    }
+  ]
+}
