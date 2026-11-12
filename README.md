@@ -41,7 +41,8 @@ scripts/build-awr-lab.sh <awr-checkout>    # the local AWR this plugin is develo
   [docs/commands.md](docs/commands.md). The AWR work context in the prompt:
   [docs/prompt-context.md](docs/prompt-context.md). The AWR tools the model can call:
   [docs/tools.md](docs/tools.md). The takeover module: [docs/takeover.md](docs/takeover.md); its button, subagent and panel in DSH:
-  [docs/takeover-ui.md](docs/takeover-ui.md). The AWR state panel: [docs/panel.md](docs/panel.md). The workflow skill: [docs/skill.md](docs/skill.md). Checkpoint requests: [docs/checkpoints.md](docs/checkpoints.md). Compactions reported to AWR: [docs/compaction.md](docs/compaction.md). Evidence candidates from tool results: [docs/evidence-candidates.md](docs/evidence-candidates.md). Real-model takeover runbook (DSH-022): [docs/dsh-022-runbook.md](docs/dsh-022-runbook.md).
+  [docs/takeover-ui.md](docs/takeover-ui.md); the same takeover through `awr takeover`:
+  [docs/takeover-cli.md](docs/takeover-cli.md). The AWR state panel: [docs/panel.md](docs/panel.md). The workflow skill: [docs/skill.md](docs/skill.md). Checkpoint requests: [docs/checkpoints.md](docs/checkpoints.md). Compactions reported to AWR: [docs/compaction.md](docs/compaction.md). Evidence candidates from tool results: [docs/evidence-candidates.md](docs/evidence-candidates.md). Real-model takeover runbook (DSH-022): [docs/dsh-022-runbook.md](docs/dsh-022-runbook.md).
 
 ## What the plugin is for
 
@@ -102,7 +103,7 @@ A project whose material does not establish its goals ends in `needs_organizatio
 
 ## Open questions
 
-- Whether the takeover orchestration lives in this plugin or in the AWR CLI (decided later, in DSH-040).
+- Whether the takeover orchestration lives in this plugin or in the AWR CLI: decided in DSH-040, the CLI. The plugin runs `awr takeover` when its awr has it (DSH-054) and keeps its own implementation for older awr versions.
 - Whether DSH subagent permission presets can be narrowed to the takeover allowlist.
 - Whether AWR has an "undo takeover" path.
 - Whether the takeover can run with no approval prompt under DSH's default permission preset

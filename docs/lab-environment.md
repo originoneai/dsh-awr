@@ -58,6 +58,16 @@ a stdio server:
         cwd: /absolute/path/to/project
 ```
 
+## An awr with `awr takeover`
+
+The lab awr is built from `main` before the takeover command. The tests of the CLI path (`test/takeover-cli.test.js`) need one that lists the `intake.takeover` capability; build it from the branches of originoneai/awr that add `awr takeover` (#621, #623, #626) and name it in `AWR_TAKEOVER_BIN`:
+
+```sh
+AWR_TAKEOVER_BIN=/absolute/path/to/awr node --test test/takeover-cli.test.js
+```
+
+Without it those tests are skipped and the rest run.
+
 ## Mixing it with released 0.7.0
 
 Checked on a disposable project created by the released 0.7.0 (fixture `dsh001-fixture`):
