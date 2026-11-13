@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "work_item": "WORK-e6aa9eb10a958373d0fdd007d98a53fd",
+  "source_sha": "6b4f6d022229efc57db80ed7fbbec38562c4fb4a",
+  "command": "npm test (node --test over the whole suite: 370 tests, 367 pass, 0 fail, 3 skipped, 18.5 s) on branch fix/windows-too-broad at commit 6b4f6d022229efc57db80ed7fbbec38562c4fb4a",
+  "scope": [
+    "lib/takeover-host.js",
+    "test/takeover-host.test.js",
+    "docs/evidence/DSH-066"
+  ],
+  "verified_at": 1794535920000,
+  "checks": [
+    {
+      "name": "Windows paths are measured in segments on both separators; ordinary Windows project directories pass, broad roots are still refused",
+      "passed": true,
+      "details": "lib/takeover-host.js exports tooBroadRoot(root, home), which refuses the filesystem root ('/' or parse(root).root, so a drive root such as C:\\ on Windows), the home directory and any root with fewer than two segments, splitting on /[\\\\/] instead of '/' alone; takeoverRootFor uses it. The new test 'tooBroadRoot measures depth in Windows segments too' in test/takeover-host.test.js passes: C:\\Users\\me\\project is accepted, C:\\, C:\\Users\\me (home), / and /opt are refused, /opt/projects/app is accepted. The pre-existing refusal tests (takeoverRootFor('/') and takeoverRootFor(homedir())) still pass. Not covered: an end-to-end run on a real Windows machine; the check is pure path logic and is unit-tested cross-platform.",
+      "criteria": [
+        "takeoverRootFor accepts an ordinary Windows project directory (e.g. C:\\Users\\me\\project) and still refuses the filesystem root, the drive root, the home directory and one-segment roots; covered by unit tests in test/takeover-host.test.js."
+      ]
+    },
+    {
+      "name": "The full suite passes with the fix, the change is committed and a PR is open",
+      "passed": true,
+      "details": "npm test on fix/windows-too-broad: 370 tests, 367 pass, 0 fail, 3 skipped (the lab-awr-dependent tests skipped as before). Commit 6b4f6d022229efc57db80ed7fbbec38562c4fb4a holds lib/takeover-host.js and test/takeover-host.test.js; PR https://github.com/originoneai/dsh-awr/pull/42 is open against main. Not covered: the PR is not yet reviewed or merged.",
+      "criteria": [
+        "The full test suite passes with the fix; the change is committed and a PR is open."
+      ]
+    }
+  ]
+}

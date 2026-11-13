@@ -513,3 +513,12 @@ work_items:
   "next_action": "Edit test/takeover-cli.test.js and test/takeover-host.test.js, run the suite with both awr versions as the lab, move the lab awr to the released 0.8.0, then complete with the evidence"
   "priority": "P1"
   "summary": "Found by running the plugin's suite against the packaged awr 0.8.0 before its release: the plugin already drives awr takeover --await-review and --reviewed, and two tests written for the plugin's own implementation fail only because the lab awr now has the command. The suite passed with that awr otherwise (364 of 366, 3 skipped)."
+- "id": "WORK-e6aa9eb10a958373d0fdd007d98a53fd"
+  "title": "DSH-066: Windows directories are not refused as too broad for takeover"
+  "status": "completed"
+  "acceptance": ["takeoverRootFor accepts an ordinary Windows project directory (e.g. C:\\Users\\me\\project) and still refuses the filesystem root, the drive root, the home directory and one-segment roots; covered by unit tests in test/takeover-host.test.js.","The full test suite passes with the fix; the change is committed and a PR is open."]
+  "goal": ["intake-goal"]
+  "next_action": "Register the completion evidence and complete DSH-066; merge PR #42"
+  "summary": "Reported by a user: the AWR panel said '这个文件夹范围太大，不适合当作一个项目' for an ordinary folder on Windows. takeoverRootFor in lib/takeover-host.js measured path depth with split('/'), which counts a Windows path as one segment, so every Windows directory was refused as too broad. Fixed by extracting tooBroadRoot(), which splits on both separators and keeps the filesystem-root and home refusals; PR #42, commit 6b4f6d0 on fix/windows-too-broad."
+  "evidence": ["docs/evidence/DSH-066/completion-report.json"]
+  "verification": {"evidence_level":"locally_verified"}
