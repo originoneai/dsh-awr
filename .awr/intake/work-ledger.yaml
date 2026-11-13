@@ -524,9 +524,11 @@ work_items:
   "verification": {"evidence_level":"locally_verified"}
 - "id": "WORK-694e7efdd18142a58cd383b9071d6bc9"
   "title": "DSH-067: The plugin offers to install a matching awr when the machine has none or an old one"
-  "status": "in_progress"
+  "status": "completed"
   "acceptance": ["1. On a machine with no awr on PATH, the takeover panel offers an Install button; accepting downloads the platform release asset, verifies it against SHA256SUMS, unpacks it under the plugin's data directory, writes .awr/runtime-binding.json for the project, and the takeover continues with that awr without any PATH change; a refused or failed download changes nothing on the machine.\n2. When the machine already has an awr the plugin can use (capabilities negotiate), that awr is used and no download happens; when the machine awr is too old for a feature, the feature's UI offers the bundled awr instead of stopping.\n3. The panel shows the bundled awr's version next to the machine's, a Check asks originoneai/awr releases for a newer one via release-manifest.json, and Update replaces the bundled copy after checksum verification, rolling back to the previous copy if the new one fails to start."]
   "goal": ["intake-goal"]
   "next_action": "Full suite green (390 pass); open the PR, verify in the real app, then evidence and completion"
   "summary": "Users hit 'no awr on PATH' and 'awr too old for the Progress tab' after installing the plugin. The plugin downloads the platform awr release into its own data directory, verifies it against the release SHA256SUMS, binds projects to it through .awr/runtime-binding.json, keeps using a compatible machine awr when there is one, and offers the install from the takeover panel with the user's consent; the same Check/Update pattern as the plugin update covers awr updates via release-manifest.json."
   "tags": ["dsh-067"]
+  "evidence": ["docs/evidence/DSH-067/completion-report.json"]
+  "verification": {"evidence_level":"locally_verified"}
