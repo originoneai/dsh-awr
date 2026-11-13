@@ -8,6 +8,7 @@
 // their parent's session (DSH-016) and the evidence candidates (DSH-050).
 import { appendFileSync } from 'node:fs'
 import { createAwr } from './lib/awr-runtime.js'
+import { createAwrInstaller } from './lib/awr-install.js'
 import { registerCheckpointPrompts } from './lib/checkpoint-prompt.js'
 import { registerCompactionReports } from './lib/compaction.js'
 import { registerAwrCommand, watchConversations } from './lib/conversation.js'
@@ -44,7 +45,10 @@ export function apply(ctx) {
       }
     : undefined
   trace?.({ event: 'apply' })
-  const awr = createAwr()
+  // The bundled awr (DSH-067): installed on demand into the plugin's own state directory and used only when a
+  // machine has no awr of its own, or bound to a project whose awr is too old.
+  const installer = createAwrInstaller()
+  const awr = createAwr({ bundled: () => installer.cli() })
   const bindings = watchConversations(ctx, { awr, trace })
   // DSH_AWR_CONTEXT_BUDGET: the token budget for the AWR context compiled into the prompt (default 5000).
   const budget = Number.parseInt(process.env.DSH_AWR_CONTEXT_BUDGET ?? '', 10)
@@ -80,10 +84,10 @@ export function apply(ctx) {
   const evidence = registerEvidenceSuggestions(ctx, { bindings, enabled: process.env.DSH_AWR_EVIDENCE_SUGGESTIONS !== '0', trace })
   // The panel reads its data from a file the host writes (lib/panel-snapshot.js), so asking for it adds nothing to the conversation.
   const updater = createPluginUpdater()
-  const progress = createProgress({ awr, takeover })
+  const progress = createProgress({ awr, takeover, installer })
   // A takeover that finishes changes what the progress page shows, so its data is written again (if the page was opened).
-  const panel = createPanelPublisher({ takeover, awr, bindings, updater, warn: (message) => ctx.logger?.warn?.(message), onSettled: (agent) => { progress.publish(agent, { onlyIfWatched: true }).catch(() => {}) } })
-  registerAwrCommand(ctx, { awr, bindings, context, takeover, evidence, panel, updater, progress })
+  const panel = createPanelPublisher({ takeover, awr, bindings, updater, installer, warn: (message) => ctx.logger?.warn?.(message), onSettled: (agent) => { progress.publish(agent, { onlyIfWatched: true }).catch(() => {}) } })
+  registerAwrCommand(ctx, { awr, bindings, context, takeover, evidence, panel, updater, progress, installer })
   // When the agent itself changes the work through the awr tool, the light and the progress page follow.
   registerAwrTools(ctx, { awr, bindings, onRun: refreshAfterAgent({ panel, progress }) })
   registerAwrSkill(ctx)

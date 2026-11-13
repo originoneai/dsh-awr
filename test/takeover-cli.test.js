@@ -13,7 +13,7 @@ import test from 'node:test'
 import { fileURLToPath } from 'node:url'
 import { createAwr } from '../lib/awr-runtime.js'
 import { TakeoverStop } from '../lib/takeover.js'
-import { awrInfo, cliStateDir, cliTakeoverAvailable, normalizeReceipt, normalizeRecord, readCliRun, runTakeoverViaCli } from '../lib/takeover-cli.js'
+import { awrInfo, cliStateDir, cliTakeoverAvailable, forgetCapabilities, normalizeReceipt, normalizeRecord, readCliRun, runTakeoverViaCli } from '../lib/takeover-cli.js'
 import { createTakeoverController, describeRun } from '../lib/takeover-host.js'
 
 const here = dirname(fileURLToPath(import.meta.url))
@@ -63,6 +63,24 @@ test('the answer is kept for a minute and asked again after that', async () => {
   assert.equal(asked, 2)
   await cliTakeoverAvailable(awr, '/other', now)
   assert.equal(asked, 3, 'each project is asked for itself')
+})
+
+test('forgetCapabilities negotiates again when the project\'s runtime changed (DSH-067)', async () => {
+  let asked = 0
+  let document = null
+  const awr = { run: async () => { asked += 1; return document } }
+  const now = () => 1_000_000
+  // No awr yet: the failure is cached for the minute.
+  assert.equal(await cliTakeoverAvailable(awr, '/p', now), false)
+  assert.equal(await cliTakeoverAvailable(awr, '/p', now), false)
+  assert.equal(asked, 1)
+  // The bundled awr was installed and bound: forgetting the cache lets the new awr answer.
+  document = { capabilities: [CAPABILITY] }
+  forgetCapabilities(awr, '/p')
+  assert.equal(await cliTakeoverAvailable(awr, '/p', now), true)
+  assert.equal(asked, 2)
+  assert.equal(await cliTakeoverAvailable(awr, '/p', now), true, 'and the new answer is cached again')
+  assert.equal(asked, 2)
 })
 
 test('which awr is used, why, and how the takeover runs, for the panel', async () => {

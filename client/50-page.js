@@ -354,6 +354,7 @@ function ProgressPage(props) {
   const [showDone, setShowDone] = React.useState(false)
   const [zoom, setZoom] = React.useState(1)
   const [failure, setFailure] = React.useState(undefined)
+  const [installing, setInstalling] = React.useState(false)
   const area = React.useRef(null)
 
   React.useEffect(() => {
@@ -379,6 +380,20 @@ function ProgressPage(props) {
       await project.act('/awr takeover')
     } catch (problem) {
       setFailure(String(problem?.message ?? problem))
+    }
+  }
+  // The machine's awr is too old for this page: install the bundled one and bind the project to it, then
+  // the page reads again (the command republishes the page's data; this read is the belt to its braces).
+  const installRuntime = async () => {
+    setFailure(undefined)
+    setInstalling(true)
+    try {
+      await project.act('/awr runtime install --use')
+      await ask(false)
+    } catch (problem) {
+      setFailure(String(problem?.message ?? problem))
+    } finally {
+      setInstalling(false)
     }
   }
   // The three views are tabs: one stop in the Tab order, the arrow keys (and Home and End) move between them.
@@ -408,10 +423,20 @@ function ProgressPage(props) {
   if (!progress) return center(h('p', { style: { ...P.body, color: C.text3 } }, error ? t('empty.failed.title') : t('page.loading')))
   if (!ok) {
     const known = progress.reason === 'unsupported'
+    // The bundled awr the page offers instead of stopping (DSH-067): install it (or bind the project to the
+    // copy that is already installed), and the page draws with it.
+    const installer = known ? progress.installer : undefined
+    const offered = installer && installer.state !== 'unsupported'
     return center(h('div', { 'data-testid': 'awr-page-empty', 'data-reason': progress.reason },
       h('p', { style: P.title }, known ? t('empty.unsupported.title') : t('empty.failed.title')),
       known ? h('p', { style: P.body }, t('empty.unsupported.body')) : null,
-      h('div', { style: { marginTop: 16 } }, h('button', { type: 'button', className: 'awr-btn awr-btn-soft', disabled: Boolean(working), onClick: () => ask(false) }, t('empty.failed.retry'))),
+      h('div', { style: { marginTop: 16, display: 'flex', alignItems: 'center', gap: 8 } },
+        h('button', { type: 'button', className: 'awr-btn awr-btn-soft', disabled: Boolean(working) || installing, onClick: () => ask(false) }, t('empty.failed.retry')),
+        offered
+          ? h('button', { id: 'awr-page-runtime-install', 'data-testid': 'awr-page-runtime-install', type: 'button', className: 'awr-btn awr-btn-primary', disabled: installing, onClick: installRuntime },
+              installing ? t('runtime.installing') : installer.state === 'installed' ? t('page.runtime.use', { version: installer.version }) : t('page.runtime.install', { version: installer.check?.latest ?? '' }))
+          : null),
+      failure ? h('p', { style: { ...P.note, color: C.bad }, 'data-testid': 'awr-page-failure' }, failure) : null,
       progress.message ? h('div', { style: { marginTop: 12 } }, h(Fold, { label: t('tech.title') }, h('div', { style: { fontSize: 12, lineHeight: '18px', color: C.text2, wordBreak: 'break-word' } }, progress.message))) : null))
   }
 

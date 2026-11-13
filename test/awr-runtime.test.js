@@ -125,6 +125,52 @@ test('unbound: an awr in a fallback directory is found when PATH has none, as in
   assert.equal((await both.resolve(project(t))).cli, winner.bin)
 })
 
+test('bundled: the awr the plugin installed is the last fallback, and forget() lets a project find it', async (t) => {
+  const dir = scratch(t)
+  const own = fakeAwr(dir, 'awr', healthy)
+  const root = project(t)
+  const empty = { PATH: scratch(t) }
+  // Nothing anywhere else: the bundled copy answers, reported as its own source.
+  const awr = createAwr({ env: empty, fallbackDirs: [], bundled: async () => own.bin })
+  assert.deepEqual(await awr.run(root, ['status']), { ok: true, project_revision: 7 })
+  assert.equal((await awr.resolve(root)).source, 'bundled')
+  // PATH still outranks it.
+  const first = scratch(t)
+  const winner = fakeAwr(first, 'awr', healthy)
+  const both = createAwr({ env: { PATH: first }, fallbackDirs: [], bundled: async () => own.bin })
+  assert.equal((await both.resolve(project(t))).source, 'path')
+  assert.equal(own.calls().length, 2, 'the bundled copy was only used where nothing else was')
+  assert.equal(winner.calls().length >= 1, true)
+})
+
+test('bundled: an installer that has nothing yet, or whose binary is gone, is the same as no awr', async (t) => {
+  const root = project(t)
+  const none = createAwr({ env: { PATH: scratch(t) }, fallbackDirs: [], bundled: async () => undefined })
+  await assert.rejects(none.resolve(root), (error) => error.kind === 'missing')
+  const gone = createAwr({ env: { PATH: scratch(t) }, fallbackDirs: [], bundled: async () => join(scratch(t), 'awr') })
+  await assert.rejects(gone.resolve(root), (error) => error.kind === 'missing')
+})
+
+test('forget() re-resolves a project whose runtime changed, so a stopped project picks up the bundled awr', async (t) => {
+  const dir = scratch(t)
+  const own = fakeAwr(dir, 'awr', healthy)
+  const root = project(t)
+  let installed = false
+  const awr = createAwr({ env: { PATH: scratch(t) }, fallbackDirs: [], bundled: async () => (installed ? own.bin : undefined) })
+  // Before the install the project stops on the missing awr; the stop is cached.
+  await assert.rejects(awr.run(root, ['status']), (error) => error.kind === 'missing')
+  assert.equal(awr.stoppedError(root)?.kind, 'missing')
+  await assert.rejects(awr.run(root, ['status']), (error) => error.kind === 'missing')
+  assert.equal(own.calls().length, 0)
+  // The install happened: without forget the cached stop would hold forever; with it the project resolves again.
+  installed = true
+  awr.forget(root)
+  assert.equal(awr.stoppedError(root), undefined)
+  assert.deepEqual(await awr.run(root, ['status']), { ok: true, project_revision: 7 })
+  assert.equal((await awr.resolve(root)).source, 'bundled')
+})
+
+
 test('an npm launcher is replaced by the native binary beside it, so no node is needed', async (t) => {
   const target = nativeTarget()
   if (!target) return t.skip('no native target for this platform')

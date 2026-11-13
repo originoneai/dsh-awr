@@ -123,6 +123,15 @@ window.__ModuleLoader__.load({
       'update.local': 'Runs from a local folder. Update it with git',
       'update.other': 'Not installed from GitHub, so it cannot update here',
 
+      'runtime.line': 'awr {version}',
+      'runtime.none': 'No bundled awr',
+      'runtime.install': 'Install awr and continue',
+      'runtime.installing': 'Installing awr…',
+      'runtime.use': 'Use awr {version} and continue',
+      'runtime.failed': 'awr could not be installed. Nothing was changed',
+      'page.runtime.install': 'Install awr {version} to draw the progress',
+      'page.runtime.use': 'Use the bundled awr {version}',
+
       'row.label': 'AWR',
       'row.running': 'Working',
       'row.done': 'Done',
@@ -300,6 +309,15 @@ window.__ModuleLoader__.load({
       'update.failed.network': '连不上 GitHub，稍后再试',
       'update.local': '运行在本地文件夹，用 git 更新',
       'update.other': '不是从 GitHub 安装的，无法在这里更新',
+
+      'runtime.line': 'awr {version}',
+      'runtime.none': '还没有自带 awr',
+      'runtime.install': '安装 awr 并继续',
+      'runtime.installing': '正在安装 awr…',
+      'runtime.use': '改用 awr {version} 并继续',
+      'runtime.failed': '无法安装 awr，本机没有任何改动',
+      'page.runtime.install': '安装 awr {version} 后即可查看项目进展',
+      'page.runtime.use': '改用自带的 awr {version}',
 
       'row.label': 'AWR',
       'row.running': '处理中',
@@ -864,7 +882,7 @@ window.__ModuleLoader__.load({
     }
 
     /** The takeover not yet done: the offer, the progress, or why it stopped. */
-    function TakeoverBlock({ view, t, busy, onStart, failure }) {
+    function TakeoverBlock({ view, t, busy, onStart, failure, installer, onRuntime, runtimeBusy }) {
       if (view.state === 'unavailable') {
         return h('div', { 'data-testid': 'awr-none' },
           h('p', { style: P.title }, t('none.title')),
@@ -882,6 +900,9 @@ window.__ModuleLoader__.load({
       const reasonKey = `reason.${view.stop?.reason}`
       const detail = view.stop?.detail
       const location = detail?.path ? `${detail.path}${detail.line ? `:${detail.line}` : ''}` : undefined
+      // Stopped because there is no usable awr on the machine: the bundled awr (DSH-067) is the way forward,
+      // so the install takes the place of the retry that would only stop again.
+      const awrMissing = stopped && Boolean(view.awr?.error) && installer && installer.state !== 'unsupported'
       return h('div', { 'data-testid': stopped ? 'awr-stopped' : 'awr-offer' },
         h('p', { style: P.title }, stopped ? t(`stop.title.${view.state}`) : t('start.title')),
         stopped
@@ -893,7 +914,10 @@ window.__ModuleLoader__.load({
               h('p', { style: P.body }, t('start.body')),
               h('p', { style: P.note }, t('start.safe'))),
         h('div', { style: { marginTop: 16 } },
-          h('button', { id: 'awr-takeover-start', type: 'button', className: 'awr-btn awr-btn-primary', disabled: busy, onClick: onStart }, busy ? t('start.starting') : stopped ? t('stop.continue') : t('start.button'))),
+          awrMissing
+            ? h('button', { id: 'awr-runtime-install', type: 'button', className: 'awr-btn awr-btn-primary', disabled: busy || runtimeBusy, onClick: () => onRuntime?.() },
+                runtimeBusy ? t('runtime.installing') : installer.state === 'installed' ? t('runtime.use', { version: installer.version }) : t('runtime.install'))
+            : h('button', { id: 'awr-takeover-start', type: 'button', className: 'awr-btn awr-btn-primary', disabled: busy, onClick: onStart }, busy ? t('start.starting') : stopped ? t('stop.continue') : t('start.button'))),
         failure ? h('p', { style: { ...P.note, color: C.bad }, 'data-testid': 'awr-failure' }, failure) : null)
     }
 
@@ -1007,6 +1031,28 @@ window.__ModuleLoader__.load({
         status?.phase === 'failed' ? h('p', { style: { ...P.note, margin: '4px 0 0', color: C.bad }, 'data-testid': 'awr-update-failure' }, status.text) : null)
     }
 
+    /** The bundled awr (DSH-067): its version, and a check and update against the newest originoneai/awr release. */
+    function RuntimeLine({ installer, t, busy, onCheck, onUpdate, status }) {
+      if (!installer || installer.state === 'unsupported') return null
+      const check = installer.check
+      let right = null
+      if (status?.phase === 'checking') right = h('span', { style: { color: C.text3 } }, t('update.checking'))
+      else if (status?.phase === 'applying') right = h('span', { style: { display: 'inline-flex', alignItems: 'center', gap: 6, color: C.text2 } }, h(Icon, { name: 'refresh', size: 12, className: 'awr-spin' }), t('update.applying'))
+      else if (check?.available) {
+        right = h('span', { style: { display: 'inline-flex', alignItems: 'center', gap: 8 } },
+          h('span', { style: { display: 'inline-flex', alignItems: 'center', gap: 6, color: C.text } }, h(Light, { state: 'active', size: 6 }), t('update.available')),
+          h('button', { id: 'awr-runtime-apply', type: 'button', className: 'awr-btn awr-btn-soft', style: { height: 24, padding: '0 10px', fontSize: 12 }, disabled: busy, onClick: onUpdate }, t('update.apply')))
+      } else {
+        right = h('span', { style: { display: 'inline-flex', alignItems: 'center', gap: 8 } },
+          check ? h('span', { style: { color: C.text3 } }, t('update.current')) : null,
+          h('button', { id: 'awr-runtime-check', type: 'button', className: 'awr-btn awr-btn-quiet', style: { height: 24, fontSize: 12, margin: '0 -8px 0 0' }, disabled: busy, onClick: onCheck }, t('update.check')))
+      }
+      return h('div', { 'data-testid': 'awr-runtime' },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, minHeight: 24, fontSize: 12, lineHeight: '16px', color: C.text3 } },
+          h('span', null, installer.state === 'installed' ? t('runtime.line', { version: installer.version }) : t('runtime.none')), right),
+        status?.phase === 'failed' ? h('p', { style: { ...P.note, margin: '4px 0 0', color: C.bad }, 'data-testid': 'awr-runtime-failure' }, status.text) : null)
+    }
+
     function AwrChip(props) {
       const ctx = props.__ctx
       const host = props.__host
@@ -1016,6 +1062,7 @@ window.__ModuleLoader__.load({
       const [anchor, setAnchor] = React.useState(undefined)
       const [failure, setFailure] = React.useState(undefined)
       const [update, setUpdate] = React.useState(undefined)
+      const [runtime, setRuntime] = React.useState(undefined)
       const trigger = React.useRef(null)
       const card = React.useRef(null)
       const project = useProjectState(ctx, sessionId, t, open)
@@ -1091,6 +1138,27 @@ window.__ModuleLoader__.load({
         }
       }
 
+      const checkRuntime = async () => {
+        setRuntime({ phase: 'checking' })
+        try {
+          await project.act('/awr runtime check')
+          setRuntime(undefined)
+        } catch (problem) {
+          setRuntime({ phase: 'failed', text: String(problem?.message ?? problem) })
+        }
+      }
+      // The install downloads the platform release, verifies and unpacks it, and with --use also binds this
+      // conversation's project to it (the takeover stopped on the missing awr is then retried with the same button).
+      const installRuntime = async (use) => {
+        setRuntime({ phase: 'applying' })
+        try {
+          await project.act(`/awr runtime install${use ? ' --use' : ''}`)
+          setRuntime(undefined)
+        } catch (problem) {
+          setRuntime({ phase: 'failed', text: t('runtime.failed') })
+        }
+      }
+
       const light = lightOf(data)
       const button = h('button', { ref: trigger, id: 'awr-header-action', type: 'button', className: 'awr-chip', title: t('chip.title'), 'aria-label': t('chip.title'), 'aria-haspopup': 'dialog', 'aria-expanded': open, onClick: toggle },
         h('span', { 'data-testid': 'awr-dot', 'data-state': view?.state ?? (error ? 'unavailable' : 'loading'), style: { display: 'inline-flex' } }, h(Light, { state: light.state, size: 7, pulse: light.pulse })),
@@ -1110,9 +1178,10 @@ window.__ModuleLoader__.load({
       if (view) {
         body.push(managed
           ? h(ManagedBlock, { key: 'managed', view, work: data.work ?? undefined, t })
-          : h(TakeoverBlock, { key: 'takeover', view, t, busy, onStart: start, failure }))
+          : h(TakeoverBlock, { key: 'takeover', view, t, busy, onStart: start, failure, installer: data.installer ?? undefined, onRuntime: () => installRuntime(true), runtimeBusy: runtime?.phase === 'applying' }))
         body.push(h('hr', { key: 'rule', style: P.rule }))
         body.push(h(UpdateLine, { key: 'update', plugin: data.plugin ?? undefined, t, busy: busy || update?.phase === 'applying', onCheck: checkUpdate, onApply: applyUpdate, canApply: Boolean(host?.manager), status: update }))
+        body.push(h(RuntimeLine, { key: 'runtime', installer: data.installer ?? undefined, t, busy: busy || runtime?.phase === 'applying', onCheck: checkRuntime, onUpdate: () => installRuntime(false), status: runtime }))
         body.push(h('div', { key: 'tech', style: { marginTop: data.plugin?.version ? 8 : 0 } }, h(Fold, { label: t('tech.title'), testId: 'awr-tech-fold' }, h(TechDetails, { view, work: data.work ?? undefined, plugin: data.plugin ?? undefined, t }))))
       }
       const cardStyle = { position: 'fixed', zIndex: 1000, top: anchor.top, left: anchor.left, width: 340, maxWidth: 'calc(100vw - 24px)', maxHeight: 'min(560px, calc(100vh - 96px))', overflow: 'auto', boxSizing: 'border-box', padding: 16, background: C.menu, color: C.text, border: `.5px solid ${C.line2}`, borderRadius: 'var(--dsw-radius-md, 12px)', boxShadow: 'var(--dsw-elevation-prominent, 0 8px 24px rgba(0,0,0,.12))', backdropFilter: 'saturate(180%) blur(20px)', fontSize: 13, lineHeight: '20px' }
@@ -1486,6 +1555,7 @@ window.__ModuleLoader__.load({
       const [showDone, setShowDone] = React.useState(false)
       const [zoom, setZoom] = React.useState(1)
       const [failure, setFailure] = React.useState(undefined)
+      const [installing, setInstalling] = React.useState(false)
       const area = React.useRef(null)
 
       React.useEffect(() => {
@@ -1511,6 +1581,20 @@ window.__ModuleLoader__.load({
           await project.act('/awr takeover')
         } catch (problem) {
           setFailure(String(problem?.message ?? problem))
+        }
+      }
+      // The machine's awr is too old for this page: install the bundled one and bind the project to it, then
+      // the page reads again (the command republishes the page's data; this read is the belt to its braces).
+      const installRuntime = async () => {
+        setFailure(undefined)
+        setInstalling(true)
+        try {
+          await project.act('/awr runtime install --use')
+          await ask(false)
+        } catch (problem) {
+          setFailure(String(problem?.message ?? problem))
+        } finally {
+          setInstalling(false)
         }
       }
       // The three views are tabs: one stop in the Tab order, the arrow keys (and Home and End) move between them.
@@ -1540,10 +1624,20 @@ window.__ModuleLoader__.load({
       if (!progress) return center(h('p', { style: { ...P.body, color: C.text3 } }, error ? t('empty.failed.title') : t('page.loading')))
       if (!ok) {
         const known = progress.reason === 'unsupported'
+        // The bundled awr the page offers instead of stopping (DSH-067): install it (or bind the project to the
+        // copy that is already installed), and the page draws with it.
+        const installer = known ? progress.installer : undefined
+        const offered = installer && installer.state !== 'unsupported'
         return center(h('div', { 'data-testid': 'awr-page-empty', 'data-reason': progress.reason },
           h('p', { style: P.title }, known ? t('empty.unsupported.title') : t('empty.failed.title')),
           known ? h('p', { style: P.body }, t('empty.unsupported.body')) : null,
-          h('div', { style: { marginTop: 16 } }, h('button', { type: 'button', className: 'awr-btn awr-btn-soft', disabled: Boolean(working), onClick: () => ask(false) }, t('empty.failed.retry'))),
+          h('div', { style: { marginTop: 16, display: 'flex', alignItems: 'center', gap: 8 } },
+            h('button', { type: 'button', className: 'awr-btn awr-btn-soft', disabled: Boolean(working) || installing, onClick: () => ask(false) }, t('empty.failed.retry')),
+            offered
+              ? h('button', { id: 'awr-page-runtime-install', 'data-testid': 'awr-page-runtime-install', type: 'button', className: 'awr-btn awr-btn-primary', disabled: installing, onClick: installRuntime },
+                  installing ? t('runtime.installing') : installer.state === 'installed' ? t('page.runtime.use', { version: installer.version }) : t('page.runtime.install', { version: installer.check?.latest ?? '' }))
+              : null),
+          failure ? h('p', { style: { ...P.note, color: C.bad }, 'data-testid': 'awr-page-failure' }, failure) : null,
           progress.message ? h('div', { style: { marginTop: 12 } }, h(Fold, { label: t('tech.title') }, h('div', { style: { fontSize: 12, lineHeight: '18px', color: C.text2, wordBreak: 'break-word' } }, progress.message))) : null))
       }
 

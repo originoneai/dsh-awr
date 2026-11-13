@@ -21,6 +21,15 @@ const status = await awr.run(root, ['status'])
    not on the `PATH` DeepSeek Harness gives its runtime: the desktop app replaces the `PATH` of the app with that of the
    login shell, so a directory put first on the `PATH` of the app process never reaches the plugin.
 3. Otherwise the first `awr` on `PATH`, then the usual install directories.
+4. Otherwise the bundled awr the plugin installed itself (DSH-067): the copy
+   `lib/awr-install.js` downloaded, verified and unpacked into the plugin's own state directory
+   (`~/.local/state/dsh-awr/runtime`). It is private to the plugin — never on `PATH`, never global —
+   and it is only used where a project has no other awr. `/awr runtime install --use` (also the
+   takeover panel's install button) installs it and pins the project to it through
+   `.awr/runtime-binding.json`, so an awr of the machine always wins over the bundled one.
+   `lib/awr-install.js` keeps the newest copy and the one before it (for projects still bound to it)
+   and rolls back to the previous copy when an update's binary does not start; `awr.forget(root)`
+   after the install re-resolves projects that had stopped on the missing awr.
 
 Before the first command for a project the plugin runs the read-only `awr runtime binding` once.
 With a binding file, `program_version` and `schema_version` in the file must equal what awr

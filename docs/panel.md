@@ -19,7 +19,10 @@ For a project AWR manages:
   saying that no work can start until the missing details are filled in. Work that merely is not ready is not listed one
   by one in that case: AWR starts nothing in a project whose goal, acceptance criteria and next steps are incomplete
   (`organization.business_execution_ready` is false), and saying so once is the truth;
-- the plugin's version, and for a plugin installed from GitHub **Check for updates** (below).
+- the plugin's version, and for a plugin installed from GitHub **Check for updates** (below);
+- the bundled awr's version with **Check** for a newer awr release and **Update** to install it, or, where a takeover
+  stopped because the machine has no awr, an **Install awr and continue** button in place of the retry (DSH-067;
+  `docs/awr-runtime.md` describes where the bundled awr lives and how it is chosen).
 
 The light is green when the person has nothing to do, amber when something needs them (a recorded blocker, an
 incomplete project, a goal waiting for confirmation), blue while a takeover runs and red where one stopped. A project

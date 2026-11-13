@@ -219,6 +219,66 @@ test('a reason this version does not know still gets a sentence, and a refusal t
   assert.equal(textOf(ui.byTestId('awr-failure')), 'The takeover is already running.', 'the first line, the one written for people')
 })
 
+test('a machine without awr is offered the bundled awr: the button installs, binds, and the takeover can go on (DSH-067)', async () => {
+  let current = { ...stopped(), awr: { error: 'No awr was found on PATH and the project has no .awr/runtime-binding.json.' } }
+  let runtime = { state: 'none', target: 'darwin-arm64', check: { checkedAt: 1, latest: '0.7.0', asset: 'originoneai-awr-darwin-arm64-0.7.0.tgz', available: true } }
+  const client = loadClient({
+    view: () => current,
+    installer: () => runtime,
+    answer: (line) => {
+      if (line.startsWith('/awr runtime')) {
+        runtime = { state: 'installed', version: '0.7.0', cli: '/state/runtime/awr-0.7.0-darwin-arm64/bin/awr', target: 'darwin-arm64' }
+        current = running()
+        return 'Installed awr 0.7.0 and bound this project to it.'
+      }
+      return 'ok'
+    },
+  })
+  const ui = await open(client)
+  assert.match(textOf(ui.byTestId('awr-stopped')), /The takeover stopped/)
+  assert.equal(textOf(ui.byId('awr-runtime-install')), 'Install awr and continue', 'the install takes the place of the retry')
+  assert.equal(ui.all((node) => node.props.id === 'awr-takeover-start').length, 0, 'retrying without an awr would only stop again')
+  await ui.click('awr-runtime-install')
+  assert.deepEqual(client.calls, ['/awr runtime install --use --ui en'])
+  assert.ok(ui.byTestId('awr-running'), 'the host republished the panel and the takeover went on')
+})
+
+test('a machine whose bundled awr is already installed offers to use it, worded with the version', async () => {
+  const current = { ...stopped(), awr: { error: 'No awr was found on PATH and the project has no .awr/runtime-binding.json.' } }
+  const client = loadClient({ view: () => current, installer: () => ({ state: 'installed', version: '0.7.0', cli: '/state/runtime/awr-0.7.0-darwin-arm64/bin/awr' }) })
+  const ui = await open(client)
+  assert.equal(textOf(ui.byId('awr-runtime-install')), 'Use awr 0.7.0 and continue')
+})
+
+test('the bundled awr line shows its version and checks for a newer release from the card (DSH-067)', async () => {
+  let runtime = { state: 'installed', version: '0.7.0', cli: '/state/runtime/awr-0.7.0-darwin-arm64/bin/awr' }
+  const client = loadClient({
+    view: managed,
+    work: () => workView(),
+    installer: () => runtime,
+    answer: (line) => {
+      if (line.startsWith('/awr runtime check')) { runtime = { ...runtime, check: { checkedAt: 1, latest: '0.8.0', asset: 'x', available: true } }; return 'awr 0.8.0 is available.' }
+      return 'ok'
+    },
+  })
+  const ui = await open(client)
+  assert.match(textOf(ui.byTestId('awr-runtime')), /^awr 0\.7\.0Check for updates$/)
+  await ui.click('awr-runtime-check')
+  assert.deepEqual(client.calls, ['/awr runtime check --ui en'])
+  assert.match(textOf(ui.byTestId('awr-runtime')), /Update availableUpdate/)
+  await ui.click('awr-runtime-apply')
+  assert.deepEqual(client.calls, ['/awr runtime check --ui en', '/awr runtime install --ui en'])
+})
+
+test('a machine with no awr build for its platform shows no bundled-awr offer', async () => {
+  const current = { ...stopped(), awr: { error: 'No awr was found on PATH and the project has no .awr/runtime-binding.json.' } }
+  const client = loadClient({ view: () => current, installer: () => ({ state: 'unsupported' }) })
+  const ui = await open(client)
+  assert.equal(ui.all((node) => node.props.id === 'awr-runtime-install').length, 0, 'nothing to install on')
+  assert.ok(ui.byId('awr-takeover-start'), 'the plain retry stays')
+  assert.equal(ui.all((node) => node.props['data-testid'] === 'awr-runtime').length, 0, 'and no runtime line either')
+})
+
 test('a conversation without a project, and a host that cannot be read, are said plainly', async () => {
   const none = loadClient({ view: () => ({ projectRoot: null, state: 'unavailable', steps: [], stop: null, receipt: null }) })
   assert.match(textOf((await open(none)).byTestId('awr-none')), /No project in this conversation/)

@@ -51,7 +51,7 @@ const P = {
 }
 
 /** The takeover not yet done: the offer, the progress, or why it stopped. */
-function TakeoverBlock({ view, t, busy, onStart, failure }) {
+function TakeoverBlock({ view, t, busy, onStart, failure, installer, onRuntime, runtimeBusy }) {
   if (view.state === 'unavailable') {
     return h('div', { 'data-testid': 'awr-none' },
       h('p', { style: P.title }, t('none.title')),
@@ -69,6 +69,9 @@ function TakeoverBlock({ view, t, busy, onStart, failure }) {
   const reasonKey = `reason.${view.stop?.reason}`
   const detail = view.stop?.detail
   const location = detail?.path ? `${detail.path}${detail.line ? `:${detail.line}` : ''}` : undefined
+  // Stopped because there is no usable awr on the machine: the bundled awr (DSH-067) is the way forward,
+  // so the install takes the place of the retry that would only stop again.
+  const awrMissing = stopped && Boolean(view.awr?.error) && installer && installer.state !== 'unsupported'
   return h('div', { 'data-testid': stopped ? 'awr-stopped' : 'awr-offer' },
     h('p', { style: P.title }, stopped ? t(`stop.title.${view.state}`) : t('start.title')),
     stopped
@@ -80,7 +83,10 @@ function TakeoverBlock({ view, t, busy, onStart, failure }) {
           h('p', { style: P.body }, t('start.body')),
           h('p', { style: P.note }, t('start.safe'))),
     h('div', { style: { marginTop: 16 } },
-      h('button', { id: 'awr-takeover-start', type: 'button', className: 'awr-btn awr-btn-primary', disabled: busy, onClick: onStart }, busy ? t('start.starting') : stopped ? t('stop.continue') : t('start.button'))),
+      awrMissing
+        ? h('button', { id: 'awr-runtime-install', type: 'button', className: 'awr-btn awr-btn-primary', disabled: busy || runtimeBusy, onClick: () => onRuntime?.() },
+            runtimeBusy ? t('runtime.installing') : installer.state === 'installed' ? t('runtime.use', { version: installer.version }) : t('runtime.install'))
+        : h('button', { id: 'awr-takeover-start', type: 'button', className: 'awr-btn awr-btn-primary', disabled: busy, onClick: onStart }, busy ? t('start.starting') : stopped ? t('stop.continue') : t('start.button'))),
     failure ? h('p', { style: { ...P.note, color: C.bad }, 'data-testid': 'awr-failure' }, failure) : null)
 }
 
@@ -194,6 +200,28 @@ function UpdateLine({ plugin, t, busy, onCheck, onApply, canApply, status: repor
     status?.phase === 'failed' ? h('p', { style: { ...P.note, margin: '4px 0 0', color: C.bad }, 'data-testid': 'awr-update-failure' }, status.text) : null)
 }
 
+/** The bundled awr (DSH-067): its version, and a check and update against the newest originoneai/awr release. */
+function RuntimeLine({ installer, t, busy, onCheck, onUpdate, status }) {
+  if (!installer || installer.state === 'unsupported') return null
+  const check = installer.check
+  let right = null
+  if (status?.phase === 'checking') right = h('span', { style: { color: C.text3 } }, t('update.checking'))
+  else if (status?.phase === 'applying') right = h('span', { style: { display: 'inline-flex', alignItems: 'center', gap: 6, color: C.text2 } }, h(Icon, { name: 'refresh', size: 12, className: 'awr-spin' }), t('update.applying'))
+  else if (check?.available) {
+    right = h('span', { style: { display: 'inline-flex', alignItems: 'center', gap: 8 } },
+      h('span', { style: { display: 'inline-flex', alignItems: 'center', gap: 6, color: C.text } }, h(Light, { state: 'active', size: 6 }), t('update.available')),
+      h('button', { id: 'awr-runtime-apply', type: 'button', className: 'awr-btn awr-btn-soft', style: { height: 24, padding: '0 10px', fontSize: 12 }, disabled: busy, onClick: onUpdate }, t('update.apply')))
+  } else {
+    right = h('span', { style: { display: 'inline-flex', alignItems: 'center', gap: 8 } },
+      check ? h('span', { style: { color: C.text3 } }, t('update.current')) : null,
+      h('button', { id: 'awr-runtime-check', type: 'button', className: 'awr-btn awr-btn-quiet', style: { height: 24, fontSize: 12, margin: '0 -8px 0 0' }, disabled: busy, onClick: onCheck }, t('update.check')))
+  }
+  return h('div', { 'data-testid': 'awr-runtime' },
+    h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, minHeight: 24, fontSize: 12, lineHeight: '16px', color: C.text3 } },
+      h('span', null, installer.state === 'installed' ? t('runtime.line', { version: installer.version }) : t('runtime.none')), right),
+    status?.phase === 'failed' ? h('p', { style: { ...P.note, margin: '4px 0 0', color: C.bad }, 'data-testid': 'awr-runtime-failure' }, status.text) : null)
+}
+
 function AwrChip(props) {
   const ctx = props.__ctx
   const host = props.__host
@@ -203,6 +231,7 @@ function AwrChip(props) {
   const [anchor, setAnchor] = React.useState(undefined)
   const [failure, setFailure] = React.useState(undefined)
   const [update, setUpdate] = React.useState(undefined)
+  const [runtime, setRuntime] = React.useState(undefined)
   const trigger = React.useRef(null)
   const card = React.useRef(null)
   const project = useProjectState(ctx, sessionId, t, open)
@@ -278,6 +307,27 @@ function AwrChip(props) {
     }
   }
 
+  const checkRuntime = async () => {
+    setRuntime({ phase: 'checking' })
+    try {
+      await project.act('/awr runtime check')
+      setRuntime(undefined)
+    } catch (problem) {
+      setRuntime({ phase: 'failed', text: String(problem?.message ?? problem) })
+    }
+  }
+  // The install downloads the platform release, verifies and unpacks it, and with --use also binds this
+  // conversation's project to it (the takeover stopped on the missing awr is then retried with the same button).
+  const installRuntime = async (use) => {
+    setRuntime({ phase: 'applying' })
+    try {
+      await project.act(`/awr runtime install${use ? ' --use' : ''}`)
+      setRuntime(undefined)
+    } catch (problem) {
+      setRuntime({ phase: 'failed', text: t('runtime.failed') })
+    }
+  }
+
   const light = lightOf(data)
   const button = h('button', { ref: trigger, id: 'awr-header-action', type: 'button', className: 'awr-chip', title: t('chip.title'), 'aria-label': t('chip.title'), 'aria-haspopup': 'dialog', 'aria-expanded': open, onClick: toggle },
     h('span', { 'data-testid': 'awr-dot', 'data-state': view?.state ?? (error ? 'unavailable' : 'loading'), style: { display: 'inline-flex' } }, h(Light, { state: light.state, size: 7, pulse: light.pulse })),
@@ -297,9 +347,10 @@ function AwrChip(props) {
   if (view) {
     body.push(managed
       ? h(ManagedBlock, { key: 'managed', view, work: data.work ?? undefined, t })
-      : h(TakeoverBlock, { key: 'takeover', view, t, busy, onStart: start, failure }))
+      : h(TakeoverBlock, { key: 'takeover', view, t, busy, onStart: start, failure, installer: data.installer ?? undefined, onRuntime: () => installRuntime(true), runtimeBusy: runtime?.phase === 'applying' }))
     body.push(h('hr', { key: 'rule', style: P.rule }))
     body.push(h(UpdateLine, { key: 'update', plugin: data.plugin ?? undefined, t, busy: busy || update?.phase === 'applying', onCheck: checkUpdate, onApply: applyUpdate, canApply: Boolean(host?.manager), status: update }))
+    body.push(h(RuntimeLine, { key: 'runtime', installer: data.installer ?? undefined, t, busy: busy || runtime?.phase === 'applying', onCheck: checkRuntime, onUpdate: () => installRuntime(false), status: runtime }))
     body.push(h('div', { key: 'tech', style: { marginTop: data.plugin?.version ? 8 : 0 } }, h(Fold, { label: t('tech.title'), testId: 'awr-tech-fold' }, h(TechDetails, { view, work: data.work ?? undefined, plugin: data.plugin ?? undefined, t }))))
   }
   const cardStyle = { position: 'fixed', zIndex: 1000, top: anchor.top, left: anchor.left, width: 340, maxWidth: 'calc(100vw - 24px)', maxHeight: 'min(560px, calc(100vh - 96px))', overflow: 'auto', boxSizing: 'border-box', padding: 16, background: C.menu, color: C.text, border: `.5px solid ${C.line2}`, borderRadius: 'var(--dsw-radius-md, 12px)', boxShadow: 'var(--dsw-elevation-prominent, 0 8px 24px rgba(0,0,0,.12))', backdropFilter: 'saturate(180%) blur(20px)', fontSize: 13, lineHeight: '20px' }

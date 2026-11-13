@@ -294,6 +294,33 @@ test('an awr that is too old, a failure and a project with no work are each said
   assert.match(empty.ui.text(), /No work is recorded yet/)
 })
 
+test('an awr too old for the page offers to install the bundled one, which draws the page (DSH-067)', async () => {
+  let ready = false
+  const { client, ui } = await page({
+    progress: () => (ready
+      ? progress()
+      : { ok: false, reason: 'unsupported', updatedAt: 1, installer: { state: 'none', target: 'darwin-arm64', check: { checkedAt: 1, latest: '0.7.0', asset: 'x', available: true } } }),
+    answer: (line) => {
+      if (line.startsWith('/awr runtime')) { ready = true; return 'Installed awr 0.7.0 and bound this project to it.' }
+      return 'ok'
+    },
+  })
+  assert.match(ui.text(), /too old to draw the progress/)
+  assert.equal(textOf(ui.byTestId('awr-page-runtime-install')), 'Install awr 0.7.0 to draw the progress')
+  await ui.click('awr-page-runtime-install')
+  await settle(4)
+  assert.ok(client.calls.includes('/awr runtime install --use --ui en'), 'the bundled awr is installed and bound')
+  assert.ok(client.calls.includes('/awr progress --ui en'), 'and the page reads again')
+  assert.ok(ui.byTestId('awr-gauge'), 'and draws the project with the new awr')
+})
+
+test('an awr too old for the page, with the bundled one already installed, offers to use it', async () => {
+  const { ui } = await page({
+    progress: () => ({ ok: false, reason: 'unsupported', updatedAt: 1, installer: { state: 'installed', version: '0.7.0', cli: '/state/runtime/awr-0.7.0-darwin-arm64/bin/awr' } }),
+  })
+  assert.equal(textOf(ui.byTestId('awr-page-runtime-install')), 'Use the bundled awr 0.7.0')
+})
+
 test('the zoom of the graph views steps between 30% and 150%, and Fit sizes it to the window', async () => {
   const { ui } = await page()
   assert.equal(ui.byTestId('awr-zoom'), undefined, 'the mainline view has no zoom')

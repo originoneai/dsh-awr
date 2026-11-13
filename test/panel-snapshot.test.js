@@ -60,6 +60,21 @@ test('a conversation the plugin instance has not bound (loaded again by an updat
   assert.equal(lost.work, undefined, 'a store that cannot find the binding leaves the work out, as before')
 })
 
+test('the snapshot carries the bundled awr the panel can offer (DSH-067)', async () => {
+  await withDirectory(async (dir) => {
+    const installer = { describe: async () => ({ state: 'installed', version: '0.7.0', cli: '/state/runtime/awr-0.7.0-darwin-arm64/bin/awr', target: 'darwin-arm64' }) }
+    const publisher = createPanelPublisher({ takeover: fakeTakeover([stopped]), awr: idle, bindings: nobody, installer, dir, now: () => 1234 })
+    await publisher.publish(agent())
+    const written = await read(join(dir, snapshotFileName('conv-1')))
+    assert.equal(written.installer.state, 'installed')
+    assert.equal(written.installer.version, '0.7.0')
+    // A snapshot written without an installer simply has no such field (older hosts, or a profile without it).
+    const plain = createPanelPublisher({ takeover: fakeTakeover([stopped]), awr: idle, bindings: nobody, dir, now: () => 1234 })
+    await plain.publish(agent('conv-2'))
+    assert.equal((await read(join(dir, snapshotFileName('conv-2')))).installer, undefined)
+  })
+})
+
 test('the snapshot is one JSON file with the view, the work and when it was written', async () => {
   await withDirectory(async (dir) => {
     const publisher = createPanelPublisher({ takeover: fakeTakeover([stopped]), awr: idle, bindings: nobody, dir, now: () => 1234 })

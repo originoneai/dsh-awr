@@ -243,6 +243,49 @@ test('an awr that stops the plugin is explained, and an unbound conversation can
   assert.match(refused.text, /no AWR session/)
 })
 
+test('/awr runtime: status, check and install of the bundled awr (DSH-067)', async () => {
+  const awr = scripted({})
+  awr.forget = function (root) { (this.forgotten ??= []).push(root) }
+  const calls = { check: 0, install: 0, bind: 0 }
+  const installer = {
+    describe: async () => ({ state: 'installed', version: '0.7.0', cli: '/state/runtime/awr-0.7.0-darwin-arm64/bin/awr' }),
+    check: async () => { calls.check += 1; return { checkedAt: 1794545000000, latest: '0.8.0', asset: 'originoneai-awr-darwin-arm64-0.8.0.tgz', available: true } },
+    install: async () => { calls.install += 1; return { version: '0.8.0', cli: '/state/runtime/awr-0.8.0-darwin-arm64/bin/awr' } },
+    bindProject: async (root) => { calls.bind += 1; return { file: `${root}/.awr/runtime-binding.json`, cli: '/state/runtime/awr-0.8.0-darwin-arm64/bin/awr', version: '0.8.0' } },
+  }
+  const takeover = { status: async () => ({ projectRoot: '/p', state: 'stopped', steps: [], stop: { reason: 'awr_unavailable' }, receipt: null }) }
+  const command = createAwrCommand({ awr, bindings: bindingsOf(bound), takeover, installer })
+  // status
+  const shown = await command({ agent, rawInput: 'runtime' })
+  assert.equal(shown.kind, 'success')
+  assert.match(shown.text, /Bundled awr 0\.7\.0 is installed/)
+  // check
+  const checked = await command({ agent, rawInput: 'runtime check' })
+  assert.match(checked.text, /awr 0\.8\.0 is available/)
+  assert.match(checked.text, /originoneai-awr-darwin-arm64-0\.8\.0\.tgz/)
+  assert.equal(calls.check, 1)
+  // install without --use never binds
+  const installed = await command({ agent, rawInput: 'runtime install' })
+  assert.match(installed.text, /Installed awr 0\.8\.0/)
+  assert.equal(calls.bind, 0)
+  // install --use binds the conversation's project and re-resolves it
+  const boundNow = await command({ agent, rawInput: 'runtime install --use' })
+  assert.match(boundNow.text, /bound this project to it/)
+  assert.deepEqual(calls, { check: 1, install: 2, bind: 1 })
+  assert.deepEqual(awr.forgotten, ['/p'], 'the project is resolved again so the stopped state does not hold')
+  // a failed install is reported and nothing was bound
+  installer.install = async () => { throw new Error('GitHub answered 404') }
+  const failed = await command({ agent, rawInput: 'runtime install --use' })
+  assert.equal(failed.kind, 'error')
+  assert.match(failed.text, /Nothing on this machine was changed|本机没有任何改动/)
+  assert.match(failed.text, /GitHub answered 404/)
+  assert.equal(calls.bind, 1, 'no further bind happened')
+  // without an installer the command says so instead of failing oddly
+  const without = await createAwrCommand({ awr, bindings: bindingsOf(bound), takeover })({ agent, rawInput: 'runtime check' })
+  assert.equal(without.kind, 'error')
+  assert.match(without.text, /not available/)
+})
+
 test('formatStatus tells a fork what it is, and says nothing for a conversation that is not one', () => {
   const status = { project_id: 'P', project_revision: 3, current: [], ready: [], blocked: [] }
   const fork = { parentConversation: 'parent-1', parentSession: 'S1', mode: 'parent_active' }

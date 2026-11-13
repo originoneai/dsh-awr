@@ -145,11 +145,12 @@ export const SESSION = 'conv-1'
  * Loads client.js into a host stand-in and returns the three things it registers (the header light, the progress page,
  * the conversation row) with everything a test needs to drive and read them.
  *
- * `view`, `work`, `plugin`, `progress` are functions that return what the host would write now. `answer(line)` returns
+ * `view`, `work`, `plugin`, `installer`, `progress` are functions that return what the host would write now.
+ * `answer(line)` returns
  * the text (or `{ error }`) of a command; `/awr panel` and `/awr progress` are answered by the stand-in itself.
  * `files`: 'fresh' (written just before), 'stale' (older than any freshness window) or 'none'.
  */
-export function loadClient({ view = () => ({ projectRoot: '/work/demo', state: 'not_initialized', steps: [], stop: null, receipt: null }), work = () => undefined, plugin = () => ({ kind: 'checkout', version: '0.1.0' }), progress = () => undefined, answer = () => 'done', files: initial = 'fresh', language = 'en', loopback = true, home = HOME, fileService = true, manager = true, install = async () => ({ ok: true, value: { changed: true, application: 'applied', stage: 'install' } }), publishes = true } = {}) {
+export function loadClient({ view = () => ({ projectRoot: '/work/demo', state: 'not_initialized', steps: [], stop: null, receipt: null }), work = () => undefined, plugin = () => ({ kind: 'checkout', version: '0.1.0' }), installer = () => undefined, progress = () => undefined, answer = () => 'done', files: initial = 'fresh', language = 'en', loopback = true, home = HOME, fileService = true, manager = true, install = async () => ({ ok: true, value: { changed: true, application: 'applied', stage: 'install' } }), publishes = true } = {}) {
   const { React, ReactDOM, mount } = createReact()
   const calls = []
   const reads = []
@@ -184,7 +185,7 @@ export function loadClient({ view = () => ({ projectRoot: '/work/demo', state: '
     /** What the host does: write the data of the light and its card. */
     publish() {
       clock.now += 10
-      files.set(panelFile, JSON.stringify({ version: 1, updatedAt: clock.now, view: view(), work: work() ?? null, plugin: plugin() ?? null }))
+      files.set(panelFile, JSON.stringify({ version: 1, updatedAt: clock.now, view: view(), work: work() ?? null, plugin: plugin() ?? null, installer: installer() ?? null }))
     },
     /** What the host does for the page. */
     publishProgress() {
@@ -196,7 +197,7 @@ export function loadClient({ view = () => ({ projectRoot: '/work/demo', state: '
   const dictionaries = {}
   const slots = {}
   const effects = []
-  const CHANGES = /^\/awr (claim|checkpoint|end|takeover|update)( |$)/
+  const CHANGES = /^\/awr (claim|checkpoint|end|takeover|update|runtime)( |$)/
   const remote = {
     hostFacts: { home, isLoopback: loopback },
     commands: {

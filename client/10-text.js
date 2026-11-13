@@ -110,6 +110,15 @@ const en = {
   'update.local': 'Runs from a local folder. Update it with git',
   'update.other': 'Not installed from GitHub, so it cannot update here',
 
+  'runtime.line': 'awr {version}',
+  'runtime.none': 'No bundled awr',
+  'runtime.install': 'Install awr and continue',
+  'runtime.installing': 'Installing awr…',
+  'runtime.use': 'Use awr {version} and continue',
+  'runtime.failed': 'awr could not be installed. Nothing was changed',
+  'page.runtime.install': 'Install awr {version} to draw the progress',
+  'page.runtime.use': 'Use the bundled awr {version}',
+
   'row.label': 'AWR',
   'row.running': 'Working',
   'row.done': 'Done',
@@ -287,6 +296,15 @@ const zh = {
   'update.failed.network': '连不上 GitHub，稍后再试',
   'update.local': '运行在本地文件夹，用 git 更新',
   'update.other': '不是从 GitHub 安装的，无法在这里更新',
+
+  'runtime.line': 'awr {version}',
+  'runtime.none': '还没有自带 awr',
+  'runtime.install': '安装 awr 并继续',
+  'runtime.installing': '正在安装 awr…',
+  'runtime.use': '改用 awr {version} 并继续',
+  'runtime.failed': '无法安装 awr，本机没有任何改动',
+  'page.runtime.install': '安装 awr {version} 后即可查看项目进展',
+  'page.runtime.use': '改用自带的 awr {version}',
 
   'row.label': 'AWR',
   'row.running': '处理中',
