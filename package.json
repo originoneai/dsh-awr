@@ -2,7 +2,7 @@
   "name": "@originoneai/dsh-awr",
   "version": "0.2.0",
   "type": "module",
-  "description": "Connects DeepSeek Harness to AWR (Agent Work Runtime) so a project's work state, claims and checkpoints survive across conversations.",
+  "description": "Connects DeepSeek Harness to AWR so a project's work state, claims and checkpoints survive across conversations.",
   "license": "MIT",
   "repository": {
     "type": "git",

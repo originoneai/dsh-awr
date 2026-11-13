@@ -1,4 +1,4 @@
-// DeepSeek Harness plugin that connects a conversation to AWR (Agent Work Runtime).
+// DeepSeek Harness plugin that connects a conversation to AWR.
 //
 // Capabilities are added one work item at a time, using the surfaces recorded in
 // docs/dsh-surfaces.md. Loaded so far: binding each conversation to an AWR session (DSH-013), the /awr

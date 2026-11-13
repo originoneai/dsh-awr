@@ -1,7 +1,7 @@
 # dsh-awr
 
 A [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) (DSH) plugin that lets
-[AWR (Agent Work Runtime)](https://github.com/originoneai/agent-work-runtime) manage work state
+[AWR](https://github.com/originoneai/agent-work-runtime) manage work state
 for projects developed inside DSH.
 
 Status: **v0.2.0.** Checked in DeepSeek Harness `0.2.2-rc.2` (the signed-in desktop app on macOS arm64, with a real model)
