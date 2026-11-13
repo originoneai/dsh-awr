@@ -26,6 +26,7 @@ import {
   parseReview,
   resultText,
   takeoverRootFor,
+  tooBroadRoot,
 } from '../lib/takeover-host.js'
 
 const here = dirname(fileURLToPath(import.meta.url))
@@ -73,6 +74,16 @@ test('the project is the Git top level of the conversation\'s directory; an AWR 
   const plain = mkdtempSync(join(tmpdir(), 'dsh-awr-host-plain-'))
   t.after(() => rmSync(plain, { recursive: true, force: true }))
   assert.equal((await takeoverRootFor(plain)).root, execFileSync('realpath', [plain], { encoding: 'utf8' }).trim(), 'no Git: the directory itself')
+})
+
+test('tooBroadRoot measures depth in Windows segments too: a backslash path is not one piece', () => {
+  const home = 'C:\\Users\\me'
+  assert.equal(tooBroadRoot('C:\\Users\\me\\project', home), false)
+  assert.equal(tooBroadRoot('C:\\Users\\me', home), true, 'the home directory')
+  assert.equal(tooBroadRoot('C:\\', home), true, 'the drive root')
+  assert.equal(tooBroadRoot('/', '/home/me'), true, 'the filesystem root')
+  assert.equal(tooBroadRoot('/opt', '/home/me'), true, 'one segment deep')
+  assert.equal(tooBroadRoot('/opt/projects/app', '/home/me'), false)
 })
 
 // --- the prompt and the answer ------------------------------------------------------------------------------
