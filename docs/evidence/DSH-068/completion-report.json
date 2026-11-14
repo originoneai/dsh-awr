@@ -1,0 +1,32 @@
+{
+ "version": 1,
+ "work_item": "WORK-21e9ba73b5d07aae5326678e1b5e89ec",
+ "source_sha": "e5023e7c25c5f2d24de2ee99e4638b016f37901e",
+ "command": "npm test",
+ "scope": [
+  "lib/takeover-host.js",
+  "test/takeover-host.test.js",
+  "test/fixtures/reviewer-output-with-reasoning.txt",
+  ".awr/intake/work-ledger.yaml",
+  "docs/evidence/DSH-068"
+ ],
+ "verified_at": 1794644795000,
+ "checks": [
+  {
+   "name": "a ```json fence quoted inside the reviewer's reasoning no longer stops the review; the captured 2026-11-14 output parses",
+   "passed": true,
+   "details": "Before the fix, replaying the exact text the review step received on the failed /Users/mac/Downloads/test takeover (7.9k chars of reasoning quoting the instruction's ```json fence, then the answer's fence) through parseReview threw 'The reviewer did not return a JSON object with the reviewed intake files.' — the fence regex matched from the quoted fence into the answer's opening fence and captured prose. After the fix: resultText (lib/takeover-host.js) reads only the answer blocks of the subagent result (reasoning/thinking blocks are read when a result has nothing else), and parseReview scans the ```json fences from the last backwards and takes the first that parses. test/takeover-host.test.js parses the exact captured output (test/fixtures/reviewer-output-with-reasoning.txt) and asserts the reviewed draft carries .awr/intake/work-ledger.yaml with status needs_confirmation, and a block-level test pins that reasoning and thinking blocks are left out of resultText.",
+   "criteria": [
+    "1. A reviewer whose reasoning quotes the instruction's ```json fence no longer stops the takeover: resultText reads only the answer blocks of the subagent result, and parseReview takes the first ```json fence that parses to a JSON object with generated_files, scanning from the last fence backwards; the output captured from the failed takeover of 2026-11-14 (/Users/mac/Downloads/test, reasoning of 7.9k chars with the quoted fence) parses and yields .awr/intake/work-ledger.yaml.\n2. A result with only reasoning blocks still fails with the same review_failed message, a missing generated_files keeps its own message, and the whole suite passes."
+   ]
+  },
+  {
+   "name": "failure messages and the suite are unchanged where behavior must not change",
+   "passed": true,
+   "details": "A result whose only blocks are reasoning still feeds parseReview text that fails with 'The reviewer did not return a JSON object with the reviewed intake files.'; an answer that parses but has no generated_files still fails with 'The reviewer\\'s answer has no generated_files.'; the existing refusal cases (empty text, prose, unparseable fence, empty object/array) still throw review_failed. npm test at e5023e7: 395 tests, 392 pass, 0 fail, 3 skipped (lab-dependent, as before). Not covered: the fixed plugin was not re-run through a live desktop-app takeover; that verification happens when the test conversation updates to the release that carries this fix and resumes its stopped takeover.",
+   "criteria": [
+    "1. A reviewer whose reasoning quotes the instruction's ```json fence no longer stops the takeover: resultText reads only the answer blocks of the subagent result, and parseReview takes the first ```json fence that parses to a JSON object with generated_files, scanning from the last fence backwards; the output captured from the failed takeover of 2026-11-14 (/Users/mac/Downloads/test, reasoning of 7.9k chars with the quoted fence) parses and yields .awr/intake/work-ledger.yaml.\n2. A result with only reasoning blocks still fails with the same review_failed message, a missing generated_files keeps its own message, and the whole suite passes."
+   ]
+  }
+ ]
+}
