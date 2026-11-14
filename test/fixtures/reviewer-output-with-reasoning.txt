@@ -1,0 +1,124 @@
+Confirmed empty. Now construct the four files? The draft only has work-ledger.yaml in generated_files. The rules say "Write only paths under .awr/intake/ and only these four names... Keep the paths of the draft's generated_files". So I should only produce .awr/intake/work-ledger.yaml, since that's the only path in the draft. The instruction "Keep the paths of the draft's generated_files" — so output only that one path. Should I create GOALS.md, PLAN.md, RULES.md? The task says "AWR refuses any other file ... Keep the paths of the draft's generated_files; the text must be in the same format as the draft shows." So only the work-ledger.yaml.
+
+Now format: YAML with goals and work_items, same structure as draft.
+
+Goal:
+- id: keep "intake-goal"? Probably keep the same id for stability. The draft's goal id is "intake-goal". Keep it. Maybe rename? Better keep ids stable.
+
+Content:
+```yaml
+goals:
+- id: intake-goal
+  status: needs_confirmation
+  title: Project goal
+  summary: |-
+    No project material establishes the purpose, scope, or acceptance criteria: the project directory contains no README, docs, plans, or ledgers, and no Git history exists. Business intent remains unconfirmed.
+
+    Provenance: none — no README.md, docs/, plan, ledger, or history found in the project.
+  success_criteria:
+  - The owner confirms the project's purpose and states where it is documented.
+  - The owner states observable acceptance criteria for the project goal.
+```
+
+Hmm, "success criteria that can be observed". Should be observable. Owner confirmation is observable as a state? Perhaps: "The owner records the project purpose and its source material in this goal." and "The owner records at least one observable acceptance criterion." I'll phrase them as confirmations.
+
+Work item INTAKE-001:
+```yaml
+work_items:
+- id: INTAKE-001
+  kind: intake
+  status: planned
+  goal: intake-goal
+  title: Verify project goals, current state, and the next deliverable
+  summary: |-
+    No project material was found to establish whether any functionality exists, is implemented, or is accepted. This intake item is unverified and exists only to gather that material.
+  acceptance:
+  - The owner supplies the project's README, docs, plans, or ledger, and each goal and work item cites its source file.
+  - Every claimed implementation state is either backed by source evidence or recorded as unverified.
+  - At least one next deliverable has observable acceptance criteria recorded in this ledger.
+  next_action: Ask the owner to add the project's source material or state the goal in writing, then rewrite this ledger from it and run awr intake inspect again.
+  depends_on: []
+```
+
+Wait: "next_action: Ask the owner..." — nobody available to answer questions in this session, but the next_action is for the owner/session later; that's fine.
+
+Also kind for goal? Goal fields: id, status, success_criteria, summary, title. Good.
+
+Should I include depends_on? Draft had depends_on: []. Keep it.
+
+Should I include priority/required? No—omit per rule.
+
+The status "planned" for INTAKE-001. Rule: "Use status planned unless the material itself says the work is done". OK.
+
+Should goal status be needs_confirmation — yes, since purpose wasn't established. Actually one might argue candidate since we're stating the search for purpose. But the goal title/summary is inferred placeholder → needs_confirmation.
+
+YAML quoting: summary with ":" - "Provenance: none — ..." contains ": " so quote or use block scalar. We use block scalar |- so fine.
+
+success_criteria containing ":"? Avoid.
+
+The title "Project goal" — maybe more specific: "Establish the project goal from source material" — but goal title should be the project goal; since unknown, keep generic "Project goal" and note unconfirmed. Hmm, the task says "replace the generic placeholder goal ... with what the project's own material establishes ... and nothing more." Material establishes nothing, so the goal stays placeholder/needs_confirmation. I'll title it "Project goal (unconfirmed)"? Better keep "Project goal".
+
+Let me write the complete YAML text. Order of keys — doesn't matter; keep similar to draft (goals then work_items).
+
+The file text as a JSON string.
+
+Note about "AWR accepts an item without them". Good.
+
+Also the rule: "A ledger with no work items cannot be bound... never leave work_items empty." Done.
+
+Potential issue: goal summary mentions "no README.md, docs/, plan, ledger, or history found in the project" — accurate.
+
+The summary must name the files it comes from. Since none, name "none". I'll write: "Provenance: none — the project directory has no README, docs/, plans, ledger, or Git history."
+
+Notes: at most three short sentences. E.g., "The project directory at /Users/mac/Downloads/test is empty: no README, docs, plans, ledgers, or Git history, so nothing could be established from material. The goal and INTAKE-001 therefore remain unconfirmed placeholders with planned status and no priority/required. Only .awr/intake/work-ledger.yaml was written, as it is the sole path in the draft."
+
+Notes "at most three short sentences" — okay, three.
+
+Let me produce JSON. Must be one JSON object in a ```json fence and nothing after it.
+
+Construct the YAML string carefully:
+
+goals:
+- id: intake-goal
+  status: needs_confirmation
+  success_criteria:
+  - The owner confirms the project purpose and cites the source material that states it.
+  - The owner defines at least one observable acceptance criterion for the project goal.
+  summary: |-
+    No project material establishes the project's purpose, scope, or acceptance criteria. The project directory contains no README, docs, plans, or ledger, and there is no Git history.
+
+    Provenance: none — no README.md, docs/, plan, ledger, or history exists in the project.
+  title: Project goal
+work_items:
+- acceptance:
+  - The owner supplies the project's README, docs, plans, or ledger, and each goal and work item references its source file.
+  - Every claimed implementation state is either supported by source evidence or recorded as unverified.
+  - At least one next deliverable has observable acceptance criteria recorded in this ledger.
+  depends_on: []
+  id: INTAKE-001
+  kind: intake
+  next_action: Obtain the project's source material or a written statement of purpose from the owner, then restate goals and work items from it and run awr intake inspect again.
+  status: planned
+  summary: This intake task is unverified; no source material exists to establish whether any functionality is implemented or accepted.
+  title: Verify project goals, current state, and the next deliverable
+
+Hmm, summary block content "Provenance: none — ..." contains ": " inside a block scalar, fine.
+
+Wait, YAML block scalar within JSON — escaping newlines as "\n". Fine.
+
+One thought: success_criteria should be observable. "The owner confirms..." is observable upon confirmation. Fine.
+
+Also maybe include goal field in work_items — yes, goal: intake-goal (required).
+
+Should I also generate GOALS.md, PLAN.md, RULES.md? Rules say "AWR refuses any other file ... Keep the paths of the draft's generated_files". Since the draft only lists work-ledger.yaml, output only that. I'm fairly confident.
+
+Let me double-check whether the review directory has anything (maybe a copy of the project). The instruction: "You can only read files (read, glob) under that directory." The workspace is /Users/mac/Downloads/test per sandbox. CWD is the review dir under /Users/mac/.local/state. Attempting to read the review dir may be outside allowed? The read tool might allow since it's CWD. But policy says only under /Users/mac/Downloads/test. I'll not read elsewhere; but maybe checking the CWD for a takeover copy is prudent? The files element explicitly says "(none listed)" and history "(no Git history)", which is the extraction summary. So the takeover found no files. Good.
+
+Write the final JSON.```json
+{
+  "generated_files": {
+    ".awr/intake/work-ledger.yaml": "goals:\n- id: intake-goal\n  status: needs_confirmation\n  success_criteria:\n  - The owner confirms the project's purpose and cites the source material that states it.\n  - The owner defines at least one observable acceptance criterion for the project goal.\n  summary: |-\n    No project material establishes the project's purpose, scope, or acceptance criteria. The project directory contains no README, docs, plans, or ledger, and there is no Git history.\n\n    Provenance: none — no README.md, docs/, plan, ledger, or history exists in the project.\n  title: Project goal\nwork_items:\n- acceptance:\n  - The owner supplies the project's README, docs, plans, or ledger, and each goal and work item references its source file.\n  - Every claimed implementation state is either supported by source evidence or recorded as unverified.\n  - At least one next deliverable has observable acceptance criteria recorded in this ledger.\n  depends_on: []\n  goal: intake-goal\n  id: INTAKE-001\n  kind: intake\n  next_action: Obtain the project's source material or a written statement of purpose from the owner, then restate goals and work items from it and run awr intake inspect again.\n  status: planned\n  summary: This intake task is unverified; no source material exists to establish whether any functionality is implemented or accepted.\n  title: Verify project goals, current state, and the next deliverable\n"
+  },
+  "notes": "The project directory at /Users/mac/Downloads/test is empty: no README, docs, plans, ledgers, or Git history, so no purpose or work could be established from material. The goal and INTAKE-001 therefore stay unconfirmed placeholders (needs_confirmation/planned) with no priority or required fields. Only .awr/intake/work-ledger.yaml was written, because it is the sole path in the draft."
+}
+```

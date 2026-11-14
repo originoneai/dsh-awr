@@ -532,3 +532,15 @@ work_items:
   "tags": ["dsh-067"]
   "evidence": ["docs/evidence/DSH-067/completion-report.json"]
   "verification": {"evidence_level":"locally_verified"}
+- "id": "WORK-21e9ba73b5d07aae5326678e1b5e89ec"
+  "title": "DSH-068: The takeover review parses the reviewer's answer, not its reasoning"
+  "status": "completed"
+  "acceptance": ["1. A reviewer whose reasoning quotes the instruction's ```json fence no longer stops the takeover: resultText reads only the answer blocks of the subagent result, and parseReview takes the first ```json fence that parses to a JSON object with generated_files, scanning from the last fence backwards; the output captured from the failed takeover of 2026-11-14 (/Users/mac/Downloads/test, reasoning of 7.9k chars with the quoted fence) parses and yields .awr/intake/work-ledger.yaml.\n2. A result with only reasoning blocks still fails with the same review_failed message, a missing generated_files keeps its own message, and the whole suite passes."]
+  "goal": ["intake-goal"]
+  "kind": "fix"
+  "next_action": "Write the completion report, register evidence, complete DSH-068, open and merge the PR"
+  "priority": "P0"
+  "summary": "Found in the owner's test takeover (session 5321ce01, /Users/mac/Downloads/test, plugin 0.2.1): the run stopped at review with 'The reviewer did not return a JSON object', yet both reviewer subagents completed with valid answers. DeepSeek Harness returns the subagent output as the full content blocks [reasoning, text]; resultText joins every block, the reasoning quotes the prompt's literal ```json fence, and the fence regex of parseReview captures prose from that false start. Reproduced exactly with the captured output; tests stayed green because fakes never carried reasoning blocks."
+  "tags": ["dsh-068"]
+  "evidence": ["docs/evidence/DSH-068/completion-report.json"]
+  "verification": {"evidence_level":"locally_verified"}
