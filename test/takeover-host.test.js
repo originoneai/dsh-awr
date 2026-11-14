@@ -131,6 +131,16 @@ test('the reviewer\'s answer is parsed from a json fence or bare, merged over th
   }
 })
 
+test('the real output of the 2026-11-14 failed takeover parses: a quoted ```json fence in the reasoning is not the answer', () => {
+  // test/fixtures/reviewer-output-with-reasoning.txt is the exact text the review step received on that run:
+  // 7.9k chars of reasoning that quote the instruction's fence, then the answer's fence (DSH-068). Before the
+  // fix, parseReview stopped the takeover of /Users/mac/Downloads/test with 'did not return a JSON object'.
+  const captured = readFileSync(new URL('./fixtures/reviewer-output-with-reasoning.txt', import.meta.url), 'utf8')
+  const parsed = parseReview(captured, { ...DRAFT, generated_files: {} })
+  assert.deepEqual(Object.keys(parsed.draft.generated_files), ['.awr/intake/work-ledger.yaml'])
+  assert.match(parsed.draft.generated_files['.awr/intake/work-ledger.yaml'], /status: needs_confirmation/)
+})
+
 test('a goal the reviewer calls active or confirmed is lowered to candidate; work items and other text are left alone', () => {
   const markdown = '# A goal {#g status=active}\n\nstatus=active in the body stays.\n\n# Another {#h status=Confirmed owner=x}\n\n# Fine {#i status=needs_confirmation}\n'
   const yaml = 'goals:\n- id: a\n  status: active\n  title: x\n- id: b\n  status: "confirmed"\n- id: c\n  status: candidate\nwork_items:\n- id: W-1\n  status: active\n  goal: a\n- id: W-2\n  status: confirmed\n'
@@ -158,6 +168,18 @@ test('resultText reads a string, content parts, or an object with output', () =>
   assert.equal(resultText({ output: [{ type: 'text', text: 'a' }, 'b'] }), 'ab')
   assert.equal(resultText({ text: 't' }), 't')
   assert.equal(resultText(undefined), '')
+})
+
+test('resultText judges the answer, not the reasoning: reasoning and thinking blocks are left out', () => {
+  // DeepSeek Harness returns the full content blocks of the final message; a reasoning block can quote the
+  // prompt's ```json instruction verbatim, which parseReview would take for the answer's fence (DSH-068).
+  const blocks = [
+    { type: 'reasoning', text: 'The rules say: reply with ONE JSON object in a ```json fence and nothing after it.' },
+    { type: 'text', text: '```json\n{"generated_files":{}}\n```' },
+  ]
+  assert.equal(resultText({ output: blocks }), '```json\n{"generated_files":{}}\n```')
+  assert.equal(resultText({ output: [{ type: 'thinking', text: 'hmm' }, 'answer'] }), 'answer')
+  assert.equal(resultText({ output: [{ type: 'reasoning', text: 'only thought' }] }), 'only thought', 'nothing else: the reasoning is all there is to read')
 })
 
 // --- the restriction and the guard ---------------------------------------------------------------------------
